@@ -147,12 +147,14 @@ You can untick single fields and files and set the [[Group]] in the target for e
   },
   'self-signout': {
     title: 'Signing myself in or out',
-    keywords: ['sign out', 'sign in', 'my events', 'signout', 'sign-up fields', 'note', 'change answers', 'edit registration', 'accept', 'late', 'decline', 'today', 'next event', 'more options', 'past events', 'attendance rate'],
+    keywords: ['sign out', 'sign in', 'my events', 'signout', 'sign-up fields', 'note', 'change answers', 'edit registration', 'accept', 'late', 'decline', 'today', 'next event', 'more options', 'past events', 'attendance rate', 'not invited', 'all events visible', 'other events'],
     body: `Under "My attendance" you see your greeting at the top with your attendance rate and how often you were late. Below are the tiles "Current pieces" and "Report absence", if they are enabled for you.
 
 Today's event (or the next one) has its own card. There you sign in or out directly with "Accept", "Late" or "Decline". You can tap the small markers such as "Run sheet", "Info", "Attachment", "Files" or "Route" directly to open the plan, the description, the attachment, the file storage or the navigation. Everything else, e.g. signing in with a note or sign-up fields, is under the link "More options". It only lists what is not already visible as a button or marker on the card. Tapping the card itself does not open a menu.
 
 The upcoming events are grouped by month. Each event shows the date on the left, time and place below it and your [[Attendance status|attendance status]] on the right. Notes such as sign-up deadline, note, run sheet or info appear as small markers. Tap an event to change your status. If you sign out, you can optionally choose an [[Absence reason|absence reason]].
+
+If your instance has turned on "All events visible to members", you also see events you are not invited to. They have a grey background, the date has a dashed outline and instead of your status it says "Not invited" on the right. This applies to the card of the current event and to the upcoming events. "Past" only lists events you took part in.
 
 Under "Past" you see your rate, coloured dots for your recent events and the last three events. "Show all" expands the whole list.
 

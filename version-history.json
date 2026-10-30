@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.14",
+      "date": "30.10.2026",
+      "changes": [
+        "👀 Termine, zu denen du nicht eingeladen bist, sind in deiner Übersicht jetzt deutlich gekennzeichnet: grau hinterlegt, gestrichelt umrandet und mit dem Hinweis „Nicht eingeladen“ (bei „Alle Termine für Mitglieder sichtbar“)."
+      ]
+    },
+    {
       "version": "4.17.13",
       "date": "30.10.2026",
       "changes": [

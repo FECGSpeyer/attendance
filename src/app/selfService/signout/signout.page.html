@@ -483,6 +483,8 @@
           <div class="ev-today__meta">{{ getEventMeta(currentAttendance, true, false) }}</div>
           @if (isOwnAttendance(currentAttendance)) {
             <span class="ev-pill ev-today__status" [ngClass]="'ion-color-' + statusColorOf(currentAttendance)">{{ statusLabelOf(currentAttendance) }}</span>
+          } @else {
+            <span class="ev-pill ev-today__status not-invited-pill"><ion-icon name="eye-outline"></ion-icon>{{ 'signout.notInvited' | transloco }}</span>
           }
         </div>
       </div>
@@ -538,6 +540,8 @@
             </ion-label>
             @if (isOwnAttendance(att)) {
               <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + statusColorOf(att)">{{ statusLabelOf(att) }}</span>
+            } @else {
+              <span slot="end" class="ev-pill not-invited-pill"><ion-icon name="eye-outline"></ion-icon>{{ 'signout.notInvited' | transloco }}</span>
             }
           </ion-item>
         }

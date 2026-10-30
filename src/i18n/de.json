@@ -795,6 +795,7 @@
     "confirmLinkInvalid": "Der Bestätigungslink ist ungültig oder abgelaufen."
   },
   "signout": {
+    "notInvited": "Nicht eingeladen",
     "current": "Aktuell",
     "legend": "Legende",
     "legendAccepted": "Zugesagt",

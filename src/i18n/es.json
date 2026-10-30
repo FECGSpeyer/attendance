@@ -795,6 +795,7 @@
     "confirmLinkInvalid": "El enlace de confirmación no es válido o ha caducado."
   },
   "signout": {
+    "notInvited": "Sin invitación",
     "current": "Actuales",
     "legend": "Leyenda",
     "legendAccepted": "Confirmado",

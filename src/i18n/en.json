@@ -795,6 +795,7 @@
     "confirmLinkInvalid": "The confirmation link is invalid or has expired."
   },
   "signout": {
+    "notInvited": "Not invited",
     "current": "Current",
     "legend": "Legend",
     "legendAccepted": "Accepted",

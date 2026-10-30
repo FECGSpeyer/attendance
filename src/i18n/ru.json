@@ -795,6 +795,7 @@
     "confirmLinkInvalid": "Ссылка для подтверждения недействительна или устарела."
   },
   "signout": {
+    "notInvited": "Без приглашения",
     "current": "Текущие",
     "legend": "Обозначения",
     "legendAccepted": "Иду",

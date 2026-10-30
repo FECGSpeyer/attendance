@@ -106,8 +106,41 @@
     }
 }
 
-.not-member {
-    border-left: 3px solid var(--ion-color-danger);
+// Termine, zu denen die Person nicht eingeladen ist ("Alle Termine für Mitglieder sichtbar"):
+// grau, gestrichelt und mit "Nicht eingeladen"-Pill, damit sie sich klar von eigenen abheben.
+ion-item.not-member {
+    --background: rgba(var(--ion-color-medium-rgb), 0.08);
+
+    ion-label h2 {
+        color: var(--ion-color-medium-shade);
+    }
+}
+
+.not-member .ev-tile {
+    background: transparent;
+    border: 2px dashed rgba(var(--ion-color-medium-rgb), 0.6);
+    color: var(--ion-color-medium-shade);
+}
+
+.ev-today.not-member {
+    border: 2px dashed var(--ion-color-medium);
+    background: rgba(var(--ion-color-medium-rgb), 0.08);
+
+    .ev-today__title {
+        color: var(--ion-color-medium-shade);
+    }
+}
+
+.not-invited-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(var(--ion-color-medium-rgb), 0.2);
+    color: var(--ion-color-medium-shade);
+
+    ion-icon {
+        font-size: 0.95em;
+    }
 }
 
 .all-attendances-info-text {

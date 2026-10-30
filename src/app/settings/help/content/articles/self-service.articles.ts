@@ -5,12 +5,14 @@ export const SELF_SERVICE_ARTICLES: HelpArticle[] = [
     id: 'self-signout',
     title: 'Mich selbst an- oder abmelden',
     categoryId: 'self-service',
-    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten', 'zusagen', 'verspätung', 'absagen', 'heute', 'nächster termin', 'weitere optionen', 'vergangene termine', 'anwesenheitsquote'],
+    keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten', 'zusagen', 'verspätung', 'absagen', 'heute', 'nächster termin', 'weitere optionen', 'vergangene termine', 'anwesenheitsquote', 'nicht eingeladen', 'alle termine sichtbar', 'fremde termine'],
     body: `Unter "Meine Anwesenheit" siehst du oben deine Begrüßung mit deiner Anwesenheitsquote und wie oft du zu spät warst. Darunter liegen die Kacheln „Aktuelle Werke“ und „Abwesenheit melden“, sofern sie für dich freigeschaltet sind.
 
 Der Termin von heute (oder der nächste Termin) steht in einer eigenen Karte. Dort meldest du dich direkt mit „Zusagen“, „Verspätung“ oder „Absagen“ an oder ab. Die kleinen Markierungen wie „Ablaufplan“, „Infos“, „Anhang“, „Dateien“ oder „Route“ kannst du direkt antippen, um den Plan, die Beschreibung, den Anhang, die Dateiablage oder die Navigation zu öffnen. Alles Weitere, z. B. Anmelden mit Notiz oder Anmeldefelder, findest du über den Link „Weitere Optionen“. Dort steht nur, was nicht schon als Button oder Markierung auf der Karte zu sehen ist. Ein Tipp auf die Karte selbst öffnet kein Menü.
 
 Die anstehenden Termine sind nach Monaten gruppiert. Jeder Termin zeigt links das Datum, darunter Uhrzeit und Ort und rechts deinen [[Anwesenheitsstatus]]. Hinweise wie Anmeldefrist, Notiz, Ablaufplan oder Infos erscheinen als kleine Markierungen. Tippe einen Termin an, um deinen Status zu ändern. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.
+
+Hat deine Instanz „Alle Termine für Mitglieder sichtbar“ eingeschaltet, siehst du auch Termine, zu denen du nicht eingeladen bist. Sie sind grau hinterlegt, das Datum ist gestrichelt umrandet und rechts steht statt deines Status „Nicht eingeladen“. Das gilt für die Karte des aktuellen Termins und für die anstehenden Termine. Unter „Vergangen“ stehen nur Termine, bei denen du dabei warst.
 
 Unter „Vergangen“ siehst du deine Quote, farbige Punkte für deine letzten Termine und die letzten drei Termine. Mit „Alle anzeigen“ klappst du die ganze Liste auf.
 
