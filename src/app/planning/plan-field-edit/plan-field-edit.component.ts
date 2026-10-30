@@ -27,6 +27,8 @@ export class PlanFieldEditComponent implements OnInit {
   @Input() field: FieldSelection;
   /** Beamer section only on ORG plans of linked orgs (see plan-beamer.ts). */
   @Input() showBeamer = false;
+  /** File of the row, otherwise the one stored with its Werk. */
+  @Input() songFile?: BeamerFile;
 
   name = '';
   conductor = '';
@@ -45,7 +47,7 @@ export class PlanFieldEditComponent implements OnInit {
     this.info = this.field.info ?? '';
     this.time = this.field.time ? Number(this.field.time) : 20;
     this.manualBeamer = this.field.needsBeamer;
-    this.beamerFile = this.field.beamerFile;
+    this.beamerFile = this.field.beamerFile ?? this.songFile;
   }
 
   get autoBeamer(): boolean {

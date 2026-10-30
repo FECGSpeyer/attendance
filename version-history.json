@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.11",
+      "date": "30.10.2026",
+      "changes": [
+        "📽️ Für FECG Speyer und FECG Schwegenheim: In der Gemeinde App verknüpfte Beamer-Dateien erscheinen am Programmpunkt, und die Datei eines Werks gilt in jedem Plan.",
+        "🛡️ Verknüpfte Beamer-Dateien bleiben erhalten, auch wenn du den Plan gleichzeitig in Attendix bearbeitest."
+      ]
+    },
+    {
       "version": "4.17.10",
       "date": "30.10.2026",
       "changes": [

@@ -71,7 +71,9 @@ With "Reset" you can return to the default programme items of the event type at 
 
 **Needed or not:** Tap a programme item. In the **Edit field** window you find the switch **Projector file needed** under "Projector". It is on automatically for [[Piece|pieces]] and when the title contains "Lied" (song) or "Gedicht" (poem). If you switch it by hand, it stays that way. Notes and programme blocks need no file.
 
-**Linking the file:** You link the file itself (.sng from the media library) in the Gemeinde App. Attendix then shows it on the programme item. For a piece, the linked file appears on the piece page under **SongBeamer file**.`,
+**Linking the file:** You link the file itself (.sng from the media library) in the Gemeinde App under More › Run sheets. Attendix then shows it on the programme item. If you remember the file for a [[Piece|piece]] there, it appears on the piece page under **SongBeamer file** and applies to every plan containing the piece, as long as the item has no file of its own.
+
+**When saving:** Linked files stay on the programme item even if you edit, rename or move it in Attendix at the same time. If you delete the item or copy the plan, the new item has no file.`,
   },
   'plan-conductor': {
     title: 'Assigning a lead/conductor',

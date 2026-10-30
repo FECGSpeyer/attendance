@@ -80,7 +80,9 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 
 **Nötig oder nicht:** Tippe auf einen Programmpunkt. Im Fenster **Feld bearbeiten** findest du unter "Beamer" den Schalter **Beamer-Datei nötig**. Er ist automatisch an bei [[Werk|Werken]] und wenn "Lied" oder "Gedicht" im Titel steht. Schaltest du ihn von Hand um, bleibt er so. Notizen und Programmblöcke brauchen keine Datei.
 
-**Datei verknüpfen:** Die Datei selbst (.sng aus der Mediathek) verknüpfst du in der Gemeinde App. Attendix zeigt sie danach am Programmpunkt an. Bei einem Werk erscheint die hinterlegte Datei auf der Werk-Seite unter **SongBeamer-Datei**.`,
+**Datei verknüpfen:** Die Datei selbst (.sng aus der Mediathek) verknüpfst du in der Gemeinde App unter Mehr › Ablaufpläne. Attendix zeigt sie danach am Programmpunkt an. Merkst du dir dort die Datei für ein [[Werk]], steht sie auf der Werk-Seite unter **SongBeamer-Datei** und gilt in jedem Plan, in dem das Werk vorkommt, solange am Punkt keine eigene Datei hängt.
+
+**Beim Speichern:** Verknüpfte Dateien bleiben am Programmpunkt, auch wenn du den Plan gleichzeitig in Attendix bearbeitest, umbenennst oder verschiebst. Löschst du den Punkt oder kopierst du den Plan, hat der neue Punkt keine Datei.`,
   },
   {
     id: 'plan-conductor',

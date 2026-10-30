@@ -1,11 +1,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-// Read access for the Gemeinde App (FECG Speyer, FECG Schwegenheim): ORG plans of the
-// organisation with "Beamer-Datei nötig" per row. Auth: header x-gemeinde-app-key, of which
-// tenant_groups stores only the SHA-256. Writing (file links) follows in phase 2.
+// Bridge for the Gemeinde App (FECG Speyer, FECG Schwegenheim). Auth: header x-gemeinde-app-key,
+// of which tenant_groups stores only the SHA-256.
 //
-// GET ?from=YYYY-MM-DD&to=YYYY-MM-DD   (default: today until 8 weeks ahead)
+// GET ?from=YYYY-MM-DD&to=YYYY-MM-DD   ORG plans with "Beamer-Datei nötig" per row
+//                                      (default: today until 8 weeks ahead)
+// POST { action: 'point', plan, field, file }   SongBeamer file of a Programmpunkt
+// POST { action: 'song', songId, file }         SongBeamer file of a Werk
+//   file = { name, path } or null to remove it. Points are written through the SQL function
+//   fecg_set_beamer_file (supabase/sql/add_gemeinde_app_write.sql), so a concurrent save in
+//   Attendix keeps the file.
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -84,25 +89,122 @@ function mapFields(fields: FieldSelection[], beamerActive: boolean, songFiles: M
   }));
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method !== 'GET') {
-    return json({ error: 'method_not_allowed' }, 405);
-  }
+interface Org { id: number; name: string; beamer_files_enabled: boolean }
 
+async function orgForKey(req: Request): Promise<Org | null> {
   const key = req.headers.get('x-gemeinde-app-key');
-  if (!key || !key.startsWith('atx_')) {
-    return json({ error: 'missing_key' }, 401);
-  }
-
-  const { data: org } = await supabase
+  if (!key || !key.startsWith('atx_')) { return null; }
+  const { data } = await supabase
     .from('tenant_groups')
     .select('id, name, beamer_files_enabled')
     .eq('gemeinde_app_key_hash', await sha256(key))
     .eq('fecg_link_enabled', true)
     .maybeSingle();
+  return (data as Org | null) ?? null;
+}
 
+async function orgTenantIds(orgId: number): Promise<number[]> {
+  const { data } = await supabase.from('tenant_group_tenants').select('tenant_id').eq('tenant_group', orgId);
+  return (data ?? []).map((t: any) => t.tenant_id);
+}
+
+/** { name, path } of an .sng, or null; anything else is rejected (undefined). */
+function parseFile(raw: unknown): BeamerFile | null | undefined {
+  if (raw === null) { return null; }
+  if (!raw || typeof raw !== 'object') { return undefined; }
+  const { name, path } = raw as Record<string, unknown>;
+  if (typeof name !== 'string' || typeof path !== 'string') { return undefined; }
+  const n = name.trim();
+  const p = path.trim();
+  if (!n || n.length > 200 || !p || p.length > 400 || !/\.sng$/i.test(p)) { return undefined; }
+  return { name: n, path: p, linkedAt: new Date().toISOString() };
+}
+
+async function handleWrite(req: Request, org: Org): Promise<Response> {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'invalid_body' }, 400);
+  }
+  const file = parseFile(body.file);
+  if (file === undefined) {
+    return json({ error: 'invalid_file' }, 400);
+  }
+  const tenantIds = await orgTenantIds(org.id);
+
+  if (body.action === 'song') {
+    const songId = Number(body.songId);
+    if (!Number.isInteger(songId) || !tenantIds.length) { return json({ error: 'not_found' }, 404); }
+    const { data, error } = await supabase
+      .from('songs')
+      .update({ beamer_file: file })
+      .eq('id', songId)
+      .in('tenantId', tenantIds)
+      .select('id');
+    if (error) {
+      console.error('fecg-bridge song write failed', error);
+      return json({ error: 'write_failed' }, 500);
+    }
+    return data?.length ? json({ ok: true, file }) : json({ error: 'not_found' }, 404);
+  }
+
+  if (body.action !== 'point') {
+    return json({ error: 'invalid_action' }, 400);
+  }
+  const planUid = String(body.plan ?? '');
+  const fieldUid = String(body.field ?? '');
+  if (!fieldUid || fieldUid.length > 80) { return json({ error: 'not_found' }, 404); }
+
+  let args: { p_attendance_id: number | null; p_plan_index: number; p_shared_plan_id: string | null };
+  const att = /^att-(\d+)-(\d+)$/.exec(planUid);
+  if (att) {
+    const { data: row } = await supabase
+      .from('attendance')
+      .select('id, tenantId, is_org_plan')
+      .eq('id', Number(att[1]))
+      .maybeSingle();
+    if (!row || !row.is_org_plan || !tenantIds.includes(row.tenantId)) { return json({ error: 'not_found' }, 404); }
+    args = { p_attendance_id: row.id, p_plan_index: Number(att[2]), p_shared_plan_id: null };
+  } else if (planUid.startsWith('adhoc-')) {
+    const { data: row } = await supabase
+      .from('shared_plans')
+      .select('id, org_id')
+      .eq('id', planUid.slice('adhoc-'.length))
+      .maybeSingle();
+    if (!row || row.org_id !== org.id) { return json({ error: 'not_found' }, 404); }
+    args = { p_attendance_id: null, p_plan_index: 0, p_shared_plan_id: row.id };
+  } else {
+    return json({ error: 'not_found' }, 404);
+  }
+
+  const { data: ok, error } = await supabase.rpc('fecg_set_beamer_file', {
+    ...args,
+    p_field_uid: fieldUid,
+    p_file: file,
+  });
+  if (error) {
+    console.error('fecg-bridge point write failed', error);
+    return json({ error: 'write_failed' }, 500);
+  }
+  return ok ? json({ ok: true, file }) : json({ error: 'not_found' }, 404);
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return json({ error: 'method_not_allowed' }, 405);
+  }
+
+  if (!req.headers.get('x-gemeinde-app-key')?.startsWith('atx_')) {
+    return json({ error: 'missing_key' }, 401);
+  }
+  const org = await orgForKey(req);
   if (!org) {
     return json({ error: 'invalid_key' }, 401);
+  }
+
+  if (req.method === 'POST') {
+    return handleWrite(req, org);
   }
 
   const url = new URL(req.url);

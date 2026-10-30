@@ -4,7 +4,7 @@ import { ActionSheetButton, ActionSheetController, AlertController, IonItemSlidi
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
 import { DbService } from '../services/db.service';
-import { Attendance, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType, PlanBlockTemplate } from '../utilities/interfaces';
+import { Attendance, BeamerFile, FieldSelection, GroupCategory, History, Group, Person, Plan, Song, AttendanceType, PlanBlockTemplate } from '../utilities/interfaces';
 // jsPDF is lazy-loaded for better initial bundle size
 import { Utils } from '../utilities/Utils';
 import { DefaultAttendanceType, Role } from 'src/app/utilities/constants';
@@ -112,6 +112,12 @@ export class PlanningPage implements OnInit {
 
   needsBeamer(field: FieldSelection): boolean {
     return needsBeamer(field);
+  }
+
+  /** File linked in the Gemeinde App: at the row, otherwise the one stored with the Werk. */
+  beamerFileOf(field: FieldSelection): BeamerFile | undefined {
+    if (field.beamerFile) { return field.beamerFile; }
+    return field.songId ? this.songs.find(s => s.id === field.songId)?.beamer_file ?? undefined : undefined;
   }
 
   get blockTemplates(): PlanBlockTemplate[] {
@@ -314,7 +320,7 @@ export class PlanningPage implements OnInit {
 
     const modal = await this.modalController.create({
       component: PlanFieldEditComponent,
-      componentProps: { field, showBeamer: this.showBeamer },
+      componentProps: { field, showBeamer: this.showBeamer, songFile: this.beamerFileOf(field) },
     });
     await modal.present();
     const { data, role } = await modal.onWillDismiss<PlanFieldEditResult>();

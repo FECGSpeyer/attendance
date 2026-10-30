@@ -298,9 +298,9 @@
                     <h3 class="danger">{{ getMissingGroups(field.songId) }}</h3>
                   }
                   @if (showBeamer && needsBeamer(field)) {
-                    <h3 class="beamer-status" [class.beamer-missing]="!field.beamerFile">
+                    <h3 class="beamer-status" [class.beamer-missing]="!beamerFileOf(field)">
                       <ion-icon name="tv-outline" aria-hidden="true"></ion-icon>
-                      {{ field.beamerFile?.name || ('planning.beamerMissing' | transloco) }}
+                      {{ beamerFileOf(field)?.name || ('planning.beamerMissing' | transloco) }}
                     </h3>
                   }
                   @if (!field.id.includes('noteFld')) {
