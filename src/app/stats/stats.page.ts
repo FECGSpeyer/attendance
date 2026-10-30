@@ -4,15 +4,30 @@ import { AlertController, ModalController } from '@ionic/angular/lazy';
 import dayjs from 'dayjs';
 import { Chart, ChartConfiguration, ChartData, registerables } from 'chart.js';
 import { DbService } from '../services/db.service';
-import { Attendance, Group, Person, Player, Tenant } from '../utilities/interfaces';
+import { Attendance, ExtraField, Group, Person, Player, Tenant } from '../utilities/interfaces';
 import { averagePersons } from 'src/app/utilities/duty';
 import { Utils } from '../utilities/Utils';
-import { AttendanceStatus, DefaultAttendanceType } from '../utilities/constants';
+import { AttendanceStatus, DefaultAttendanceType, FieldType } from '../utilities/constants';
 import { normalizeName } from '../utilities/person-matcher';
 import { translate } from '@jsverse/transloco';
 
 // Register Chart.js components
 Chart.register(...registerables);
+
+/** Field types whose values are a fixed set of options and can be shown as a distribution. */
+const DISTRIBUTION_FIELD_TYPES: FieldType[] = [FieldType.SELECT, FieldType.BOOLEAN, FieldType.BFECG_CHURCH];
+
+const FIELD_STATS_COLORS = [
+  '#3880ff', '#2dd36f', '#ffc409', '#eb445a', '#5260ff', '#3dc2ff',
+  '#ff9f0a', '#a855f7', '#14b8a6', '#f472b6', '#84cc16', '#92949c',
+];
+
+export interface FieldStatsRow {
+  label: string;
+  count: number;
+  perc: number;
+  color: string;
+}
 
 @Component({
   selector: 'app-stats',
@@ -67,6 +82,20 @@ export class StatsPage implements OnInit {
   public top20ChartHeight = 500;
   public divaChartHeight = 350;
 
+  // Additional field statistics
+  public distributionFields: ExtraField[] = [];
+  public selectedFieldId: string | null = null;
+  /** 0 = all groups */
+  public fieldStatsGroupId = 0;
+  public fieldStatsIncludePaused = false;
+  public fieldStatsRows: FieldStatsRow[] = [];
+  public fieldStatsTotal = 0;
+  public fieldPieData: ChartData<'doughnut'>;
+  public fieldPieOptions: ChartConfiguration<'doughnut'>['options'];
+  public fieldGroupBarData: ChartData<'bar'>;
+  public fieldGroupBarOptions: ChartConfiguration<'bar'>['options'];
+  public fieldGroupChartHeight = 300;
+
   public chartsReady = false;
 
   constructor(
@@ -103,6 +132,8 @@ export class StatsPage implements OnInit {
     // Load groups and apply date filter (which initializes charts)
     this.groups = this.db.groups();
     this.applyDateFilter();
+
+    await this.initFieldStats();
 
     await this.getOrganizationStats();
   }
@@ -508,6 +539,164 @@ export class StatsPage implements OnInit {
       plugins: {
         title: { display: true, text: translate('stats.unexcusedAbsences') },
         legend: { display: false }
+      }
+    };
+  }
+
+  private async initFieldStats() {
+    this.distributionFields = this.db.getPersonExtraFields()
+      .filter(field => DISTRIBUTION_FIELD_TYPES.includes(field.type));
+    if (!this.distributionFields.length) { return; }
+
+    try {
+      await this.db.hydrateSharedPersonFieldValues(this.players);
+    } catch (error) {
+      console.warn('Shared person field values could not be loaded', error);
+    }
+    if (this.distributionFields.some(f => f.type === FieldType.BFECG_CHURCH) && !this.db.churches()?.length) {
+      try {
+        this.db.churches.set(await this.db.getChurches());
+      } catch (error) {
+        console.warn('Churches could not be loaded', error);
+      }
+    }
+
+    this.selectedFieldId = this.distributionFields[0].id;
+    this.updateFieldStats();
+  }
+
+  get selectedField(): ExtraField | undefined {
+    return this.distributionFields.find(f => f.id === this.selectedFieldId);
+  }
+
+  /** Groups that have at least one person counted for the field statistics. */
+  get fieldStatsGroups(): Group[] {
+    const ids = new Set(this.fieldStatsPersons(0).map(p => p.instrument));
+    return this.groups.filter(g => ids.has(g.id));
+  }
+
+  private fieldStatsPersons(groupId: number): Player[] {
+    return this.players.filter(p =>
+      !p.left &&
+      (this.fieldStatsIncludePaused || !p.paused) &&
+      (!groupId || p.instrument === groupId)
+    );
+  }
+
+  /** Display label of a person's value; missing values fall back to the field's default like in the people list. */
+  private fieldValueLabel(field: ExtraField, player: Player): string {
+    let value = player.additional_fields?.[field.id];
+    if (value === undefined || value === null) {
+      value = Utils.getFieldTypeDefaultValue(field.type, field.defaultValue, field.options, this.db.churches());
+    }
+    switch (field.type) {
+      case FieldType.BOOLEAN:
+        return value === true || value === 'true' ? translate('common.yes') : translate('common.no');
+      case FieldType.BFECG_CHURCH: {
+        if (value === '' || value === undefined || value === null) { return translate('stats.fieldNoValue'); }
+        const church = this.db.churches()?.find(c => c.id === value);
+        return church?.name || String(value);
+      }
+      default:
+        return value === '' || value === undefined || value === null ? translate('stats.fieldNoValue') : String(value);
+    }
+  }
+
+  /** Labels in a stable order: defined options first, then other values found, "no value" last. */
+  private fieldValueOrder(field: ExtraField, labels: string[]): string[] {
+    const noValue = translate('stats.fieldNoValue');
+    let base: string[] = [];
+    if (field.type === FieldType.BOOLEAN) {
+      base = [translate('common.yes'), translate('common.no')];
+    } else if (field.type === FieldType.SELECT) {
+      base = field.options ?? [];
+    }
+    const extra = [...new Set(labels)].filter(l => !base.includes(l) && l !== noValue).sort((a, b) => a.localeCompare(b));
+    const ordered = [...base, ...extra];
+    if (labels.includes(noValue)) { ordered.push(noValue); }
+    return ordered;
+  }
+
+  updateFieldStats() {
+    const field = this.selectedField;
+    if (!field) {
+      this.fieldStatsRows = [];
+      this.fieldStatsTotal = 0;
+      return;
+    }
+    if (this.fieldStatsGroupId && !this.fieldStatsGroups.some(g => g.id === this.fieldStatsGroupId)) {
+      this.fieldStatsGroupId = 0;
+    }
+
+    const persons = this.fieldStatsPersons(this.fieldStatsGroupId);
+    const labels = persons.map(p => this.fieldValueLabel(field, p));
+    const order = this.fieldValueOrder(field, labels);
+    const colorOf = (label: string) => FIELD_STATS_COLORS[order.indexOf(label) % FIELD_STATS_COLORS.length];
+    const total = labels.length;
+
+    this.fieldStatsTotal = total;
+    this.fieldStatsRows = order.map(label => {
+      const count = labels.filter(l => l === label).length;
+      return { label, count, perc: total ? Math.round((count / total) * 100) : 0, color: colorOf(label) };
+    });
+
+    const shownRows = this.fieldStatsRows.filter(r => r.count > 0);
+    this.fieldPieData = {
+      labels: shownRows.map(r => translate('stats.pieLabel', { label: r.label, perc: r.perc })),
+      datasets: [{
+        data: shownRows.map(r => r.count),
+        backgroundColor: shownRows.map(r => r.color),
+      }]
+    };
+    this.fieldPieOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: { display: true, text: field.name },
+        tooltip: {
+          callbacks: {
+            label: (context) => translate('stats.fieldTooltip', {
+              count: context.raw as number,
+              perc: total ? Math.round(((context.raw as number) / total) * 100) : 0,
+            })
+          }
+        }
+      }
+    };
+
+    // Distribution per group (100 % stacked), only when no single group is selected
+    const groups = !this.fieldStatsGroupId ? this.fieldStatsGroups : [];
+    const groupRows = groups.map(g => {
+      const groupLabels = this.fieldStatsPersons(g.id).map(p => this.fieldValueLabel(field, p));
+      return { name: `${g.name} (${groupLabels.length})`, labels: groupLabels };
+    });
+    this.fieldGroupChartHeight = Math.max(250, groupRows.length * 32 + 80);
+    this.fieldGroupBarData = {
+      labels: groupRows.map(g => g.name),
+      datasets: shownRows.map(r => ({
+        label: r.label,
+        backgroundColor: r.color,
+        data: groupRows.map(g => g.labels.length
+          ? Math.round((g.labels.filter(l => l === r.label).length / g.labels.length) * 100)
+          : 0),
+      })),
+    };
+    this.fieldGroupBarOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        title: { display: true, text: translate('stats.fieldPerGroupChart', { field: field.name }) },
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${context.raw}%`
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, min: 0, max: 100, title: { display: true, text: '%' } },
+        y: { stacked: true },
       }
     };
   }

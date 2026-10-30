@@ -68,7 +68,22 @@ Push-Nachrichten für Mitteilungen schaltest du in den Benachrichtigungen über 
     title: 'Statistiken',
     categoryId: 'other',
     keywords: ['auswertung', 'diagramme', 'anwesenheitsquote'],
-    body: `Die Statistik-Seite zeigt Anwesenheitstrends, die Verteilung der [[Anwesenheitsstatus|Anwesenheitsstatus]], Altersverteilung und weitere Auswertungen über einen frei wählbaren Zeitraum.`,
+    body: `Die Statistik-Seite zeigt Anwesenheitstrends, die Verteilung der [[Anwesenheitsstatus|Anwesenheitsstatus]], Altersverteilung und weitere Auswertungen über einen frei wählbaren Zeitraum. Für [[Zusatzfeld|Zusatzfelder]] mit festen Optionen siehst du dort außerdem, wie sich die Antworten verteilen.`,
+  },
+  {
+    id: 'other-stats-fields',
+    title: 'Statistiken zu Zusatzfeldern',
+    categoryId: 'other',
+    keywords: ['zusatzfelder auswerten', 'verteilung', 'prozent', 'kreisdiagramm', 'auswahlfeld', 'ja nein', 'gemeinde verteilung', 'optionen'],
+    body: `In den Statistiken findest du den Bereich "Zusatzfelder". Dort siehst du für jedes [[Zusatzfeld]] vom Typ Auswahl, Ja/Nein oder Gemeinde, wie viele Personen welche Option haben, als Diagramm und als Liste mit Anzahl und Prozent.
+
+So nutzt du ihn:
+- Wähle oben das Feld aus, das du auswerten möchtest.
+- Über "Gruppe" schränkst du die Auswertung auf eine [[Gruppe]] ein.
+- Mit "Pausierende einbeziehen" zählst du pausierende Personen mit. Ausgetretene Personen zählen nie mit.
+- Bei "Alle Gruppen" zeigt ein zweites Diagramm die Verteilung pro Gruppe in Prozent.
+
+Hat eine Person für das Feld noch keinen Wert, zählt der Standardwert des Feldes, so wie er auch in der Personenliste angezeigt wird. Auch organisationsweite Zusatzfelder werden ausgewertet.`,
   },
   {
     id: 'other-instruments',

@@ -2294,7 +2294,16 @@
     "years": "Jahre",
     "unexcusedChart": "Unentschuldigte Fehlzeiten",
     "unexcusedAbsences": "Unentschuldigte Abwesenheiten",
-    "orgTenants": "Instanzen der Organisation"
+    "orgTenants": "Instanzen der Organisation",
+    "additionalFields": "🧩 Zusatzfelder",
+    "fieldSelect": "Feld",
+    "fieldGroupFilter": "Gruppe",
+    "fieldAllGroups": "Alle Gruppen",
+    "fieldIncludePaused": "Pausierende einbeziehen",
+    "fieldNoValue": "Keine Angabe",
+    "fieldTooltip": "{count, plural, one {# Person} other {# Personen}} ({perc}%)",
+    "fieldPerGroupChart": "{field} nach Gruppe (in %)",
+    "fieldNoPersons": "Für diese Auswahl gibt es keine Personen."
   },
   "history": {
     "title": "Werkhistorie",

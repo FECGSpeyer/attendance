@@ -2294,7 +2294,16 @@
     "years": "Лет",
     "unexcusedChart": "Неуважительные пропуски",
     "unexcusedAbsences": "Неуважительные отсутствия",
-    "orgTenants": "Экземпляры организации"
+    "orgTenants": "Экземпляры организации",
+    "additionalFields": "🧩 Дополнительные поля",
+    "fieldSelect": "Поле",
+    "fieldGroupFilter": "Группа",
+    "fieldAllGroups": "Все группы",
+    "fieldIncludePaused": "Учитывать приостановленных",
+    "fieldNoValue": "Не указано",
+    "fieldTooltip": "{count, plural, one {# человек} few {# человека} many {# человек} other {# человека}} ({perc}%)",
+    "fieldPerGroupChart": "{field} по группам (в %)",
+    "fieldNoPersons": "Для этого выбора нет участников."
   },
   "history": {
     "title": "История произведений",

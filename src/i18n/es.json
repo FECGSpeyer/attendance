@@ -2294,7 +2294,16 @@
     "years": "Años",
     "unexcusedChart": "Faltas injustificadas",
     "unexcusedAbsences": "Ausencias injustificadas",
-    "orgTenants": "Instancias de la organización"
+    "orgTenants": "Instancias de la organización",
+    "additionalFields": "🧩 Campos adicionales",
+    "fieldSelect": "Campo",
+    "fieldGroupFilter": "Grupo",
+    "fieldAllGroups": "Todos los grupos",
+    "fieldIncludePaused": "Incluir personas en pausa",
+    "fieldNoValue": "Sin indicar",
+    "fieldTooltip": "{count, plural, one {# persona} other {# personas}} ({perc}%)",
+    "fieldPerGroupChart": "{field} por grupo (en %)",
+    "fieldNoPersons": "No hay personas para esta selección."
   },
   "history": {
     "title": "Historial de obras",

@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.17",
+      "date": "30.10.2026",
+      "changes": [
+        "📊 Statistiken: Neuer Bereich „Zusatzfelder“ zeigt für Auswahl-, Ja/Nein- und Gemeinde-Felder als Diagramm und Liste, wie sich die Optionen prozentual verteilen.",
+        "🎛️ Auswertung pro Feld frei wählbar, filterbar nach Gruppe, optional mit Pausierenden, und bei allen Gruppen zusätzlich als Verteilung pro Gruppe."
+      ]
+    },
+    {
       "version": "4.17.16",
       "date": "30.10.2026",
       "changes": [

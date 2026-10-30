@@ -2294,7 +2294,16 @@
     "years": "Years",
     "unexcusedChart": "Unexcused absences",
     "unexcusedAbsences": "Unexcused absences",
-    "orgTenants": "Instances of the organisation"
+    "orgTenants": "Instances of the organisation",
+    "additionalFields": "🧩 Additional fields",
+    "fieldSelect": "Field",
+    "fieldGroupFilter": "Group",
+    "fieldAllGroups": "All groups",
+    "fieldIncludePaused": "Include paused people",
+    "fieldNoValue": "Not specified",
+    "fieldTooltip": "{count, plural, one {# person} other {# people}} ({perc}%)",
+    "fieldPerGroupChart": "{field} by group (in %)",
+    "fieldNoPersons": "There are no people for this selection."
   },
   "history": {
     "title": "Piece history",
