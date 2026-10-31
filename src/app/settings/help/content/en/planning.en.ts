@@ -47,14 +47,16 @@ With "Reset" you can return to the default programme items of the event type at 
   },
   'plan-live-activity': {
     title: 'Running run sheet on the lock screen',
-    keywords: ['live activity', 'dynamic island', 'lock screen', 'lockscreen', 'live update', 'countdown', 'time left', 'current item', 'notification', 'iphone', 'android'],
+    keywords: ['live activity', 'dynamic island', 'lock screen', 'lockscreen', 'live update', 'countdown', 'time left', 'colour', 'color', 'event type', 'current item', 'notification', 'iphone', 'android'],
     body: `While a [[Run sheet|run sheet]] is running, the Attendix app shows the current programme item in large print with the time left on your lock screen, below it a bar for the whole schedule and the next item with its time. Long titles may take two lines. On the iPhone it also appears in the Dynamic Island, on Android as an ongoing notification with a countdown.
 
 **When:** The display starts automatically 15 minutes before the first item. Until the start it shows a countdown and the first programme items with their times. After that it moves on to the next item by itself and disappears 15 minutes after the end. If the plan is changed during the event, the display is up to date within a minute at the latest. The plan runs by the clock: when an item's time is up, the time left stays at 0:00 briefly until the next item appears. On the iPhone the display moves on to the next item by itself within a minute, even without a connection.
 
-**Who:** Everyone who may see the run sheet: admins and people in charge always, everyone else if the plan is shared with members. Observers never see the run sheet, so they get no display either. Anyone who has signed out of the event does not get one.
+**Who:** Everyone who may see the run sheet: admins and people in charge always, everyone else if the plan is shared with members. Observers never see the run sheet, so they get no display either. Anyone who has signed out of the event does not get one. ORG plans of your organisation (events marked as ORG plan and ORG plans without an event) run on the lock screen the same way, for the admins and people in charge of all choirs in the organisation.
 
 **Several plans:** For events with several plans (e.g. one per day of a retreat), the plan that is currently running is shown.
+
+**Colour:** Each display has the colour of its event type (set under **More → Settings → Attendance types**), so you can tell several plans running at the same time apart. ORG plans without an event stay teal. On the iPhone this needs the current app version from the App Store.
 
 **Tapping** opens the run sheet in the app in live mode.
 

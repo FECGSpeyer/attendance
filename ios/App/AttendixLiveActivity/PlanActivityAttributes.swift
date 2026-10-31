@@ -28,6 +28,8 @@ public struct PlanActivityAttributes: ActivityAttributes {
         public var planEnd: Double
         /// Start of every item; missing in pushes from older servers.
         public var bounds: [Double]?
+        /// Accent colour as "#rrggbb" (Termin type); missing means the default teal.
+        public var color: String?
     }
 
     public var attendanceId: Int

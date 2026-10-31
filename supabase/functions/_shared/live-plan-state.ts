@@ -65,6 +65,40 @@ export interface LivePlanState {
   planEnd: number;
   /** Start of every item (epoch seconds), for the widget's timeline bar; the last one ends at planEnd. */
   bounds?: number[];
+  /** Accent colour of the widget (hex, from the Termin type); missing means the default teal. */
+  color?: string;
+}
+
+/**
+ * Ionic colour names of attendance_types.color as hex, in their dark-mode shade
+ * because the widgets have a dark background. Hex values pass through.
+ */
+const LIVE_COLORS: Record<string, string> = {
+  primary: '#5eb8bf',
+  secondary: '#50c8ff',
+  tertiary: '#8a85ff',
+  success: '#25b15d',
+  warning: '#ffd534',
+  danger: '#ff4961',
+  rosa: '#be72c0',
+  mint: '#36c2c4',
+  orange: '#ec8d09',
+  holiday: '#c07a90',
+  medium: '#989aa2',
+};
+
+/** Widget accent for a Termin type colour, or undefined for the default. */
+export function liveColor(typeColor: string | null | undefined): string | undefined {
+  const value = typeColor?.trim().toLowerCase();
+  if (!value) return undefined;
+  if (/^#[0-9a-f]{6}$/.test(value)) return value;
+  return LIVE_COLORS[value];
+}
+
+/** State with the Termin type's accent colour attached (no-op without one). */
+export function withLiveColor(state: LivePlanState | null, typeColor: string | null | undefined): LivePlanState | null {
+  const color = liveColor(typeColor);
+  return state && color ? { ...state, color } : state;
 }
 
 /** Offset of `timezone` from UTC at the given instant, in milliseconds. */

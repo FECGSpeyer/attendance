@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.22",
+      "date": "31.10.2026",
+      "changes": [
+        "🎨 Live Activity: Laufende Ablaufpläne auf dem Sperrbildschirm haben jetzt die Farbe ihres Termintyps, damit du mehrere gleichzeitig auseinanderhalten kannst. Auf dem iPhone ab dem nächsten App-Store-Update."
+      ]
+    },
+    {
       "version": "4.17.21",
       "date": "31.10.2026",
       "changes": [

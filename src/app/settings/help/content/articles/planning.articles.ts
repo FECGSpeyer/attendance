@@ -54,7 +54,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     id: 'plan-live-activity',
     title: 'Laufender Ablaufplan auf dem Sperrbildschirm',
     categoryId: 'planning',
-    keywords: ['live activity', 'dynamic island', 'sperrbildschirm', 'lockscreen', 'live update', 'org-plan', 'organisation', 'countdown', 'restzeit', 'aktueller punkt', 'benachrichtigung', 'iphone', 'android'],
+    keywords: ['live activity', 'dynamic island', 'sperrbildschirm', 'lockscreen', 'live update', 'org-plan', 'organisation', 'countdown', 'restzeit', 'farbe', 'termintyp', 'aktueller punkt', 'benachrichtigung', 'iphone', 'android'],
     body: `Läuft gerade ein [[Ablaufplan]], zeigt die Attendix-App den aktuellen Programmpunkt groß mit Restzeit, darunter einen Balken für den ganzen Ablauf und den nächsten Punkt mit Uhrzeit auf deinem Sperrbildschirm. Lange Titel dürfen zwei Zeilen haben. Auf dem iPhone erscheint er außerdem in der Dynamic Island, auf Android als laufende Benachrichtigung mit Countdown.
 
 **Wann:** Die Anzeige startet automatisch 15 Minuten vor dem ersten Punkt. Bis zum Beginn zeigt sie einen Countdown bis zum Start und die ersten Programmpunkte mit Uhrzeit. Danach springt sie von selbst zum nächsten Punkt und verschwindet 15 Minuten nach dem Ende. Wird der Plan während des Termins geändert, ist die Anzeige spätestens nach einer Minute aktuell. Der Plan läuft nach Uhrzeit: Ist die Zeit eines Punkts um, bleibt die Restzeit kurz bei 0:00, bis der nächste Punkt erscheint. Auf dem iPhone springt die Anzeige spätestens eine Minute später auch ohne Netz von selbst zum nächsten Punkt.
@@ -62,6 +62,8 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 **Wer:** Alle, die den Ablaufplan sehen dürfen: Admins und Verantwortliche immer, alle anderen, wenn der Plan für Mitglieder freigegeben ist. Beobachter sehen den Ablaufplan nie, also auch keine Anzeige. Wer sich vom Termin abgemeldet hat, bekommt ebenfalls keine. ORG-Pläne deiner Organisation (als ORG-Plan markierte Termine und ORG-Pläne ohne Termin) laufen genauso auf dem Sperrbildschirm, und zwar für die Admins und Verantwortlichen aller Chöre der Organisation.
 
 **Mehrere Pläne:** Bei Terminen mit mehreren Plänen (z. B. pro Tag einer Freizeit) erscheint jeweils der Plan, der gerade läuft.
+
+**Farbe:** Jede Anzeige hat die Farbe ihres Termintyps (einstellbar unter **Mehr → Einstellungen → Anwesenheits-Typen**). So kannst du mehrere gleichzeitig laufende Pläne auseinanderhalten. ORG-Pläne ohne Termin bleiben türkis. Auf dem iPhone braucht das die aktuelle App-Version aus dem App Store.
 
 **Antippen** öffnet den Ablaufplan in der App im Live-Modus.
 

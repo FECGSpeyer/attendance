@@ -9,7 +9,7 @@ import { DbService } from '../db.service';
 import { Role } from '../../utilities/constants';
 import { Attendance } from '../../utilities/interfaces';
 import { allPlans } from '../../utilities/plan-days';
-import { buildSchedule, iosLiveState, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
+import { buildSchedule, iosLiveState, withLiveColor, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
 import { LiveActivity, LiveActivityTarget } from './live-activity.plugin';
 import { Utils } from '../../utilities/Utils';
 
@@ -168,9 +168,10 @@ export class LiveActivityService {
       // Beobachter never see the plan; others only when it is shared.
       if (role === Role.VIEWER || (!isLeader && !att.share_plan)) { continue; }
       const plans = allPlans(att);
-      const typeName = this.db.attendanceTypes().find(t => t.id === att.type_id)?.name ?? '';
+      const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
+      const typeName = type?.name ?? '';
       plans.forEach((plan, index) => {
-        const state = liveStateAt(liveSchedule(att, index, timezone, plans), now);
+        const state = withLiveColor(liveStateAt(liveSchedule(att, index, timezone, plans), now), type?.color);
         if (!state) { return; }
         result.push({
           attendanceId: att.id,
@@ -200,7 +201,7 @@ export class LiveActivityService {
     const [{ data: orgAttendances }, { data: sharedPlans }] = await Promise.all([
       tenantIds.length
         ? (supabase.from('attendance') as any)
-          .select('id, date, plan, typeInfo, attType:type_id(name)')
+          .select('id, date, plan, typeInfo, attType:type_id(name, color)')
           .in('tenantId', tenantIds)
           .eq('is_org_plan', true)
           .gte('date', dayjs().subtract(1, 'day').startOf('day').toISOString())
@@ -217,7 +218,7 @@ export class LiveActivityService {
     for (const att of (orgAttendances ?? []) as any[]) {
       attendanceIds.add(att.id);
       if (result.some(c => c.attendanceId === att.id && c.planKey === 'main')) { continue; }
-      const state = liveStateAt(liveSchedule({ id: att.id, date: att.date, plan: att.plan }, 0, timezone, [att.plan]), now);
+      const state = withLiveColor(liveStateAt(liveSchedule({ id: att.id, date: att.date, plan: att.plan }, 0, timezone, [att.plan]), now), att.attType?.color);
       if (!state) { continue; }
       result.push({ attendanceId: att.id, planKey: 'main', title: liveTitle(att, att.attType?.name ?? '', 0, [att.plan]), state });
     }

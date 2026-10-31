@@ -53,7 +53,7 @@ struct PlanLiveActivity: Widget {
                     .frame(width: 20, height: 20)
             }
             .widgetURL(deepLink(context.attributes))
-            .keylineTint(LiveColors.accent)
+            .keylineTint(context.state.accent)
         }
     }
 }
@@ -65,6 +65,18 @@ enum LiveColors {
     static let track = Color.white.opacity(0.3)
     static let secondary = Color(white: 0.72)
     static let done = Color(red: 0.24, green: 0.81, blue: 0.56)
+}
+
+@available(iOS 16.1, *)
+extension PlanActivityAttributes.ContentState {
+    /// Colour of the Termin type, so several running plans can be told apart.
+    var accent: Color {
+        guard let color, color.count == 7, color.hasPrefix("#"),
+              let value = UInt32(color.dropFirst(), radix: 16) else { return LiveColors.accent }
+        return Color(red: Double((value >> 16) & 0xFF) / 255,
+                     green: Double((value >> 8) & 0xFF) / 255,
+                     blue: Double(value & 0xFF) / 255)
+    }
 }
 
 /// iOS marks the activity stale a minute after the current item (or the start) is over.
@@ -146,7 +158,7 @@ struct CountdownText: View {
         default:
             Text(timerInterval: state.startDate...max(state.startDate, state.endDate), countsDown: true)
                 .multilineTextAlignment(.trailing)
-                .foregroundStyle(LiveColors.accent)
+                .foregroundStyle(state.accent)
         }
     }
 }
@@ -157,7 +169,7 @@ struct StatusDot: View {
 
     var body: some View {
         Circle()
-            .fill(state.phase == "running" ? LiveColors.accent : (state.phase == "ended" ? LiveColors.done : LiveColors.track))
+            .fill(state.phase == "running" ? state.accent : (state.phase == "ended" ? LiveColors.done : LiveColors.track))
             .frame(width: 10, height: 10)
     }
 }
@@ -174,13 +186,13 @@ struct ProgressRing: View {
                 EmptyView()
             }
             .progressViewStyle(.circular)
-            .tint(LiveColors.accent)
+            .tint(state.accent)
         } else if state.phase == "ended" {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(LiveColors.done)
         } else {
             Image(systemName: "list.bullet")
-                .foregroundStyle(LiveColors.accent)
+                .foregroundStyle(state.accent)
         }
     }
 }
@@ -242,13 +254,13 @@ private struct SegmentView: View {
                 EmptyView()
             }
             .progressViewStyle(.linear)
-            .tint(LiveColors.accent)
+            .tint(state.accent)
             // The system track is almost invisible on the dark background: same grey as the later segments behind it.
             .frame(height: 4)
             .background(Capsule().fill(LiveColors.track))
             .clipShape(Capsule())
         } else {
-            Capsule().fill(done ? LiveColors.accent : LiveColors.track)
+            Capsule().fill(done ? state.accent : LiveColors.track)
                 .frame(height: 4)
         }
     }
@@ -266,9 +278,9 @@ private struct SingleItemBar: View {
                 EmptyView()
             }
             .progressViewStyle(.linear)
-            .tint(LiveColors.accent)
+            .tint(state.accent)
         } else {
-            Capsule().fill(state.phase == "ended" ? LiveColors.accent : LiveColors.track)
+            Capsule().fill(state.phase == "ended" ? state.accent : LiveColors.track)
         }
     }
 }
@@ -284,7 +296,7 @@ struct CurrentItemView: View {
                 Text(label)
                     .font(.caption2.weight(.bold))
                     .tracking(0.8)
-                    .foregroundStyle(state.phase == "running" ? LiveColors.accent : LiveColors.secondary)
+                    .foregroundStyle(state.phase == "running" ? state.accent : LiveColors.secondary)
                 Text(headline)
                     .font(.headline)
                     .lineLimit(2)
@@ -381,7 +393,7 @@ struct LockScreenView: View {
         VStack(alignment: .leading, spacing: 9) {
             HStack(spacing: 8) {
                 Image(systemName: "list.bullet.rectangle.fill")
-                    .foregroundStyle(LiveColors.accent)
+                    .foregroundStyle(state.accent)
                 Text(context.attributes.title)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)

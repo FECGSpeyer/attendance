@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Plan } from './interfaces';
-import { buildSchedule, iosLiveState, liveSchedule, liveStateAt, liveTitle, livePlanKey, zonedTimeToUtc } from './live-plan';
+import { buildSchedule, iosLiveState, liveColor, liveSchedule, liveStateAt, liveTitle, livePlanKey, withLiveColor, zonedTimeToUtc } from './live-plan';
 
 const TZ = 'Europe/Berlin';
 const at = (iso: string) => Date.parse(iso);
@@ -76,5 +76,17 @@ describe('live-plan', () => {
 
     const running = liveStateAt(s, at('2026-10-17T08:05:00Z'))!;
     expect(iosLiveState(running)).toBe(running);
+  });
+
+  it('gives the widget the colour of the Termin type', () => {
+    expect(liveColor('rosa')).toBe('#be72c0');
+    expect(liveColor('#3880FF')).toBe('#3880ff');
+    expect(liveColor('unbekannt')).toBeUndefined();
+    expect(liveColor(null)).toBeUndefined();
+    const s = buildSchedule({ date: '2026-10-17', planTime: '10:00', fields: [fields[1], fields[2]], timezone: TZ });
+    const state = liveStateAt(s, at('2026-10-17T08:05:00Z'));
+    expect(withLiveColor(state, 'danger')?.color).toBe('#ff4961');
+    expect(withLiveColor(state, '')).toBe(state);
+    expect(withLiveColor(null, 'danger')).toBeNull();
   });
 });

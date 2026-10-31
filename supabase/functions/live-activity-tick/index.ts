@@ -18,6 +18,7 @@ import {
   buildSchedule,
   liveStateAt,
   liveStateKey,
+  withLiveColor,
   iosLiveState,
   LIVE_TAIL_MINUTES,
   LivePlanState,
@@ -106,7 +107,7 @@ function planLabel(att: AttendanceRow, plans: PlanJson[], index: number, timezon
   return `Plan ${index + 1}`;
 }
 
-function livePlans(att: AttendanceRow, typeName: string, timezone: string, now: number): LivePlan[] {
+function livePlans(att: AttendanceRow, typeName: string, typeColor: string | undefined, timezone: string, now: number): LivePlan[] {
   if (!att.plan) return [];
   const plans = [att.plan, ...(att.extra_plans ?? []).filter(Boolean)];
   const name = att.typeInfo?.trim() || typeName || 'Termin';
@@ -119,7 +120,7 @@ function livePlans(att: AttendanceRow, typeName: string, timezone: string, now: 
       attendance: att,
       planKey: plan.id || 'main',
       title: plans.length > 1 ? `${name} · ${planLabel(att, plans, index, timezone)}` : name,
-      state: liveStateAt(schedule, now),
+      state: withLiveColor(liveStateAt(schedule, now), typeColor),
     };
   });
 }
@@ -286,17 +287,18 @@ Deno.serve(async (req) => {
     const typeIds = [...new Set((attendances ?? []).map((a: AttendanceRow) => a.type_id).filter(Boolean))];
     const [{ data: tenants }, { data: types }, { data: sentRows }] = await Promise.all([
       supabase.from('tenants').select('id, timezone').in('id', tenantIds.length ? tenantIds : [-1]),
-      supabase.from('attendance_types').select('id, name').in('id', typeIds.length ? typeIds : ['00000000-0000-0000-0000-000000000000']),
+      supabase.from('attendance_types').select('id, name, color').in('id', typeIds.length ? typeIds : ['00000000-0000-0000-0000-000000000000']),
       supabase.from('live_activity_sent').select('*'),
     ]);
     const tzOf = new Map<number, string>((tenants ?? []).map((t: any) => [t.id, t.timezone || DEFAULT_TIMEZONE]));
     const typeName = new Map<string, string>((types ?? []).map((t: any) => [t.id, t.name ?? '']));
+    const typeColor = new Map<string, string>((types ?? []).map((t: any) => [t.id, t.color ?? '']));
     const sent = new Map<string, SentRow>((sentRows ?? []).map((r: SentRow) => [`${r.user_id}|${r.attendance_id}|${r.plan_key}`, r]));
     const touched = new Set<string>();
 
     const plans: LivePlan[] = [];
     for (const att of (attendances ?? []) as AttendanceRow[]) {
-      const attPlans = livePlans(att, typeName.get(att.type_id ?? '') ?? '', tzOf.get(att.tenantId) ?? DEFAULT_TIMEZONE, now);
+      const attPlans = livePlans(att, typeName.get(att.type_id ?? '') ?? '', typeColor.get(att.type_id ?? ''), tzOf.get(att.tenantId) ?? DEFAULT_TIMEZONE, now);
       // ORG plans are plan 1 only, like on the ORG-Pläne page.
       if (att.is_org_plan && attPlans[0]) attPlans[0].orgId = orgOfTenant.get(att.tenantId) ?? null;
       plans.push(...attPlans);

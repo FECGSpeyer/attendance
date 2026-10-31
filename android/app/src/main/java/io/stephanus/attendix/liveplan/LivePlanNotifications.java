@@ -92,6 +92,11 @@ public final class LivePlanNotifications {
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(openIntent(context, attendanceId, planKey));
+        // Colour of the Termin type, so several running plans can be told apart.
+        String color = state.optString("color", "");
+        if (color.matches("#[0-9a-fA-F]{6}")) {
+            builder.setColor(android.graphics.Color.parseColor(color));
+        }
 
         switch (phase) {
             case "before":
