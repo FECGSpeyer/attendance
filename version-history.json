@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.21",
+      "date": "31.10.2026",
+      "changes": [
+        "📱 Android: Die Tableiste unten liegt jetzt auch auf Geräten mit Navigationstasten (z. B. Huawei) über den Systemknöpfen statt darunter. Wirkt nach dem nächsten App-Update aus dem Play Store."
+      ]
+    },
+    {
       "version": "4.17.20",
       "date": "30.10.2026",
       "changes": [

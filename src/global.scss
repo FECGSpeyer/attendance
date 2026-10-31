@@ -428,6 +428,15 @@ ion-select-popover ion-list {
 .avatar-critical { background: #d32f2f; }
 .avatar-songs    { background: #7b1fa2; }
 
+// ── Android navigation bar ────────────────────────────────────────────────────
+// MainActivity measures how far the WebView reaches under the Android navigation
+// bar and sets --attendix-nav-inset-bottom. Some devices (e.g. Huawei with
+// 3-button navigation) report no safe area otherwise, and the tab bar ends up
+// under the system buttons.
+html.plt-android {
+  --ion-safe-area-bottom: max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), var(--attendix-nav-inset-bottom, 0px));
+}
+
 // ── Floating iOS tab bar ──────────────────────────────────────────────────────
 // The iOS tab bar floats over the bottom of every page inside the tabs. The
 // theme only reserves room for fullscreen content without a footer, so pages
