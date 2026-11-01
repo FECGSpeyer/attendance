@@ -1,4 +1,4 @@
--- Termine archivieren (4.18.0)
+-- Termine archivieren (4.17.24, eingespielt 1.11.2026)
 -- Archivierte Termine sehen nur Admins (Rolle 1) und Verantwortliche (Rolle 5).
 -- RLS ist auf attendance/person_attendances aktuell nicht aktiv, daher filtert
 -- die App (db.service) und die Edge Functions (iCal, Org-Pläne, Bridge) selbst.

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.24",
+      "date": "1.11.2026",
+      "changes": [
+        "🗄️ Termine archivieren: Admins und Verantwortliche können vergangene Termine über das Menü (⋮) im Termin archivieren. Mitglieder sehen archivierte Termine und ihre Anwesenheit dazu nicht mehr, auch nicht im Kalender-Abo. In der Terminübersicht holst du sie über „Archivierte anzeigen“ zurück und kannst sie jederzeit wiederherstellen."
+      ]
+    },
+    {
       "version": "4.17.23",
       "date": "1.11.2026",
       "changes": [
