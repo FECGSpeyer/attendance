@@ -979,7 +979,10 @@
     "unknownConductor": "Unknown conductor",
     "enterConductor": "Enter conductor",
     "presentOf": "{present} of {total} present",
-    "eventsSelected": "{count, plural, one {# event selected} other {# events selected}}"
+    "eventsSelected": "{count, plural, one {# event selected} other {# events selected}}",
+    "showArchived": "Show archived",
+    "archivedCount": "{count, plural, one {# archived event} other {# archived events}}",
+    "archived": "Archived"
   },
   "dateDialog": {
     "changeDate": "Change date",
@@ -1162,7 +1165,16 @@
     "onlyNeutralHint": "Only sends to people who have not responded yet",
     "emailLink": "Link in the email",
     "send": "Send",
-    "presentNotAssigned": "Present, not assigned"
+    "presentNotAssigned": "Present, not assigned",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archiveConfirmHeader": "Archive event?",
+    "archiveConfirmMessage": "Members will no longer see this event or their attendance for it. Admins and responsibles still see it and can restore it at any time.",
+    "archivedToast": "Event archived",
+    "restoredToast": "Event restored",
+    "archiveFailed": "The event could not be changed.",
+    "archivedBanner": "Archived",
+    "archivedBannerHint": "Hidden from members. Only admins and responsibles can see this event."
   },
   "people": {
     "searchPerson": "Search person...",

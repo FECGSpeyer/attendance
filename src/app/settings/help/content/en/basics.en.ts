@@ -95,6 +95,20 @@ In the event, swipe a person to the left, tap the three dots and choose "Send re
 
 For general messages not related to an event, use announcements instead (Settings → Communication → Announcements).`,
   },
+  'att-archive': {
+    title: 'Archiving events',
+    keywords: ['archive', 'archived', 'hide', 'hide event', 'restore', 'invisible to members', 'show archived'],
+    body: `As an admin or responsible you can archive past events that are not relevant for members, for example an internal meeting.
+
+Open a past event, tap the menu (⋮) at the top right and then "Archive". Events that take place today, are still running or lie in the future don't have this option.
+
+What happens then:
+- Members, helpers, voice leaders, parents and [[Observer|observers]] no longer see the event, not even their own attendance for it. It no longer counts towards their own average.
+- The event disappears from the calendar subscription, from the organisation's run sheets and from shared plan links.
+- Admins and responsibles still see it, marked "Archived". It still counts in their statistics and average.
+
+In the event overview, archived events are hidden. Use the filter at the top right and choose "Show archived" to bring them back; they then appear dimmed with an archive icon. To undo, open the event and choose "Restore" in the menu. Nothing is deleted.`,
+  },
   'att-options-menu': {
     title: 'Options and view in the event',
     keywords: ['menu', 'options', 'view', 'filter', 'sorting', 'pictures', 'sign-up fields', 'status filter', 'additional fields'],

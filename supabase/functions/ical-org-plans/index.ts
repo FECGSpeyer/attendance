@@ -258,6 +258,7 @@ Deno.serve(async (req: Request) => {
           .select('id, date, plan, typeInfo')
           .in('tenantId', tenantIds)
           .eq('is_org_plan', true)
+          .eq('archived', false)
           .not('plan', 'is', null)
           .order('date', { ascending: true })
       : Promise.resolve({ data: [] }),

@@ -66,6 +66,8 @@ export class AttListPage implements OnInit {
   public highlightedTypes: string[] = [];
   public isAddModalOpen = false;
   public filterTypeId = 'all';
+  public showArchived = false;
+  public archivedCount = 0;
   /** Dienst-Modus: persons needed per ISO weekday when creating several Termine. */
   public dutyRequiredByWeekday: Record<number, number> = {};
   public showAllPast = false;
@@ -281,11 +283,15 @@ export class AttListPage implements OnInit {
   private applyAttendances(attendances: Attendance[]): void {
     this.allAttendances = attendances;
 
-    const filtered = this.filterTypeId === 'all' ? attendances : attendances.filter(att => att.type_id === this.filterTypeId);
+    const byType = this.filterTypeId === 'all' ? attendances : attendances.filter(att => att.type_id === this.filterTypeId);
+    // Archivierte Termine sind standardmäßig ausgeblendet; zählen aber weiter im Durchschnitt.
+    this.archivedCount = byType.filter(att => att.archived).length;
+    const filtered = this.showArchived ? byType : byType.filter(att => !att.archived);
 
     this.attendances = filtered.filter((att: Attendance) => !attendanceHasEnded(att)).reverse();
     this.oldAttendances = filtered.filter((att: Attendance) => attendanceHasEnded(att));
     this.viewerAttendances = filtered.filter((att: Attendance) => attendanceHasEnded(att));
+    const pastForAverage = byType.filter((att: Attendance) => attendanceHasEnded(att));
     if (this.attendances.length) {
       this.currentAttendance = { ...this.attendances[0] };
       this.viewerAttendances.unshift(this.attendances[0]);
@@ -295,7 +301,7 @@ export class AttListPage implements OnInit {
     }
 
     // Duty Termine without anybody assigned have no meaningful percentage.
-    const forAverage = this.oldAttendances.filter((att: Attendance) => !this.isDutyAttendance(att) || (att.persons ?? []).some(p => !!p.duty_state));
+    const forAverage = pastForAverage.filter((att: Attendance) => !this.isDutyAttendance(att) || (att.persons ?? []).some(p => !!p.duty_state));
     if (forAverage.length) {
       this.perc = Math.round((forAverage.reduce((value: number, current: Attendance) => value + current.percentage, 0)) / forAverage.length);
     }
@@ -624,6 +630,11 @@ export class AttListPage implements OnInit {
   setFilter(typeId: string): void {
     this.filterTypeId = typeId;
     void this.getAttendance();
+  }
+
+  toggleShowArchived(): void {
+    this.showArchived = !this.showArchived;
+    this.applyAttendances(this.allAttendances);
   }
 
   get upcomingGroups(): EventMonthGroup<Attendance>[] {

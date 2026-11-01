@@ -979,7 +979,10 @@
     "unknownConductor": "Unbekannter Dirigent",
     "enterConductor": "Dirigent eingeben",
     "presentOf": "{present} von {total} anwesend",
-    "eventsSelected": "{count, plural, one {# Termin ausgewählt} other {# Termine ausgewählt}}"
+    "eventsSelected": "{count, plural, one {# Termin ausgewählt} other {# Termine ausgewählt}}",
+    "showArchived": "Archivierte anzeigen",
+    "archivedCount": "{count, plural, one {# archivierter Termin} other {# archivierte Termine}}",
+    "archived": "Archiviert"
   },
   "dateDialog": {
     "changeDate": "Datum ändern",
@@ -1162,7 +1165,16 @@
     "onlyNeutralHint": "Sendet nur an Personen, die noch keine Rückmeldung gegeben haben",
     "emailLink": "Link in der E-Mail",
     "send": "Versenden",
-    "presentNotAssigned": "Anwesend, nicht eingeteilt"
+    "presentNotAssigned": "Anwesend, nicht eingeteilt",
+    "archive": "Archivieren",
+    "restore": "Wiederherstellen",
+    "archiveConfirmHeader": "Termin archivieren?",
+    "archiveConfirmMessage": "Mitglieder sehen den Termin und ihre Anwesenheit dazu dann nicht mehr. Admins und Verantwortliche sehen ihn weiterhin und können ihn jederzeit wiederherstellen.",
+    "archivedToast": "Termin archiviert",
+    "restoredToast": "Termin wiederhergestellt",
+    "archiveFailed": "Der Termin konnte nicht geändert werden.",
+    "archivedBanner": "Archiviert",
+    "archivedBannerHint": "Für Mitglieder unsichtbar. Nur Admins und Verantwortliche sehen diesen Termin."
   },
   "people": {
     "searchPerson": "Person suchen...",

@@ -355,6 +355,10 @@ export interface Attendance {
   duty_required?: number | null;
   duty_urgent_sent_at?: string | null;
   duty_alert_sent_at?: string | null;
+  /** Archivierte Termine sehen nur Admins und Verantwortliche. */
+  archived?: boolean;
+  archived_at?: string | null;
+  archived_by?: string | null;
 }
 
 export interface Plan {

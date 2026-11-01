@@ -26,7 +26,7 @@
     }
     <ion-buttons slot="end">
       <ion-button id="att-filter-trigger">
-        <ion-icon slot="icon-only" [color]="filterTypeId !== 'all' ? 'primary' : ''" name="options"></ion-icon>
+        <ion-icon slot="icon-only" [color]="filterTypeId !== 'all' || showArchived ? 'primary' : ''" name="options"></ion-icon>
       </ion-button>
       <ion-popover trigger="att-filter-trigger" triggerAction="click" [dismissOnSelect]="true">
         <ng-template>
@@ -42,6 +42,20 @@
                 <ion-icon slot="start" name="ellipse" [color]="type.color"></ion-icon>
                 <ion-label [color]="filterTypeId === type.id ? 'primary' : ''">{{ type.name }}</ion-label>
                 @if (filterTypeId === type.id) {
+                  <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
+                }
+              </ion-item>
+            }
+            @if (isConductor) {
+              <ion-item button detail="false" lines="none" (click)="toggleShowArchived()">
+                <ion-icon slot="start" name="archive-outline" [color]="showArchived ? 'primary' : ''"></ion-icon>
+                <ion-label [color]="showArchived ? 'primary' : ''">
+                  {{ 'attList.showArchived' | transloco }}
+                  @if (archivedCount) {
+                    <p>{{ 'attList.archivedCount' | transloco: { count: archivedCount } }}</p>
+                  }
+                </ion-label>
+                @if (showArchived) {
                   <ion-icon slot="end" name="checkmark" color="primary"></ion-icon>
                 }
               </ion-item>
@@ -224,13 +238,18 @@
         </div>
         @for (att of pastPreview; track att.id) {
           <ion-item-sliding #slider [disabled]="!isConductor">
-            <ion-item [button]="isConductor || isHelper" detail="false" (click)="openAttendance(att)">
+            <ion-item [button]="isConductor || isHelper" detail="false" (click)="openAttendance(att)" [class.ev-archived]="att.archived">
               <div slot="start" class="ev-tile ev-tile--past" [class.ev-tile--hl]="highlightedTypes.includes(att.type_id)">
                 <span class="ev-tile__wd">{{ weekday(att.date) }}</span>
                 <span class="ev-tile__day">{{ day(att.date) }}</span>
               </div>
               <ion-label>
-                <h2>{{ getEventTitle(att) }}</h2>
+                <h2>
+                  @if (att.archived) {
+                    <ion-icon name="archive-outline" color="medium" class="ev-archived__icon" [attr.aria-label]="'attList.archived' | transloco"></ion-icon>
+                  }
+                  {{ getEventTitle(att) }}
+                </h2>
                 <p>{{ getReadableDate(att.date, att.type_id) }} · {{ getCountText(att) }}</p>
               </ion-label>
               <span slot="end" class="ev-pill" [ngClass]="'ion-color-' + percColor(att.percentage || 0)">{{ att.percentage || 0 }}%</span>

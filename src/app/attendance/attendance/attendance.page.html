@@ -168,6 +168,12 @@
               <ion-label>{{ 'attendance.sendReminder' | transloco }}</ion-label>
             </ion-item>
             }
+            @if (canToggleArchived()) {
+            <ion-item button detail="false" (click)="toggleArchived(); optionsPopover.dismiss()">
+              <ion-icon slot="start" [name]="attendance?.archived ? 'arrow-undo-outline' : 'archive-outline'"></ion-icon>
+              <ion-label>{{ (attendance?.archived ? 'attendance.restore' : 'attendance.archive') | transloco }}</ion-label>
+            </ion-item>
+            }
           </ion-list>
         </ng-template>
       </ion-popover>
@@ -214,6 +220,17 @@
 
 <ion-content color="light" class="tabbar-safe">
   @if (attendance) {
+  @if (attendance.archived) {
+  <ion-list [inset]="true" class="archived-banner">
+    <ion-item lines="none" color="medium">
+      <ion-icon slot="start" name="archive-outline"></ion-icon>
+      <ion-label class="ion-text-wrap">
+        <h3>{{ 'attendance.archivedBanner' | transloco }}</h3>
+        <p>{{ 'attendance.archivedBannerHint' | transloco }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  }
   <ion-list [inset]="true" class="marginBottom">
     <ion-item-group>
       <ion-accordion-group>

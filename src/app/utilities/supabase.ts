@@ -39,6 +39,9 @@ export type Database = {
           plan: Json | null
           playerNotes: Json | null
           players: Json | null
+          archived: boolean
+          archived_at: string | null
+          archived_by: string | null
           save_in_history: boolean | null
           share_plan: boolean | null
           share_key: string | null
@@ -74,6 +77,9 @@ export type Database = {
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
+          archived?: boolean
+          archived_at?: string | null
+          archived_by?: string | null
           save_in_history?: boolean | null
           share_plan?: boolean | null
           share_key?: string | null
@@ -109,6 +115,9 @@ export type Database = {
           plan?: Json | null
           playerNotes?: Json | null
           players?: Json | null
+          archived?: boolean
+          archived_at?: string | null
+          archived_by?: string | null
           save_in_history?: boolean | null
           share_plan?: boolean | null
           share_key?: string | null
