@@ -12,6 +12,7 @@ import { PlanChipsComponent } from '../plan-chips/plan-chips.component';
 import { groupDuration, isGroupHead } from '../../utilities/plan-groups';
 import { openPlanShareSheet } from '../plan-share-sheet/plan-share-sheet.component';
 import { translate, TranslocoModule } from '@jsverse/transloco';
+import { SongActionsService } from '../../services/song-actions/song-actions.service';
 
 @Component({
   selector: 'app-plan-viewer',
@@ -43,7 +44,8 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   constructor(
     private modalController: ModalController,
     private actionSheetController: ActionSheetController,
-    public db: DbService
+    public db: DbService,
+    private songActions: SongActionsService,
   ) {}
 
   ngOnInit() {
@@ -262,6 +264,22 @@ export class PlanViewerComponent implements OnInit, OnDestroy {
   getDateFormatted(): string {
     if (!this.attendance?.date) {return '';}
     return this.currentDate().format(dateFmt());
+  }
+
+  /**
+   * Werk of a plan row when the viewer was opened from a member view (with the Werke list);
+   * its row then opens the score actions.
+   */
+  songOf(field: FieldSelection): Song | undefined {
+    if (!field.songId || !this.songs?.length) { return undefined; }
+    return this.songs.find((s: Song) => s.id === field.songId);
+  }
+
+  async openSong(field: FieldSelection) {
+    const song = this.songOf(field);
+    if (song) {
+      await this.songActions.openSongOptions(song, this.playerInstrument);
+    }
   }
 
   isInstrumentMissing(field: FieldSelection): boolean {

@@ -165,7 +165,7 @@ You can untick single fields and files and set the [[Group]] in the target for e
     keywords: ['sign out', 'sign in', 'my events', 'signout', 'sign-up fields', 'note', 'change answers', 'edit registration', 'accept', 'late', 'decline', 'today', 'next event', 'more options', 'past events', 'attendance rate', 'not invited', 'all events visible', 'other events'],
     body: `Under "My attendance" you see your greeting at the top with your attendance rate and how often you were late. Below are the tiles "Current pieces" and "Report absence", if they are enabled for you.
 
-Today's event (or the next one) has its own card. There you sign in or out directly with "Accept", "Late" or "Decline". You can tap the small markers such as "Run sheet", "Info", "Attachment", "Files" or "Route" directly to open the plan, the description, the attachment, the file storage or the navigation. Everything else, e.g. signing in with a note or sign-up fields, is under the link "More options". It only lists what is not already visible as a button or marker on the card. Tapping the card itself does not open a menu.
+Today's event (or the next one) has its own card. There you sign in or out directly with "Accept", "Late" or "Decline". You can tap the small markers such as "Pieces", "Run sheet", "Info", "Attachment", "Files" or "Route" directly to open the plan, the description, the attachment, the file storage or the navigation. Everything else, e.g. signing in with a note or sign-up fields, is under the link "More options". It only lists what is not already visible as a button or marker on the card. Tapping the card itself does not open a menu.
 
 The upcoming events are grouped by month. Each event shows the date on the left, time and place below it and your [[Attendance status|attendance status]] on the right. Notes such as sign-up deadline, note, run sheet or info appear as small markers. Tap an event to change your status. If you sign out, you can optionally choose an [[Absence reason|absence reason]].
 
@@ -176,6 +176,17 @@ Under "Past" you see your rate, coloured dots for your recent events and the las
 If an event has sign-up fields (e.g. "Joining for dinner?"), the app asks for them when you sign in, even if you choose "Sign in with note": first you enter your note, then you fill in the sign-up fields.
 
 If you are already signed in, tap the event and choose "Edit sign-up fields" to change your answers afterwards. This works as long as the event's sign-up deadline has not passed.`,
+  },
+  'self-event-songs': {
+    title: 'Viewing the pieces of an event',
+    keywords: ['pieces', 'songs', 'sheet music', 'event pieces', 'current pieces', 'run sheet', 'what are we singing', 'what are we playing', 'print sheet music', 'download sheet music', 'past events'],
+    body: `If [[Piece|pieces]] are attached to an event, the event shows the marker "♪ 3 pieces" under "My attendance". This applies to the next event, the upcoming events and also past events, so you can also see what was sung last Sunday, for example.
+
+Tap the marker to see the event's pieces. They are listed in the order of the [[Run sheet|run sheet]], followed by pieces that are only entered for the event. You also see pieces from the run sheet when the run sheet itself is not shared with you. A piece with a red background has no sheet music for your voice or instrument.
+
+Tap a piece to show, download or print its sheet music, listen to the recording or open the lyrics, just like in "Current pieces". The printer icon at the top right prints all sheet music of the event at once. If the run sheet is shared, open it at the bottom with "Open run sheet". In the run sheet itself you can also tap a piece to open its sheet music.
+
+The "Current pieces" tile still collects all pieces of the upcoming events, now including the pieces from the run sheet. As a [[Parent|parent]] you see the pieces of your children's events and can open the link stored for a piece.`,
   },
   'self-pause': {
     title: 'Entering a planned absence',

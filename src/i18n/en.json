@@ -3216,5 +3216,17 @@
   "fileViewer": {
     "noPreview": "There is no preview for this file. Download it to open it.",
     "downloadFailed": "File could not be downloaded"
+  },
+  "attendanceSongs": {
+    "title": "Pieces",
+    "chip": "{count, plural, one {# piece} other {# pieces}}",
+    "show": "Show pieces",
+    "printAll": "Print all sheet music",
+    "noScoresForYou": "No sheet music for you",
+    "openRunSheet": "Open run sheet",
+    "tileEvents": "{count, plural, one {Next event} other {# events}}"
+  },
+  "planViewer": {
+    "openScores": "Open sheet music"
   }
 }

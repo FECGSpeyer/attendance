@@ -2831,6 +2831,10 @@ export class DbService {
     return this.historySvc.getHistoryByAttendanceId(attendance_id, this.tenant().id);
   }
 
+  async getHistoryForAttendances(attendanceIds: number[]): Promise<{ songId: number; attendance_id: number; conductorName: string }[]> {
+    return this.historySvc.getHistoryForAttendances(attendanceIds, this.tenant().id);
+  }
+
   async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
     this.checkDemoRestriction();
     return this.historySvc.updateHistoryEntry(id, history);

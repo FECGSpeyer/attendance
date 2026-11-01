@@ -149,7 +149,7 @@
         <span class="greet-tile__icon"><ion-icon name="musical-notes-outline"></ion-icon></span>
         <span>
           <span class="greet-tile__title">{{ 'signout.currentSongs' | transloco }}</span>
-          <span class="greet-tile__sub">{{ upcomingSongs.length === 1 ? 'Nächster Termin' : upcomingSongs.length + ' Termine' }}</span>
+          <span class="greet-tile__sub">{{ 'attendanceSongs.tileEvents' | transloco: { count: upcomingSongs.length } }}</span>
         </span>
       </button>
     }
@@ -269,17 +269,17 @@
             </ion-label>
           </ion-list-header>
           <ion-item-group>
-            @for (his of group.history; track trackByHistoryId($index, his)) {
-            <ion-item [color]="hasSongNotesForPlayer(his.song) ? '' : 'danger'" button
-              (click)="openSongOptions(his.song)">
-              @if (his.song) {
+            @for (entry of group.items; track entry.songId) {
+            <ion-item [color]="!entry.song || hasSongNotesForPlayer(entry.song) ? '' : 'danger'" [button]="!!entry.song"
+              (click)="entry.song && openSongOptions(entry.song)">
               <ion-label>
-                <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
-                <h3>{{ 'signout.conductor' | transloco: { name: his.conductorName } }}</h3>
+                <h2>{{ entry.name }}</h2>
+                @if (entry.conductorName) {
+                <h3>{{ 'signout.conductor' | transloco: { name: entry.conductorName } }}</h3>
+                }
               </ion-label>
-              }
-              @if (his.song.link) {
-              <ion-button fill="clear" size="small" (click)="openSongLink(his.song.link)">
+              @if (entry.song?.link) {
+              <ion-button fill="clear" size="small" (click)="$event.stopPropagation(); openSongLink(entry.song.link)">
                 <ion-icon name="download-outline"></ion-icon>
               </ion-button>
               }
@@ -337,13 +337,16 @@
   </ion-modal>
 
   <ng-template #eventChips let-att>
-    @if (showDeadlineInfo(att) || att.notes || att.attendance?.description || att.attendance?.attachment_url || hasFilesFolder(att) || hasPlan(att) || att.attendance?.place) {
+    @if (showDeadlineInfo(att) || att.notes || att.attendance?.description || att.attendance?.attachment_url || hasFilesFolder(att) || hasPlan(att) || att.attendance?.place || songsOf(att).length) {
       <div class="ev-chips">
         @if (showDeadlineInfo(att)) {
           <span class="ev-chip ev-chip--danger">{{ getDeadlineText(att) }}</span>
         }
         @if (att.notes) {
           <span class="ev-chip">{{ 'signout.noteChip' | transloco: { note: att.notes } }}</span>
+        }
+        @if (songsOf(att).length; as songCount) {
+          <button class="ev-chip" (click)="$event.stopPropagation(); openAttendanceSongs(att)"><ion-icon name="musical-notes-outline"></ion-icon> {{ 'attendanceSongs.chip' | transloco: { count: songCount } }}</button>
         }
         @if (hasPlan(att)) {
           <button class="ev-chip" (click)="$event.stopPropagation(); openPlanViewer(att)"><ion-icon name="document-text-outline"></ion-icon> {{ 'signout.runSheet' | transloco }}</button>
@@ -578,6 +581,11 @@
           <ion-label>
             <h2>{{ getEventTitle(att) }}</h2>
             <p>{{ getReadableDate(att.date, att.typeId) }}</p>
+            @if (songsOf(att).length; as songCount) {
+              <div class="ev-chips">
+                <button class="ev-chip" (click)="$event.stopPropagation(); openAttendanceSongs(att)"><ion-icon name="musical-notes-outline"></ion-icon> {{ 'attendanceSongs.chip' | transloco: { count: songCount } }}</button>
+              </div>
+            }
           </ion-label>
           @if (hasFilesFolder(att)) {
             <ion-button slot="end" fill="clear" (click)="openFilesFolder(att); $event.stopPropagation()" [attr.aria-label]="'signout.openFiles' | transloco">

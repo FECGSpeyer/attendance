@@ -8,7 +8,7 @@ export const SELF_SERVICE_ARTICLES: HelpArticle[] = [
     keywords: ['abmelden', 'anmelden', 'meine termine', 'signout', 'anmeldefelder', 'notiz', 'antworten ändern', 'anmeldung bearbeiten', 'zusagen', 'verspätung', 'absagen', 'heute', 'nächster termin', 'weitere optionen', 'vergangene termine', 'anwesenheitsquote', 'nicht eingeladen', 'alle termine sichtbar', 'fremde termine'],
     body: `Unter "Meine Anwesenheit" siehst du oben deine Begrüßung mit deiner Anwesenheitsquote und wie oft du zu spät warst. Darunter liegen die Kacheln „Aktuelle Werke“ und „Abwesenheit melden“, sofern sie für dich freigeschaltet sind.
 
-Der Termin von heute (oder der nächste Termin) steht in einer eigenen Karte. Dort meldest du dich direkt mit „Zusagen“, „Verspätung“ oder „Absagen“ an oder ab. Die kleinen Markierungen wie „Ablaufplan“, „Infos“, „Anhang“, „Dateien“ oder „Route“ kannst du direkt antippen, um den Plan, die Beschreibung, den Anhang, die Dateiablage oder die Navigation zu öffnen. Alles Weitere, z. B. Anmelden mit Notiz oder Anmeldefelder, findest du über den Link „Weitere Optionen“. Dort steht nur, was nicht schon als Button oder Markierung auf der Karte zu sehen ist. Ein Tipp auf die Karte selbst öffnet kein Menü.
+Der Termin von heute (oder der nächste Termin) steht in einer eigenen Karte. Dort meldest du dich direkt mit „Zusagen“, „Verspätung“ oder „Absagen“ an oder ab. Die kleinen Markierungen wie „Werke“, „Ablaufplan“, „Infos“, „Anhang“, „Dateien“ oder „Route“ kannst du direkt antippen, um den Plan, die Beschreibung, den Anhang, die Dateiablage oder die Navigation zu öffnen. Alles Weitere, z. B. Anmelden mit Notiz oder Anmeldefelder, findest du über den Link „Weitere Optionen“. Dort steht nur, was nicht schon als Button oder Markierung auf der Karte zu sehen ist. Ein Tipp auf die Karte selbst öffnet kein Menü.
 
 Die anstehenden Termine sind nach Monaten gruppiert. Jeder Termin zeigt links das Datum, darunter Uhrzeit und Ort und rechts deinen [[Anwesenheitsstatus]]. Hinweise wie Anmeldefrist, Notiz, Ablaufplan oder Infos erscheinen als kleine Markierungen. Tippe einen Termin an, um deinen Status zu ändern. Meldest du dich ab, wählst du optional einen [[Ausfallgrund]] aus.
 
@@ -19,6 +19,19 @@ Unter „Vergangen“ siehst du deine Quote, farbige Punkte für deine letzten T
 Hat ein Termin Anmeldefelder (z. B. „Essen mit?“), fragt die App sie beim Anmelden ab – auch wenn du „Anmelden mit Notiz“ wählst: Erst gibst du deine Notiz ein, danach füllst du die Anmeldefelder aus.
 
 Bist du schon angemeldet, tippst du den Termin an und wählst „Anmeldefelder anpassen“, um deine Antworten nachträglich zu ändern. Das geht, solange die Anmeldefrist des Termins nicht abgelaufen ist.`,
+  },
+  {
+    id: 'self-event-songs',
+    title: 'Werke eines Termins ansehen',
+    categoryId: 'self-service',
+    keywords: ['werke', 'lieder', 'stücke', 'noten', 'termin werke', 'aktuelle werke', 'ablaufplan', 'was singen wir', 'was spielen wir', 'noten drucken', 'noten herunterladen', 'vergangene termine'],
+    body: `Hängen an einem Termin [[Werk|Werke]], steht unter "Meine Anwesenheit" am Termin die Markierung „♪ 3 Werke“. Das gilt für den nächsten Termin, die anstehenden und auch die vergangenen Termine. So siehst du z. B. auch, was am letzten Sonntag gesungen wurde.
+
+Tippe die Markierung an, um die Werke des Termins zu sehen. Die Werke stehen in der Reihenfolge des [[Ablaufplan|Ablaufplans]], danach folgen Werke, die nur beim Termin eingetragen sind. Werke aus dem Ablaufplan siehst du auch dann, wenn der Ablaufplan selbst nicht für dich freigegeben ist. Ist ein Werk rot hinterlegt, sind für deine Stimme bzw. dein Instrument keine Noten hinterlegt.
+
+Tippst du ein Werk an, kannst du wie bei „Aktuelle Werke“ die Noten anzeigen, herunterladen oder drucken, die Aufnahme anhören oder den Liedtext öffnen. Mit dem Drucker-Symbol oben rechts druckst du alle Noten des Termins auf einmal. Ist der Ablaufplan freigegeben, öffnest du ihn unten mit „Ablaufplan öffnen“. Auch im Ablaufplan selbst kannst du ein Werk antippen, um seine Noten zu öffnen.
+
+Die Kachel „Aktuelle Werke“ zeigt weiterhin alle Werke der kommenden Termine gesammelt, jetzt ebenfalls inklusive der Werke aus dem Ablaufplan. Als [[Elternteil]] siehst du die Werke der Termine deiner Kinder und kannst den hinterlegten Link des Werks öffnen.`,
   },
   {
     id: 'self-pause',
