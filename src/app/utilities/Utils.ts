@@ -1671,6 +1671,29 @@ export class Utils {
     return Capacitor.getPlatform() === 'ios' && (navigator.maxTouchPoints || 0) === 0;
   }
 
+  /**
+   * iOS app on a Mac only: opens the URL in the default browser. Capacitor hands
+   * window.open() to UIApplication.open(), which (unlike Browser.open) shows no
+   * "Link opens in Safari" notice first.
+   */
+  static openInMacBrowser(url: string): void {
+    window.open(url, '_blank');
+  }
+
+  /**
+   * iOS app on a Mac only: saving a file through the native viewer does nothing
+   * there, so let the browser download it (Supabase serves public files as
+   * attachment with ?download=). Returns false everywhere else.
+   */
+  static downloadInMacBrowser(url: string | undefined, fileName: string): boolean {
+    if (!url?.startsWith('http') || !Utils.isIosAppOnMac()) {
+      return false;
+    }
+    const separator = url.includes('?') ? '&' : '?';
+    Utils.openInMacBrowser(`${url}${separator}download=${encodeURIComponent(fileName)}`);
+    return true;
+  }
+
   private static isStandaloneWebApp(): boolean {
     return (navigator as any).standalone === true
       || window.matchMedia?.('(display-mode: standalone)').matches
@@ -1781,9 +1804,8 @@ export class Utils {
     if (typeof urlOrBlob === 'string' && urlOrBlob.startsWith('http') && Utils.isIosAppOnMac()) {
       // The native file viewer (UIDocumentInteractionController preview) silently
       // does nothing when the iOS app runs on an Apple silicon Mac, so hand the
-      // file to the browser there.
-      const { Browser } = await import('@capacitor/browser');
-      await Browser.open({ url: urlOrBlob });
+      // file to the default browser there.
+      Utils.openInMacBrowser(urlOrBlob);
       return;
     }
 

@@ -56,9 +56,25 @@ describe('Utils.openFileNative (iOS app on Mac)', () => {
     vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('ios');
     vi.spyOn(navigator, 'maxTouchPoints', 'get').mockReturnValue(0);
 
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+
     await Utils.openFileNative('https://example.com/noten.pdf', 'noten.pdf');
 
-    expect(Browser.open).toHaveBeenCalledWith({ url: 'https://example.com/noten.pdf' });
+    expect(open).toHaveBeenCalledWith('https://example.com/noten.pdf', '_blank');
+    expect(Browser.open).not.toHaveBeenCalled();
+  });
+
+  it('downloads files through the browser', () => {
+    vi.spyOn(Capacitor, 'getPlatform').mockReturnValue('ios');
+    vi.spyOn(navigator, 'maxTouchPoints', 'get').mockReturnValue(0);
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    expect(Utils.downloadInMacBrowser('https://example.com/noten.pdf', 'Noten Sopran.pdf')).toBe(true);
+    expect(open).toHaveBeenCalledWith('https://example.com/noten.pdf?download=Noten%20Sopran.pdf', '_blank');
+  });
+
+  it('leaves downloads alone outside the Mac app', () => {
+    expect(Utils.downloadInMacBrowser('https://example.com/noten.pdf', 'noten.pdf')).toBe(false);
   });
 
   it('is not detected on iPhone/iPad', () => {

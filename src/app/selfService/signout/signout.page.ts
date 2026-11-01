@@ -1085,6 +1085,7 @@ export class SignoutPage implements OnInit {
           handler: async () => {
             const file = files[0];
             if (file) {
+              if (Utils.downloadInMacBrowser(file.url, file.fileName)) { return; }
               const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
               Utils.downloadFileNative(blob, file.fileName);
             }
@@ -1121,6 +1122,7 @@ export class SignoutPage implements OnInit {
                 text: file.fileName,
                 role: '',
                 handler: async () => {
+                  if (Utils.downloadInMacBrowser(file.url, file.fileName)) { return; }
                   const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
                   Utils.downloadFileNative(blob, file.fileName);
                 },
@@ -1211,6 +1213,7 @@ export class SignoutPage implements OnInit {
       buttons.push({
         text: translate('signout.downloadRecording'),
         handler: async () => {
+          if (Utils.downloadInMacBrowser(audioFile.url, audioFile.fileName)) { return; }
           const blob = await this.db.downloadSongFile(audioFile.storageName ?? audioFile.url.split('/').pop(), song.id);
           Utils.downloadFileNative(blob, audioFile.fileName);
         },

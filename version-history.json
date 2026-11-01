@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.17.23",
+      "date": "1.11.2026",
+      "changes": [
+        "🍎 Mac-App (Apple-Chip): Dateien öffnen sich ohne den Hinweis „Link öffnet in Safari“ direkt im Browser.",
+        "⬇️ Mac-App: Werk-Dateien und Aufnahmen lassen sich wieder herunterladen, sie landen über den Browser im Downloads-Ordner."
+      ]
+    },
+    {
       "version": "4.17.22",
       "date": "31.10.2026",
       "changes": [

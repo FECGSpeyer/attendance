@@ -556,10 +556,15 @@ export class SongPage implements OnInit {
       Utils.openInNewTab(link);
       return;
     }
+    if (Utils.isIosAppOnMac()) {
+      Utils.openInMacBrowser(link);
+      return;
+    }
     Browser.open({ url: link });
   }
 
   async downloadFile(file: SongFile) {
+    if (Utils.downloadInMacBrowser(file.url, file.fileName)) { return; }
     const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), this.song.id);
     Utils.downloadFileNative(blob, file.fileName);
   }
