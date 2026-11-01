@@ -33,7 +33,7 @@
       <ion-list [inset]="true">
         <ion-item button detail="false" (click)="showContent = !showContent">
           <ion-label class="ion-text-wrap">
-            <h2 class="title">{{ message.title }}</h2>
+            <h2 class="title">{{ display.title }}</h2>
             <p>{{ message.created_at | date: ('common.ngDate' | transloco) + ', HH:mm' }}{{ message.sender_name ? ' · ' + message.sender_name : '' }} · {{ showContent ? 'Nachricht ausblenden' : 'Nachricht anzeigen' }}</p>
           </ion-label>
           <ion-icon slot="end" [name]="showContent ? 'chevron-up-outline' : 'chevron-down-outline'" color="medium"></ion-icon>
@@ -44,11 +44,46 @@
     @if (showContent) {
       <div class="message-card">
         @if (!isManager) {
-          <h1>{{ message.title }}</h1>
+          <h1>{{ display.title }}</h1>
           <p class="from">{{ 'messages.from' | transloco: { name: message.sender_name || ('common.unknown' | transloco), date: (message.created_at | date: ('common.ngDate' | transloco) + ', HH:mm') } }}</p>
         }
-        <div class="message-body" [innerHTML]="message.body_html" (click)="onBodyClick($event)"></div>
+        <div class="message-body" [innerHTML]="display.html" (click)="onBodyClick($event)"></div>
       </div>
+    }
+
+    @if (!isManager && termin) {
+      <div class="termin-card">
+        <div class="termin-text">
+          <b>{{ termin.label }}</b>
+        </div>
+        @if (termin.status !== null) {
+          <span [class]="'status s' + termin.status">{{ statusKey(termin.status) | transloco }}</span>
+        }
+      </div>
+      @if (ownResponse) {
+        <div class="response-note" [class.done]="ownResponse.state !== 'pending'">
+          <ion-icon [name]="ownResponse.state === 'rejected' ? 'close-circle-outline' : 'checkmark-circle-outline'" aria-hidden="true"></ion-icon>
+          <span>{{ ('autoMessages.respState.' + ownResponse.state) | transloco }}@if (ownResponse.reason_code) { · {{ 'autoMessages.reason.' + ownResponse.reason_code | transloco }} }@if (ownResponse.kind === 'was_present') { · {{ 'autoMessages.respWasThere' | transloco }} }</span>
+        </div>
+      }
+      @if (canRespond) {
+        <div class="respond-actions">
+          <ion-button expand="block" (click)="respond('reason')">{{ (ownResponse ? 'autoMessages.respChange' : 'autoMessages.respAddReason') | transloco }}</ion-button>
+          @if (!ownResponse) {
+            <ion-button expand="block" fill="outline" (click)="respond('was_present')">{{ 'autoMessages.respWasThere' | transloco }}</ion-button>
+            <p class="hint">{{ 'autoMessages.respWasThereShort' | transloco }}</p>
+          }
+        </div>
+      }
+    }
+
+    @if (isManager && message.attendance_id) {
+      <ion-list [inset]="true">
+        <ion-item button detail="true" (click)="openTermin()">
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          <ion-label>{{ 'autoMessages.openTermin' | transloco }}</ion-label>
+        </ion-item>
+      </ion-list>
     }
 
     @if (isManager) {

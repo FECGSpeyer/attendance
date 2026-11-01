@@ -42,6 +42,43 @@ If you tap the push message or the entry in the bell (notification centre), the 
 
 You switch push messages for announcements on or off in the notifications with the "Announcements" switch. The email and the entry in the bell still arrive.`,
   },
+  'other-auto-messages': {
+    title: 'Automatic messages after an event',
+    keywords: ['automatic', 'automatic message', 'follow up', 'unexcused', 'did not cancel', 'absent', 'missed', 'late', 'no reply', 'rule', 'reminder after event', 'in a row', 'skip', 'check replies', 'add reason'],
+    body: `With automatic messages, [[Member|members]] get a message by themselves after an event, e.g. when they were absent without cancelling. [[Administrator|Administrators]] and [[Person in charge|people in charge]] set this up under Settings → Communication → Automatic messages. Nothing happens as long as no rule is switched on.
+
+**Creating a rule**
+1. Tap "New rule" or start from a template.
+2. Choose when it is sent: absent without excuse, late without notice or no reply.
+3. Choose how often: every time, only from a certain number in a row or from a number within a period.
+4. Optionally limit it to event types and groups and set the wait after the event ends (default: 2 hours).
+5. Use a template or write your own text. Placeholders like {vorname}, {termin} and {datum} are filled in for every person. Every member gets the template in their app language, your own text exactly as you write it.
+6. Choose the channels (push/Telegram, email) and whether members may reply.
+7. Tap "Preview with the last events". You see who would have been contacted for the last events. Only then switch it on.
+
+**When is something sent?**
+Only when attendance was really taken for the event and the wait is over. People who cancelled, paused or left never get a message. Each person gets at most one message per rule and event. Events before switching on are not sent afterwards.
+
+**On the event**
+At the top of the event you see when the message goes out. With "Skip this time" nobody gets the message for this event. After sending you see how many people it went to and who read it. With "Message the unexcused" you send a prefilled announcement to all unexcused people of this event, even without a rule.
+
+**Checking replies**
+When a member replies with a reason or "I was there", it appears in the event under "Replies". With "Excuse" or "Mark present" you change the status, with "Reject" it stays. The person is notified either way. In the rule you can choose that a reason excuses right away. "I was there" is always checked.
+
+**Copy and history**
+Optionally, admins and people in charge or section leaders (only for their group) get one summary per event. Under "History" of a rule you see how many people were contacted, how many read and replied, and why an event was skipped.`,
+  },
+  'other-auto-messages-reply': {
+    title: 'Replying to an automatic message',
+    keywords: ['add reason', 'excuse afterwards', 'i was there', 'wrongly marked', 'unexcused', 'sick', 'reply', 'automatic message'],
+    body: `If you missed an event without cancelling, your instance can send you a message automatically. You also find it in the notification centre (bell).
+
+The message shows the event and your status. Below there are two buttons:
+- **Add reason:** Choose a reason (e.g. sick) and optionally add a few words. The reason is then a note on the event. Depending on the setting you are excused right away, or the people in charge confirm it.
+- **I was there:** The people in charge get a notice and can mark you as present.
+
+While your reply is still being checked you can change it. You are notified as soon as it is accepted or rejected. You can reply up to 7 days after the event.`,
+  },
   'other-history': {
     title: 'History',
     keywords: ['pieces played', 'performance history'],

@@ -1,10 +1,13 @@
 import { currentIntlLocale } from '../../i18n/languages';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular/lazy';
+import { AlertController, ModalController } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
 import { DbService } from 'src/app/services/db.service';
 import { MessageService } from 'src/app/services/message/message.service';
+import { AutoMessageService, RESPONSE_DAYS, formatTerminDate, personalizeMessage } from 'src/app/services/auto-message/auto-message.service';
+import { AttendanceResponseModalComponent } from 'src/app/shared/attendance-response-modal/attendance-response-modal.component';
+import type { AttendanceResponse } from 'src/app/utilities/interfaces';
 import { Role } from 'src/app/utilities/constants';
 import { Message } from 'src/app/utilities/interfaces';
 import type { MessageRecipient } from 'src/app/utilities/interfaces';
@@ -42,6 +45,8 @@ export class MessageDetailPage implements OnInit {
   private router = inject(Router);
   private alertController = inject(AlertController);
   private messageService = inject(MessageService);
+  private autoMessages = inject(AutoMessageService);
+  private modalController = inject(ModalController);
   public db = inject(DbService);
 
   message: Message | null = null;
@@ -51,6 +56,13 @@ export class MessageDetailPage implements OnInit {
   filter: Filter = 'all';
   recipients: RecipientRow[] = [];
   earlier: Message[] = [];
+  /** Title and body with placeholders filled (automatic messages). */
+  display = { title: '', html: '' };
+  /** The Termin the message is about, for members. */
+  termin: { id: number; label: string; date: string; status: number | null } | null = null;
+  myRecipient: MessageRecipient | null = null;
+  ownResponse: AttendanceResponse | null = null;
+  canRespond = false;
   stats = { read: 0, total: 0, pushDelivered: 0, pushTotal: 0, emailDelivered: 0, emailTotal: 0, emailOpened: 0, readAny: 0, open: 0, problems: 0 };
 
   async ngOnInit(): Promise<void> {
@@ -91,8 +103,10 @@ export class MessageDetailPage implements OnInit {
       }
 
       if (this.isManager) {
+        this.display = personalizeMessage(this.message, null);
         await this.loadRecipients();
       } else {
+        await this.loadOwnCopy();
         this.earlier = (await this.messageService.getReceivedMessages(this.db.user.id, this.message.tenantId, 6))
           .filter(m => m.id !== this.message!.id)
           .slice(0, 5);
@@ -102,6 +116,62 @@ export class MessageDetailPage implements OnInit {
       Utils.showToast(translate('messages.loadFailed'), 'danger');
     } finally {
       this.loading = false;
+    }
+  }
+
+  /** Own recipient row, personalized text, Termin and own answer (members). */
+  private async loadOwnCopy(): Promise<void> {
+    const message = this.message!;
+    try {
+      const rows = await this.messageService.getRecipients(message.id);
+      this.myRecipient = rows.find(r => r.user_id === this.db.user.id) ?? null;
+    } catch (e) {
+      console.error('[message-detail] own recipient failed:', e);
+    }
+    this.display = personalizeMessage(message, this.myRecipient);
+    this.termin = null;
+    this.canRespond = false;
+    if (!message.attendance_id) return;
+    try {
+      const [att] = await this.autoMessages.getAttendanceInfo([message.attendance_id]);
+      if (!att) return;
+      const typeName = this.db.attendanceTypes().find(t => t.id === att.type_id)?.name ?? '';
+      const paId = this.myRecipient?.person_attendance_id ?? null;
+      this.termin = {
+        id: att.id,
+        label: [att.typeInfo || typeName, formatTerminDate(att.date)].filter(Boolean).join(' · '),
+        date: att.date,
+        status: paId ? await this.autoMessages.getPersonAttendanceStatus(paId) : null,
+      };
+      this.ownResponse = paId ? await this.autoMessages.getOwnResponse(paId) : null;
+      const open = Date.now() <= new Date(att.date).getTime() + (RESPONSE_DAYS + 1) * 86400_000;
+      this.canRespond = !!message.allow_responses && !!paId && open && (!this.ownResponse || this.ownResponse.state === 'pending');
+    } catch (e) {
+      console.error('[message-detail] termin failed:', e);
+    }
+  }
+
+  async respond(kind: 'reason' | 'was_present'): Promise<void> {
+    if (!this.message || !this.termin) return;
+    const modal = await this.modalController.create({
+      component: AttendanceResponseModalComponent,
+      componentProps: { messageId: this.message.id, termin: this.termin.label, kind },
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+    if (role === 'sent') {
+      Utils.showToast(translate(data === 'accepted' ? 'autoMessages.respDoneInstant' : 'autoMessages.respDone'), 'success');
+      await this.loadOwnCopy();
+    }
+  }
+
+  statusKey(status: number | null): string {
+    return `autoMessages.status.${status ?? 0}`;
+  }
+
+  openTermin(): void {
+    if (this.message?.attendance_id) {
+      void this.router.navigateByUrl(`/tabs/attendance/${this.message.attendance_id}`);
     }
   }
 

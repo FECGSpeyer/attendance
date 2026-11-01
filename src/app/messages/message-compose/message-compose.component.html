@@ -29,6 +29,14 @@
   <ion-list-header>
     <ion-label>{{ 'messages.recipients' | transloco }}</ion-label>
   </ion-list-header>
+  @if (isPreset) {
+  <ion-list [inset]="true">
+    <ion-item lines="none">
+      <ion-icon name="people-outline" slot="start"></ion-icon>
+      <ion-label class="ion-text-wrap">{{ recipientsLabel }}</ion-label>
+    </ion-item>
+  </ion-list>
+  } @else {
   <ion-list [inset]="true">
     <ion-radio-group [value]="audience" (ionChange)="setAudience($any($event.detail.value))">
       <ion-item>
@@ -53,6 +61,7 @@
       </div>
     }
   </ion-list>
+  }
 
   <ion-list-header>
     <ion-label>{{ 'messages.sendVia' | transloco }}</ion-label>

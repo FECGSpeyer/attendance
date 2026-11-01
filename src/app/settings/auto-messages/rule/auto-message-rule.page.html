@@ -1,0 +1,275 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="/tabs/settings/auto-messages"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ (isNew ? 'autoMessages.newRule' : 'autoMessages.rule') | transloco }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="save()" [disabled]="saving || loading" strong="true">{{ 'common.save' | transloco }}</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  @if (!isNew) {
+    <ion-toolbar>
+      <ion-segment [value]="tab" (ionChange)="tab = $any($event.detail.value)">
+        <ion-segment-button value="rule"><ion-label>{{ 'autoMessages.rule' | transloco }}</ion-label></ion-segment-button>
+        <ion-segment-button value="history"><ion-label>{{ 'autoMessages.history' | transloco }}</ion-label></ion-segment-button>
+      </ion-segment>
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content color="light">
+  @if (loading) {
+    <div class="noDataContainer"><ion-spinner></ion-spinner></div>
+  } @else if (tab === 'history') {
+    <div class="tiles">
+      <div class="tile"><b>{{ totals.sent }}</b><small>{{ 'autoMessages.histSent' | transloco }}</small></div>
+      <div class="tile"><b>{{ totals.read }}</b><small>{{ 'autoMessages.histRead' | transloco }}</small></div>
+      <div class="tile"><b>{{ totals.responses }}</b><small>{{ 'autoMessages.histResponses' | transloco }}</small></div>
+    </div>
+    @if (history.length === 0) {
+      <p class="hint">{{ 'autoMessages.histEmpty' | transloco }}</p>
+    } @else {
+      <ion-list [inset]="true">
+        @for (h of history; track h.id) {
+          <ion-item [button]="!!h.messageId" [detail]="!!h.messageId" (click)="openMessage(h)">
+            <ion-label class="ion-text-wrap">
+              <h3>{{ h.title }} · {{ h.date | date: ('common.ngDate' | transloco) }}</h3>
+              @switch (h.status) {
+                @case ('sent') {
+                  <p>{{ 'autoMessages.histRowSent' | transloco: { count: h.recipients, read: h.read, responses: h.responses } }}</p>
+                }
+                @case ('none') { <p>{{ 'autoMessages.histRowNone' | transloco }}</p> }
+                @case ('not_recorded') { <p>{{ 'autoMessages.histRowNotRecorded' | transloco }}</p> }
+                @case ('suspended') { <p>{{ 'autoMessages.histRowSuspended' | transloco: { name: h.by || ('common.unknown' | transloco) } }}</p> }
+              }
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    }
+  } @else {
+    <ion-list-header><ion-label>{{ 'autoMessages.general' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-input [label]="'autoMessages.name' | transloco" labelPlacement="stacked" [(ngModel)]="rule.name" [maxlength]="100"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-toggle [(ngModel)]="rule.enabled">{{ 'autoMessages.active' | transloco }}</ion-toggle>
+      </ion-item>
+    </ion-list>
+    <p class="hint">{{ 'autoMessages.activeHint' | transloco }}</p>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.when' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      @for (s of statusOptions; track s) {
+        <ion-item>
+          <ion-checkbox [checked]="hasStatus(s)" (ionChange)="toggleStatus(s)" justify="start" labelPlacement="end">
+            <ion-label class="ion-text-wrap">
+              {{ 'autoMessages.trigger.' + s | transloco }}
+              <p>{{ 'autoMessages.triggerHint.' + s | transloco }}</p>
+            </ion-label>
+          </ion-checkbox>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.howOften' | transloco }}</ion-label></ion-list-header>
+    <ion-segment class="seg" [value]="rule.frequency" (ionChange)="onFrequencyChange($any($event.detail.value))">
+      <ion-segment-button value="each"><ion-label>{{ 'autoMessages.freqEach' | transloco }}</ion-label></ion-segment-button>
+      <ion-segment-button value="streak"><ion-label>{{ 'autoMessages.freqStreak' | transloco }}</ion-label></ion-segment-button>
+      <ion-segment-button value="window"><ion-label>{{ 'autoMessages.freqWindow' | transloco }}</ion-label></ion-segment-button>
+    </ion-segment>
+    @if (rule.frequency !== 'each') {
+      <ion-list [inset]="true">
+        <ion-item>
+          <ion-label>{{ 'autoMessages.freqCount' | transloco }}</ion-label>
+          <div slot="end" class="stepper">
+            <ion-button fill="clear" (click)="changeCount('frequency_count', -1)" [attr.aria-label]="'autoMessages.less' | transloco"><ion-icon name="remove-outline" slot="icon-only"></ion-icon></ion-button>
+            <b>{{ rule.frequency_count }}×</b>
+            <ion-button fill="clear" (click)="changeCount('frequency_count', 1)" [attr.aria-label]="'autoMessages.more' | transloco"><ion-icon name="add-outline" slot="icon-only"></ion-icon></ion-button>
+          </div>
+        </ion-item>
+        @if (rule.frequency === 'window') {
+          <ion-item>
+            <ion-label>{{ 'autoMessages.freqDays' | transloco }}</ion-label>
+            <div slot="end" class="stepper">
+              <ion-button fill="clear" (click)="changeCount('frequency_days', -7)" [attr.aria-label]="'autoMessages.less' | transloco"><ion-icon name="remove-outline" slot="icon-only"></ion-icon></ion-button>
+              <b>{{ 'autoMessages.days' | transloco: { count: rule.frequency_days } }}</b>
+              <ion-button fill="clear" (click)="changeCount('frequency_days', 7)" [attr.aria-label]="'autoMessages.more' | transloco"><ion-icon name="add-outline" slot="icon-only"></ion-icon></ion-button>
+            </div>
+          </ion-item>
+        }
+      </ion-list>
+    }
+    <p class="hint">{{ ('autoMessages.freqHint.' + rule.frequency) | transloco: { count: rule.frequency_count, days: rule.frequency_days } }}</p>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.whichTermine' | transloco }}</ion-label></ion-list-header>
+    <div class="chips">
+      @for (type of types; track type.id) {
+        <ion-chip [outline]="!hasType(type.id!)" [color]="hasType(type.id!) ? 'primary' : 'medium'" (click)="toggleType(type.id!)">{{ type.name }}</ion-chip>
+      }
+    </div>
+    <p class="hint">{{ (rule.type_ids?.length ? 'autoMessages.typesSome' : 'autoMessages.typesAll') | transloco }}</p>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.groups' | transloco }}</ion-label></ion-list-header>
+    <div class="chips">
+      @for (group of groups; track group.id) {
+        <ion-chip [outline]="!hasGroup(group.id!)" [color]="hasGroup(group.id!) ? 'primary' : 'medium'" (click)="toggleGroup(group.id!)">{{ group.name }}</ion-chip>
+      }
+    </div>
+    <p class="hint">{{ (rule.group_ids?.length ? 'autoMessages.groupsSome' : 'autoMessages.groupsAll') | transloco }}</p>
+
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-select [label]="'autoMessages.delay' | transloco" [(ngModel)]="rule.delay_minutes" interface="popover">
+          @for (d of delayOptions; track d) {
+            <ion-select-option [value]="d">{{ delayLabel(d) }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
+    </ion-list>
+    <p class="hint">{{ 'autoMessages.delayHint' | transloco }}</p>
+
+    <div class="lock">
+      <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+      <span>{{ 'autoMessages.safety' | transloco }}</span>
+    </div>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.message' | transloco }}</ion-label></ion-list-header>
+    <ion-segment class="seg" [value]="rule.use_template ? 'template' : 'custom'" (ionChange)="setTextMode($any($event.detail.value))">
+      <ion-segment-button value="template"><ion-label>{{ 'autoMessages.useTemplate' | transloco }}</ion-label></ion-segment-button>
+      <ion-segment-button value="custom"><ion-label>{{ 'autoMessages.customText' | transloco }}</ion-label></ion-segment-button>
+    </ion-segment>
+    @if (rule.use_template) {
+      <ion-list [inset]="true">
+        <ion-item>
+          <ion-select [label]="'autoMessages.template' | transloco" [(ngModel)]="rule.template_key" interface="popover">
+            @for (tpl of templates; track tpl) {
+              <ion-select-option [value]="tpl">{{ 'autoMessages.tplName.' + tpl | transloco }}</ion-select-option>
+            }
+          </ion-select>
+        </ion-item>
+        <div class="sample">
+          <b>{{ sample.title }}</b>
+          <p>{{ sample.body }}</p>
+        </div>
+      </ion-list>
+      <p class="hint">{{ 'autoMessages.templateHint' | transloco }}</p>
+    } @else {
+      <ion-list [inset]="true">
+        <ion-item>
+          <ion-input [label]="'messages.title' | transloco" labelPlacement="stacked" [(ngModel)]="rule.title" [maxlength]="200"></ion-input>
+        </ion-item>
+      </ion-list>
+      <ion-list [inset]="true" class="editor-list">
+        <app-message-editor [content]="initialContent" (contentChange)="onContentChange($event)"></app-message-editor>
+      </ion-list>
+      <div class="chips">
+        @for (p of placeholders; track p) {
+          <ion-chip outline="true" color="primary" (click)="insertPlaceholder(p)" class="ph">{{ placeholderLabel(p) }}</ion-chip>
+        }
+      </div>
+      <p class="hint">{{ 'autoMessages.customHint' | transloco }} <a href="javascript:void(0)" (click)="resetToTemplate()">{{ 'autoMessages.resetToTemplate' | transloco }}</a></p>
+    }
+
+    <ion-list-header><ion-label>{{ 'autoMessages.channels' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-toggle [checked]="hasChannel('push')" (ionChange)="setChannel('push', $event.detail.checked)">{{ 'autoMessages.channelPush' | transloco }}</ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-toggle [checked]="hasChannel('email')" (ionChange)="setChannel('email', $event.detail.checked)">{{ 'autoMessages.channelEmail' | transloco }}</ion-toggle>
+      </ion-item>
+    </ion-list>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.responses' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-toggle [(ngModel)]="rule.allow_responses">
+          <ion-label class="ion-text-wrap">
+            {{ 'autoMessages.allowResponses' | transloco }}
+            <p>{{ 'autoMessages.allowResponsesHint' | transloco }}</p>
+          </ion-label>
+        </ion-toggle>
+      </ion-item>
+      @if (rule.allow_responses) {
+        <ion-radio-group [(ngModel)]="rule.instant_excuse">
+          <ion-item>
+            <ion-radio [value]="false" justify="start" labelPlacement="end">{{ 'autoMessages.excuseAfterCheck' | transloco }}</ion-radio>
+          </ion-item>
+          <ion-item>
+            <ion-radio [value]="true" justify="start" labelPlacement="end">{{ 'autoMessages.excuseInstant' | transloco }}</ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      }
+    </ion-list>
+    @if (rule.allow_responses) {
+      <p class="hint">{{ 'autoMessages.responsesHint' | transloco: { days: 7 } }}</p>
+    }
+
+    <ion-list-header><ion-label>{{ 'autoMessages.copy' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      <ion-item>
+        <ion-checkbox [(ngModel)]="rule.copy_responsibles" justify="start" labelPlacement="end">{{ 'autoMessages.copyResponsibles' | transloco }}</ion-checkbox>
+      </ion-item>
+      <ion-item>
+        <ion-checkbox [(ngModel)]="rule.copy_voice_leaders" justify="start" labelPlacement="end">{{ 'autoMessages.copyVoiceLeaders' | transloco }}</ion-checkbox>
+      </ion-item>
+    </ion-list>
+    <p class="hint">{{ 'autoMessages.copyHint' | transloco }}</p>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.preview' | transloco }}</ion-label></ion-list-header>
+    <div class="actions">
+      <ion-button expand="block" fill="outline" (click)="loadPreview()" [disabled]="previewLoading">
+        @if (previewLoading) { <ion-spinner slot="start" name="dots"></ion-spinner> }
+        {{ 'autoMessages.showPreview' | transloco }}
+      </ion-button>
+    </div>
+    @if (previewError) {
+      <p class="hint">{{ 'autoMessages.previewFailed' | transloco }}</p>
+    }
+    @if (preview) {
+      @if (preview.length === 0) {
+        <p class="hint">{{ 'autoMessages.previewNoTermine' | transloco }}</p>
+      }
+      @for (p of preview; track p.attendanceId; let first = $first) {
+        <ion-list [inset]="true">
+          <ion-item lines="full">
+            <ion-label class="ion-text-wrap">
+              <p>{{ p.title }} · {{ p.date | date: ('common.ngDate' | transloco) }}{{ p.startTime ? ' · ' + p.startTime : '' }}</p>
+              @if (!p.recorded) {
+                <h3>{{ 'autoMessages.previewNotRecorded' | transloco }}</h3>
+              } @else {
+                <h3 class="big">{{ 'autoMessages.previewWould' | transloco: { count: p.people.length } }}</h3>
+                @if (first) {
+                  <p>{{ 'autoMessages.previewAt' | transloco: { time: (p.sendAt | date: ('common.ngDate' | transloco) + ', HH:mm') } }}</p>
+                }
+              }
+            </ion-label>
+          </ion-item>
+          @for (person of p.people; track person.id) {
+            <ion-item>
+              <ion-label>{{ person.name }}</ion-label>
+              <ion-note slot="end">{{ groupName(person.groupId) }}@if (!person.app && person.email) { · {{ 'autoMessages.onlyEmail' | transloco }} }@if (!person.app && !person.email) { · {{ 'autoMessages.unreachable' | transloco }} }</ion-note>
+            </ion-item>
+          }
+          @if (p.recorded) {
+            <ion-item lines="none">
+              <ion-note>{{ 'autoMessages.previewExcluded' | transloco: { excused: p.excused, paused: p.paused } }}</ion-note>
+            </ion-item>
+          }
+        </ion-list>
+      }
+      <p class="hint">{{ 'autoMessages.previewHint' | transloco }}</p>
+    }
+
+    @if (!isNew) {
+      <div class="actions bottom">
+        <ion-button expand="block" fill="clear" color="danger" (click)="remove()">{{ 'autoMessages.deleteRule' | transloco }}</ion-button>
+      </div>
+    } @else {
+      <div class="bottom"></div>
+    }
+  }
+</ion-content>
