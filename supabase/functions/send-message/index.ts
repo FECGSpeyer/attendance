@@ -14,15 +14,23 @@
 //   { tenantId, title, content (Tiptap JSON), groupIds?, channels? }
 //                                          → creates the message, returns { messageId }
 //                                            immediately and delivers in the background.
+//   Optional playerIds: number[] (instead of groupIds) + attendanceId: the
+//   "Unentschuldigte anschreiben" message of a Termin; allowResponses lets the
+//   recipients answer with a reason / "I was there" (attendance-response).
 //
 // Per-recipient delivery and read state is tracked in message_recipients;
 // email delivered/opened/bounced events arrive via the resend-webhook function.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2";
-import { sendPushToUser } from "../_shared/send-push.ts";
-import { messageEmail } from "../_shared/attendix-email-templates.ts";
-import { Lang, t, tenantLanguage, userLanguages } from "../_shared/i18n.ts";
+import {
+  countRecipients,
+  deliverMessage,
+  DeliveryPlayer,
+  DeliveryRecipient,
+  loadMessageConfigs,
+  toRecipient,
+} from "../_shared/message-delivery.ts";
 import { renderHtml, renderText, TiptapNode } from "../_shared/message-render.ts";
 
 const CORS_HEADERS = {
@@ -37,37 +45,10 @@ const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 const ROLE_ADMIN = 1;
 const ROLE_RESPONSIBLE = 5;
-const APP_URL = "https://attendix.de";
-const FROM = "Attendix <noreply@attendix.de>";
 const MAX_TITLE = 200;
 const MAX_CONTENT_BYTES = 100_000;
-const PUSH_CONCURRENCY = 8;
-const EMAIL_BATCH_SIZE = 100;
 
-interface Player {
-  id: number;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  appId: string | null;
-  instrument: number | null;
-}
-
-interface NotificationConfig {
-  id: string;
-  enabled: boolean;
-  telegram_chat_id: string | null;
-  push_enabled: boolean | null;
-  push_and_telegram: boolean | null;
-  enabled_tenants: (number | string)[] | null;
-}
-
-interface Recipient {
-  player: Player;
-  userId: string | null;
-  email: string | null;
-  config: NotificationConfig | null; // eligible push/Telegram config, else null
-}
+type Recipient = DeliveryRecipient;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -99,6 +80,10 @@ Deno.serve(async (req) => {
     const groupIds: number[] | null = Array.isArray(body?.groupIds) && body.groupIds.length > 0
       ? body.groupIds.map(Number).filter((n: number) => Number.isFinite(n))
       : null;
+    const playerIds: number[] | null = Array.isArray(body?.playerIds) && body.playerIds.length > 0
+      ? body.playerIds.map(Number).filter((n: number) => Number.isFinite(n)).slice(0, 5000)
+      : null;
+    const attendanceId = Number(body?.attendanceId) || null;
     const channels = {
       push: body?.channels?.push !== false,
       email: body?.channels?.email !== false,
@@ -123,7 +108,14 @@ Deno.serve(async (req) => {
       return json({ error: "Forbidden" }, 403);
     }
 
-    const recipients = await resolveRecipients(admin, tenantId, groupIds);
+    if (attendanceId) {
+      const { data: att } = await admin.from("attendance").select("tenantId").eq("id", attendanceId).maybeSingle();
+      if (!att || Number(att.tenantId) !== tenantId) {
+        return json({ error: "Invalid attendanceId" }, 400);
+      }
+    }
+
+    const recipients = await resolveRecipients(admin, tenantId, groupIds, playerIds);
     const counts = countRecipients(recipients, channels);
 
     if (body?.dryRun) {
@@ -171,6 +163,8 @@ Deno.serve(async (req) => {
         body_text: bodyText,
         channels: [channels.push ? "push" : null, channels.email ? "email" : null].filter(Boolean),
         group_ids: groupIds,
+        attendance_id: attendanceId,
+        allow_responses: !!attendanceId && body?.allowResponses === true,
         recipient_count: recipients.length,
         status: "sending",
       })
@@ -182,7 +176,14 @@ Deno.serve(async (req) => {
     }
     const messageId = message.id as string;
 
+    const paByPlayer = new Map<number, string>();
+    if (attendanceId) {
+      const { data: pas } = await admin.from("person_attendances").select("id, person_id")
+        .eq("attendance_id", attendanceId).range(0, 4999);
+      for (const pa of pas ?? []) paByPlayer.set(Number(pa.person_id), pa.id as string);
+    }
     const rows = recipients.map((r) => ({
+      person_attendance_id: paByPlayer.get(r.player.id) ?? null,
       message_id: messageId,
       tenantId,
       player_id: r.player.id,
@@ -203,17 +204,18 @@ Deno.serve(async (req) => {
 
     console.log(`[send-message] created message=${messageId} tenant=${tenantId} recipients=${recipients.length} push=${counts.push} email=${counts.email}`);
 
-    const delivery = deliver(admin, {
+    const emailHtml = renderHtml(content, { email: true });
+    const delivery = deliverMessage(admin, {
       messageId,
       tenantId,
       tenantName,
-      title,
-      bodyText,
-      emailHtml: renderHtml(content, { email: true }),
       senderName,
       replyTo: caller.email ?? null,
       recipients,
       channels,
+      // The message is the sender's text and is not translated.
+      render: () => ({ title, bodyText, emailHtml }),
+      logTag: "[send-message]",
     }).catch((e) => console.error(`[send-message] delivery failed message=${messageId}:`, e));
 
     // Respond right away; delivery continues in the background.
@@ -236,6 +238,7 @@ async function resolveRecipients(
   admin: SupabaseClient,
   tenantId: number,
   groupIds: number[] | null,
+  playerIds: number[] | null = null,
 ): Promise<Recipient[]> {
   // All active members: not archived, not a pending registration. The main
   // group is included on purpose (unlike reminder emails).
@@ -246,7 +249,9 @@ async function resolveRecipients(
     .is("left", null)
     .or("pending.is.null,pending.eq.false")
     .range(0, 4999);
-  if (groupIds) {
+  if (playerIds) {
+    query = query.in("id", playerIds);
+  } else if (groupIds) {
     query = query.in("instrument", groupIds);
   }
   const { data: players, error } = await query;
@@ -254,51 +259,9 @@ async function resolveRecipients(
     throw new Error(`player query failed: ${error.message}`);
   }
 
-  const appIds = Array.from(new Set((players ?? []).map((p: Player) => p.appId).filter(Boolean))) as string[];
-  const configs = new Map<string, NotificationConfig>();
-  // Chunked to keep the PostgREST URL (in.(...) filter) short.
-  for (let i = 0; i < appIds.length; i += 150) {
-    const { data, error: nErr } = await admin
-      .from("notifications")
-      .select("id, enabled, telegram_chat_id, push_enabled, push_and_telegram, enabled_tenants")
-      .eq("enabled", true)
-      .eq("messages", true)
-      .in("id", appIds.slice(i, i + 150));
-    if (nErr) {
-      console.error("[send-message] notifications query failed:", nErr);
-      continue;
-    }
-    for (const c of (data ?? []) as NotificationConfig[]) {
-      const hasChannel = !!c.telegram_chat_id || !!c.push_enabled;
-      const tenantOk = !c.enabled_tenants || c.enabled_tenants.length === 0 ||
-        c.enabled_tenants.map(Number).includes(tenantId);
-      if (hasChannel && tenantOk) configs.set(c.id, c);
-    }
-  }
-
-  return (players ?? []).map((p: Player) => {
-    const email = (p.email ?? "").trim().toLowerCase();
-    return {
-      player: p,
-      userId: p.appId ?? null,
-      email: email.includes("@") ? email : null,
-      config: p.appId ? configs.get(p.appId) ?? null : null,
-    };
-  });
-}
-
-function countRecipients(recipients: Recipient[], channels: { push: boolean; email: boolean }) {
-  let push = 0;
-  let email = 0;
-  let unreachable = 0;
-  for (const r of recipients) {
-    const viaPush = channels.push && !!r.config;
-    const viaEmail = channels.email && !!r.email;
-    if (viaPush) push++;
-    if (viaEmail) email++;
-    if (!viaPush && !viaEmail) unreachable++;
-  }
-  return { recipients: recipients.length, push, email, unreachable };
+  const list = (players ?? []) as DeliveryPlayer[];
+  const configs = await loadMessageConfigs(admin, tenantId, list.map((p) => p.appId ?? ""));
+  return list.map((p) => toRecipient(p, configs));
 }
 
 async function resolveSenderName(admin: SupabaseClient, tenantId: number, userId: string, fallback: string): Promise<string> {
@@ -311,241 +274,6 @@ async function resolveSenderName(admin: SupabaseClient, tenantId: number, userId
     .maybeSingle();
   const name = data ? `${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() : "";
   return name || fallback;
-}
-
-interface DeliveryParams {
-  messageId: string;
-  tenantId: number;
-  tenantName: string;
-  title: string;
-  bodyText: string;
-  emailHtml: string;
-  senderName: string;
-  replyTo: string | null;
-  recipients: Recipient[];
-  channels: { push: boolean; email: boolean };
-}
-
-async function deliver(admin: SupabaseClient, p: DeliveryParams): Promise<void> {
-  const startedAt = Date.now();
-  const url = `${APP_URL}/tabs/messages/${p.messageId}`;
-  const channelsByUser = new Map<string, Set<string>>();
-  const addChannel = (userId: string, ch: string) => {
-    if (!channelsByUser.has(userId)) channelsByUser.set(userId, new Set());
-    channelsByUser.get(userId)!.add(ch);
-  };
-  // Each recipient gets the frame texts in their language; the message itself
-  // is the sender's text and is not translated.
-  const userLangs = await userLanguages(admin, p.recipients.map((r) => r.userId ?? ""));
-  const tenantLang = await tenantLanguage(admin, p.tenantId);
-  const langOf = (r: Recipient): Lang => (r.userId && userLangs.get(r.userId)) || tenantLang;
-
-  // 1. Push / Telegram ---------------------------------------------------------
-  if (p.channels.push) {
-    const pushTitle = `📣 ${p.title}`;
-    const pushBody = p.bodyText.length > 180 ? `${p.bodyText.slice(0, 177).trimEnd()}…` : p.bodyText;
-    const telegramText = (lang: Lang) =>
-      `📣 ${p.title}\n\n${p.bodyText}\n\n${t(lang, "telegram.openInApp", { url })}`.slice(0, 4000);
-    const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-    const seen = new Set<string>();
-    const targets = p.recipients.filter((r) => {
-      if (!r.config || !r.userId || seen.has(r.userId)) return false;
-      seen.add(r.userId);
-      return true;
-    });
-
-    await runPool(targets, PUSH_CONCURRENCY, async (r) => {
-      const config = r.config!;
-      const parallelMode = !!config.push_and_telegram && !!config.push_enabled && !!config.telegram_chat_id;
-      let pushSent = 0;
-      let telegramSent = false;
-
-      if (config.push_enabled) {
-        try {
-          pushSent = await sendPushToUser(admin, config.id, {
-            title: pushTitle,
-            body: pushBody,
-            data: { type: "message", messageId: p.messageId, tenantId: String(p.tenantId) },
-          });
-        } catch (e) {
-          console.error(`[send-message] push error user=${config.id}:`, e);
-        }
-      }
-
-      if (config.telegram_chat_id && telegramToken && (parallelMode || pushSent === 0)) {
-        try {
-          const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chat_id: config.telegram_chat_id, text: telegramText(langOf(r)), disable_web_page_preview: true }),
-          });
-          telegramSent = res.ok;
-          if (!res.ok) console.error(`[send-message] telegram ${res.status} user=${config.id}: ${await res.text()}`);
-        } catch (e) {
-          console.error(`[send-message] telegram error user=${config.id}:`, e);
-        }
-      }
-
-      const now = new Date().toISOString();
-      const update: Record<string, unknown> = { push_failed: pushSent === 0 && !telegramSent };
-      if (pushSent > 0) { update.push_sent_at = now; addChannel(r.userId!, "push"); }
-      if (telegramSent) { update.telegram_sent_at = now; addChannel(r.userId!, "telegram"); }
-      await admin.from("message_recipients").update(update)
-        .eq("message_id", p.messageId).eq("user_id", r.userId!);
-    });
-  }
-
-  // 2. Email ------------------------------------------------------------------
-  if (p.channels.email) {
-    const emailsByLang = new Map<Lang, Set<string>>();
-    for (const r of p.recipients) {
-      if (!r.email) continue;
-      const lang = langOf(r);
-      if (!emailsByLang.has(lang)) emailsByLang.set(lang, new Set());
-      emailsByLang.get(lang)!.add(r.email);
-    }
-    const results = new Map<string, { id: string | null }>();
-    const sentTo = new Set<string>();
-    for (const [lang, set] of emailsByLang) {
-      // An address shared by people with different languages gets one mail only.
-      const emails = [...set].filter((e) => !sentTo.has(e));
-      emails.forEach((e) => sentTo.add(e));
-      if (!emails.length) continue;
-      const content = messageEmail({
-        title: p.title,
-        bodyHtml: p.emailHtml,
-        preview: p.bodyText.slice(0, 140),
-        senderName: p.senderName,
-        tenant: p.tenantName,
-        url,
-      }, lang);
-      for (const [email, result] of await sendEmails(emails, content.subject, content.html, p.replyTo, p.messageId)) {
-        results.set(email, result);
-      }
-    }
-    const now = new Date().toISOString();
-    for (const [email, result] of results) {
-      const update = result.id
-        ? { email_sent_at: now, resend_email_id: result.id }
-        : { email_failed: true };
-      await admin.from("message_recipients").update(update)
-        .eq("message_id", p.messageId).eq("email", email);
-      if (result.id) {
-        for (const r of p.recipients) {
-          if (r.email === email && r.userId) addChannel(r.userId, "email");
-        }
-      }
-    }
-  }
-
-  // 3. Notification center: one entry per app user, always ---------------------
-  const feedUsers = Array.from(new Set(p.recipients.map((r) => r.userId).filter(Boolean))) as string[];
-  // The bell lists only the body, so it leads with the title.
-  const preview = p.bodyText.replace(/\s+/g, " ");
-  const feedBody = `📣 ${p.title}: ${preview.length > 250 ? `${preview.slice(0, 247).trimEnd()}…` : preview}`;
-  const feedRows = feedUsers.map((userId) => ({
-    user_id: userId,
-    tenantId: p.tenantId,
-    type: "message",
-    title: `📣 ${p.title}`,
-    body: feedBody,
-    channels: Array.from(channelsByUser.get(userId) ?? []),
-    data: { messageId: p.messageId, tenantId: String(p.tenantId) },
-    read: false,
-  }));
-  for (let i = 0; i < feedRows.length; i += 500) {
-    const { error } = await admin.from("user_notifications").insert(feedRows.slice(i, i + 500));
-    if (error) console.error("[send-message] feed insert failed:", error);
-  }
-
-  await admin.from("messages")
-    .update({ status: "sent", sent_at: new Date().toISOString() })
-    .eq("id", p.messageId);
-
-  console.log(`[send-message] delivered message=${p.messageId} feed=${feedRows.length} elapsedMs=${Date.now() - startedAt}`);
-}
-
-/**
- * Sends one email per address through Resend's batch endpoint (100 per call),
- * falling back to single sends for a batch Resend rejects as a whole (e.g. one
- * malformed address). Returns the Resend email id per address (null = failed).
- */
-async function sendEmails(
-  emails: string[],
-  subject: string,
-  html: string,
-  replyTo: string | null,
-  messageId: string,
-): Promise<Map<string, { id: string | null }>> {
-  const results = new Map<string, { id: string | null }>();
-  const apiKey = Deno.env.get("RESEND_API_KEY");
-  if (!apiKey) {
-    console.warn("[send-message] RESEND_API_KEY not configured; skipping email");
-    emails.forEach((e) => results.set(e, { id: null }));
-    return results;
-  }
-
-  const payload = (to: string) => ({
-    from: FROM,
-    to: [to],
-    subject,
-    html,
-    ...(replyTo ? { reply_to: replyTo } : {}),
-    tags: [{ name: "message_id", value: messageId }],
-  });
-
-  for (let i = 0; i < emails.length; i += EMAIL_BATCH_SIZE) {
-    const chunk = emails.slice(i, i + EMAIL_BATCH_SIZE);
-    const res = await resendFetch(apiKey, "https://api.resend.com/emails/batch", chunk.map(payload));
-    if (res.ok) {
-      const data = await res.json().catch(() => null);
-      const ids: { id: string }[] = data?.data ?? [];
-      chunk.forEach((email, idx) => results.set(email, { id: ids[idx]?.id ?? null }));
-    } else {
-      console.error(`[send-message] batch failed ${res.status}: ${await res.text()}; falling back to single sends`);
-      for (const email of chunk) {
-        const single = await resendFetch(apiKey, "https://api.resend.com/emails", payload(email));
-        const data = single.ok ? await single.json().catch(() => null) : null;
-        if (!single.ok) console.error(`[send-message] email failed for ${email}: ${single.status} ${await single.text()}`);
-        results.set(email, { id: data?.id ?? null });
-        await sleep(550); // stay under Resend's default 2 requests/second
-      }
-    }
-    await sleep(550);
-  }
-  return results;
-}
-
-async function resendFetch(apiKey: string, url: string, body: unknown): Promise<Response> {
-  for (let attempt = 0; ; attempt++) {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (res.status !== 429 || attempt >= 3) return res;
-    await res.body?.cancel();
-    await sleep(1000 * (attempt + 1));
-  }
-}
-
-async function runPool<T>(items: T[], size: number, fn: (item: T) => Promise<void>): Promise<void> {
-  let next = 0;
-  const workers = Array.from({ length: Math.min(size, items.length) }, async () => {
-    while (next < items.length) {
-      const item = items[next++];
-      try {
-        await fn(item);
-      } catch (e) {
-        console.error("[send-message] worker error:", e);
-      }
-    }
-  });
-  await Promise.all(workers);
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 function json(body: unknown, status = 200): Response {
