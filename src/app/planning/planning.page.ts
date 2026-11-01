@@ -795,14 +795,36 @@ export class PlanningPage implements OnInit {
     this.calculateEnd();
   }
 
-  addCurrentSongs(popover: IonPopover) {
-    const songsToAdd: string[] = [];
-    for (const historyItem of this.history) {
-      if (!this.selectedFields.find((field: FieldSelection) => Number(field.id) === historyItem.songId)) {
-        songsToAdd.push(String(historyItem.songId));
-      }
+  async addCurrentSongs(popover: IonPopover) {
+    popover?.dismiss();
+    // Unique current songs (a song can be planned for several upcoming events).
+    const currentIds = [...new Set(
+      this.history
+        .map((his: History) => his.songId)
+        .filter((songId: number) => this.songs.some((song: Song) => song.id === songId)),
+    )].map(String);
+
+    if (!currentIds.length) {
+      Utils.showToast(translate('planning.noCurrentSongs'), 'warning');
+      return;
     }
-    this.onSongsChange(songsToAdd);
+
+    // Only the open plan counts: other plans of the same event don't block adding.
+    const missing = currentIds.filter(id => !this.selectedFields.some((field: FieldSelection) => Number(field.id) === Number(id)));
+    if (missing.length) {
+      this.onSongsChange(missing);
+      return;
+    }
+
+    const alert = await this.alertController.create({
+      header: translate('planning.currentSongsAlreadyAddedHeader'),
+      message: translate('planning.currentSongsAlreadyAddedMessage'),
+      buttons: [
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('planning.addAgain'), handler: () => { this.onSongsChange(currentIds); } },
+      ],
+    });
+    await alert.present();
   }
 
   onAddSong(id: string, popover: IonPopover) {

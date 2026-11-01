@@ -4,10 +4,12 @@ import { HelpArticleTranslation } from '../types';
 export const PLANNING_EN: Record<string, HelpArticleTranslation> = {
   'plan-create': {
     title: 'Creating a run sheet',
-    keywords: ['create plan', 'create programme', 'schedule', 'add field', 'programme item', 'info text', 'note', 'description'],
+    keywords: ['create plan', 'create programme', 'schedule', 'add field', 'programme item', 'info text', 'note', 'description', 'current pieces', 'add pieces', 'add again', 'duplicate'],
     body: `Under "Planning" you choose an event and create a [[Run sheet|run sheet]]: a sequence of programme items (pieces, speeches, breaks), each with its duration and start time. The end time is calculated automatically from the duration of all items.
 
 **Adding an item:** In the schedule, tap **+** and then **Add field**. Next to name, performer and duration you can also enter an optional **info text**, for example a song title or a note. The info text appears in small print under the programme item. To change it later, tap the item.
+
+**Current pieces:** With **+** and **Add current pieces** all pieces of the upcoming events are added to the schedule. Pieces that are already in the open run sheet are skipped. If all of them are already there, the app asks whether you want to add them again. Other run sheets of the same event don't matter here.
 
 With "Reset" you can return to the default programme items of the event type at any time; changes you have made are lost.`,
   },

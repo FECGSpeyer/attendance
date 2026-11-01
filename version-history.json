@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.25",
+      "date": "1.11.2026",
+      "changes": [
+        "🎵 Ablaufplan: Sind alle aktuellen Werke schon im Plan, fragt „Aktuelle Werke hinzufügen“ jetzt, ob sie noch einmal hinzugefügt werden sollen. Bei mehreren Plänen zählt nur der geöffnete Plan."
+      ]
+    },
+    {
       "version": "4.17.24",
       "date": "1.11.2026",
       "changes": [
