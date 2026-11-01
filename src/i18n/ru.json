@@ -3212,5 +3212,17 @@
   "fileViewer": {
     "noPreview": "Для этого файла нет предпросмотра. Скачайте его, чтобы открыть.",
     "downloadFailed": "Не удалось скачать файл"
+  },
+  "attendanceSongs": {
+    "title": "Произведения",
+    "chip": "{count, plural, one {# произведение} few {# произведения} many {# произведений} other {# произведения}}",
+    "show": "Показать произведения",
+    "printAll": "Распечатать все ноты",
+    "noScoresForYou": "Для тебя нет нот",
+    "openRunSheet": "Открыть программу",
+    "tileEvents": "{count, plural, one {# мероприятие} few {# мероприятия} many {# мероприятий} other {# мероприятия}}"
+  },
+  "planViewer": {
+    "openScores": "Открыть ноты"
   }
 }

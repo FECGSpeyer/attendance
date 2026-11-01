@@ -3212,5 +3212,17 @@
   "fileViewer": {
     "noPreview": "No hay vista previa para este archivo. Descárgalo para abrirlo.",
     "downloadFailed": "No se pudo descargar el archivo"
+  },
+  "attendanceSongs": {
+    "title": "Obras",
+    "chip": "{count, plural, one {# obra} other {# obras}}",
+    "show": "Ver obras",
+    "printAll": "Imprimir todas las partituras",
+    "noScoresForYou": "No hay partituras para ti",
+    "openRunSheet": "Abrir programa",
+    "tileEvents": "{count, plural, one {Próximo evento} other {# eventos}}"
+  },
+  "planViewer": {
+    "openScores": "Abrir partituras"
   }
 }

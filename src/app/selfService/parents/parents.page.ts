@@ -10,7 +10,9 @@ import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
 import { TrackingEvent, TrackingService } from 'src/app/services/tracking/tracking.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS } from 'src/app/utilities/constants';
-import { Attendance, AttendanceType, History, Person, PersonAttendance, Plan } from 'src/app/utilities/interfaces';
+import { Attendance, AttendanceType, Person, PersonAttendance, Plan, Song } from 'src/app/utilities/interfaces';
+import { AttendanceSong, groupHistoryByAttendance, songsForAttendance } from 'src/app/utilities/attendance-songs';
+import { ATTENDANCE_SONGS_OPEN_PLAN, AttendanceSongsComponent } from 'src/app/shared/attendance-songs/attendance-songs.component';
 import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
@@ -43,7 +45,9 @@ export class ParentsPage implements OnInit {
   public upcomingGroups: EventMonthGroup<Attendance>[] = [];
   public showAllPast = false;
   public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
-  public upcomingSongs: { date: string; history: History[] }[] = [];
+  public upcomingSongs: { date: string; items: AttendanceSong[] }[] = [];
+  /** Werke per Termin id (Ablaufplan + Werke of the Termin). */
+  private attendanceSongs = new Map<number, AttendanceSong[]>();
   public songsModalOpen = false;
   public absenceReasons: string[] = [];
   public lateReasons: string[] = [];
@@ -165,8 +169,7 @@ export class ParentsPage implements OnInit {
     // Calculate statistics per kid
     this.calculateKidStats();
 
-    // Get current songs
-    this.upcomingSongs = await this.db.getCurrentSongs();
+    await this.loadAttendanceSongs();
   }
 
   organizeAttendances() {
@@ -465,6 +468,63 @@ export class ParentsPage implements OnInit {
   openSongLink(link: string) {
     if (link) {
       Browser.open({ url: link });
+    }
+  }
+
+  /** Werke of the kids' Termine and the "Aktuelle Werke" of the upcoming ones. */
+  private async loadAttendanceSongs(): Promise<void> {
+    let songs: Song[] = [];
+    let history: Awaited<ReturnType<DbService['getHistoryForAttendances']>> = [];
+    try {
+      [songs, history] = await Promise.all([
+        this.db.getSongs(),
+        this.db.getHistoryForAttendances(this.attendances.map(att => att.id)),
+      ]);
+    } catch (e) {
+      console.error(e);
+    }
+    const byAttendance = groupHistoryByAttendance(history);
+    const map = new Map<number, AttendanceSong[]>();
+    for (const att of this.attendances) {
+      const list = songsForAttendance(att, byAttendance.get(att.id) ?? [], songs);
+      if (list.length) {
+        map.set(att.id, list);
+      }
+    }
+    this.attendanceSongs = map;
+
+    const today = dayjs().startOf('day');
+    this.upcomingSongs = this.attendances
+      .filter(att => !dayjs(att.date).isBefore(today) && map.has(att.id))
+      .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))
+      .map(att => ({
+        date: `${dayjs(att.date).format(dateFmt())} | ${this.getEventTitle(att)}`,
+        items: map.get(att.id),
+      }));
+  }
+
+  songsOf(att: Attendance): AttendanceSong[] {
+    return att ? this.attendanceSongs.get(att.id) ?? [] : [];
+  }
+
+  async openAttendanceSongs(att: Attendance) {
+    const modal = await this.modalController.create({
+      component: AttendanceSongsComponent,
+      componentProps: {
+        title: this.getEventTitle(att),
+        subtitle: dayjs(att.date).format(dateFmt()),
+        entries: this.songsOf(att),
+        linkOnly: true,
+        canOpenPlan: this.hasPlan(att),
+      },
+      initialBreakpoint: 0.75,
+      breakpoints: [0, 0.75, 1],
+      handleBehavior: 'none',
+    });
+    await modal.present();
+    const { role } = await modal.onDidDismiss();
+    if (role === ATTENDANCE_SONGS_OPEN_PLAN) {
+      await this.openPlanViewer(att);
     }
   }
 

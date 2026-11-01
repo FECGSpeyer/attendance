@@ -134,15 +134,15 @@
               </ion-label>
             </ion-list-header>
             <ion-item-group>
-              @for (his of group.history; track his.id) {
-                <ion-item button (click)="openSongLink(his.song?.link)">
-                  @if (his.song) {
-                    <ion-label>
-                      <h2>{{ his.song.number }}. {{ his.song.name }}</h2>
-                      <h3>{{ 'signout.conductor' | transloco: { name: his.conductorName } }}</h3>
-                    </ion-label>
-                  }
-                  @if (his.song?.link) {
+              @for (entry of group.items; track entry.songId) {
+                <ion-item [button]="!!entry.song?.link" (click)="openSongLink(entry.song?.link)">
+                  <ion-label>
+                    <h2>{{ entry.name }}</h2>
+                    @if (entry.conductorName) {
+                      <h3>{{ 'signout.conductor' | transloco: { name: entry.conductorName } }}</h3>
+                    }
+                  </ion-label>
+                  @if (entry.song?.link) {
                     <ion-icon slot="end" name="download-outline"></ion-icon>
                   }
                 </ion-item>
@@ -177,8 +177,11 @@
   </ion-modal>
 
   <ng-template #eventChips let-att>
-    @if (hasPlan(att) || att.description || att.attachment_url) {
+    @if (hasPlan(att) || att.description || att.attachment_url || songsOf(att).length) {
       <div class="ev-chips">
+        @if (songsOf(att).length; as songCount) {
+          <button class="ev-chip" (click)="openAttendanceSongs(att); $event.stopPropagation()"><ion-icon name="musical-notes-outline"></ion-icon> {{ 'attendanceSongs.chip' | transloco: { count: songCount } }}</button>
+        }
         @if (hasPlan(att)) {
           <button class="ev-chip" (click)="openPlanViewer(att); $event.stopPropagation()"><ion-icon name="document-text-outline"></ion-icon> {{ 'signout.runSheet' | transloco }}</button>
         }
@@ -282,6 +285,9 @@
           <ion-label>
             <h2>{{ getEventTitle(att) }}</h2>
             <div class="ev-chips">
+              @if (songsOf(att).length; as songCount) {
+                <button class="ev-chip" (click)="openAttendanceSongs(att); $event.stopPropagation()"><ion-icon name="musical-notes-outline"></ion-icon> {{ 'attendanceSongs.chip' | transloco: { count: songCount } }}</button>
+              }
               @for (pa of kidsByAttendance[att.id] ?? []; track pa.id) {
                 <span class="ev-pill" [ngClass]="'ion-color-' + statusColorOf(pa.status)">{{ pa.person.firstName }} · {{ statusLabelOf(pa.status, true) }}</span>
               }

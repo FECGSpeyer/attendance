@@ -1,7 +1,7 @@
 import { dateFmt } from '../../i18n/languages';
 /* eslint-disable arrow-body-style */
 import { Component, effect, inject, OnInit, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, isPlatform, ModalController } from '@ionic/angular/lazy';
+import { ActionSheetController, AlertController, IonAccordionGroup, IonModal, ModalController } from '@ionic/angular/lazy';
 import { Browser } from '@capacitor/browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import dayjs from 'dayjs';
@@ -9,15 +9,16 @@ import { attendanceHasEnded, attendanceIsRunning, isMultiDay } from '../../utili
 import { EventMonthGroup, PAST_PREVIEW_COUNT, eventDay, eventMeta, eventTimeRange, eventWeekday, groupByMonth, percentageColor, statusColor, statusLabel } from '../../utilities/event-list';
 import { DbService } from 'src/app/services/db.service';
 import { PushService } from 'src/app/services/push/push.service';
-import { AudioPlayerService } from 'src/app/services/audio-player/audio-player.service';
 import { TelegramService } from 'src/app/services/telegram/telegram.service';
 import { AttendanceStatus, DEFAULT_ABSENCE_REASONS, DEFAULT_LATE_REASONS, defaultShowAllAttendancesInfoText, PlayerHistoryType, Role } from 'src/app/utilities/constants';
-import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, History, SongFile, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
+import { Attendance, PersonAttendance, Player, PlayerAbsence, PlayerHistoryEntry, Song, Tenant, AttendanceType, Plan, RegistrationField } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { countsForAverage, isCancelled, isDutyType, occupiesDuty } from 'src/app/utilities/duty';
 import { DutyTermin } from 'src/app/services/duty/duty.service';
 import { UnavailabilityModalComponent } from 'src/app/duty/unavailability-modal/unavailability-modal.component';
-import { PrintService } from 'src/app/services/print/print.service';
+import { SongActionsService } from 'src/app/services/song-actions/song-actions.service';
+import { AttendanceSong, groupHistoryByAttendance, songsForAttendance } from 'src/app/utilities/attendance-songs';
+import { ATTENDANCE_SONGS_OPEN_PLAN, AttendanceSongsComponent } from 'src/app/shared/attendance-songs/attendance-songs.component';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { MyTasksComponent } from 'src/app/tasks/my-tasks/my-tasks.component';
@@ -30,8 +31,9 @@ import { translate } from '@jsverse/transloco';
   standalone: false
 })
 export class SignoutPage implements OnInit {
-  private audioPlayer = inject(AudioPlayerService);
-  private printService = inject(PrintService);
+  private songActions = inject(SongActionsService);
+  /** Werke per Termin id (Ablaufplan + Werke of the Termin). */
+  private attendanceSongs = new Map<number, AttendanceSong[]>();
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
   @ViewChild('descriptionModal') descriptionModal: IonModal;
@@ -52,7 +54,7 @@ export class SignoutPage implements OnInit {
   public tenantId: number;
   public tenants: Tenant[] = [];
   public songsModalOpen = false;
-  public upcomingSongs: { date: string; history: History[] }[] = [];
+  public upcomingSongs: { date: string; items: AttendanceSong[] }[] = [];
   public isApplicant = false;
   public absenceReasons: string[] = [];
   public lateReasons: string[] = [];
@@ -220,18 +222,6 @@ export class SignoutPage implements OnInit {
       this.player = await this.db.getPlayerByAppId();
       this.isApplicant = true;
     }
-
-    const songs = await this.db.getCurrentSongs();
-    this.upcomingSongs = [];
-    for (const song of songs) {
-      const history = song.history.filter((h: History) => this.personAttendances.some((att: PersonAttendance) => att.attendance.id === (h.attendance_id as unknown as Attendance).id));
-      if (history.length) {
-        this.upcomingSongs.push({
-          date: song.date,
-          history
-        });
-      }
-    }
   }
 
   async onExcuseConfirm({ reason, isLate }: { reason: string; isLate: boolean }) {
@@ -371,6 +361,66 @@ export class SignoutPage implements OnInit {
 
     this.applyDutyView();
     void this.loadOpenDuties();
+    await this.loadAttendanceSongs();
+  }
+
+  private attIdOf(att: PersonAttendance): number {
+    return att.attendance?.id ?? att.attendance_id ?? att.attId;
+  }
+
+  /** Werke of every listed Termin and the "Aktuelle Werke" of the upcoming ones. */
+  private async loadAttendanceSongs(): Promise<void> {
+    const ids = this.personAttendances.map(att => this.attIdOf(att));
+    let history: Awaited<ReturnType<DbService['getHistoryForAttendances']>> = [];
+    try {
+      history = await this.db.getHistoryForAttendances(ids);
+    } catch (e) {
+      console.error(e);
+    }
+    const byAttendance = groupHistoryByAttendance(history);
+    const map = new Map<number, AttendanceSong[]>();
+    for (const att of this.personAttendances) {
+      const id = this.attIdOf(att);
+      const list = songsForAttendance(att.attendance, byAttendance.get(id) ?? [], this.songs);
+      if (list.length) {
+        map.set(id, list);
+      }
+    }
+    this.attendanceSongs = map;
+
+    const today = dayjs().startOf('day');
+    this.upcomingSongs = this.personAttendances
+      .filter(att => !dayjs(att.date).isBefore(today) && map.has(this.attIdOf(att)))
+      .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)))
+      .map(att => ({
+        date: `${dayjs(att.date).format(dateFmt())} | ${this.getEventTitle(att)}`,
+        items: map.get(this.attIdOf(att)),
+      }));
+  }
+
+  songsOf(att: PersonAttendance): AttendanceSong[] {
+    return att ? this.attendanceSongs.get(this.attIdOf(att)) ?? [] : [];
+  }
+
+  async openAttendanceSongs(att: PersonAttendance) {
+    const modal = await this.modalController.create({
+      component: AttendanceSongsComponent,
+      componentProps: {
+        title: this.getEventTitle(att),
+        subtitle: dayjs(att.date).format(dateFmt()),
+        entries: this.songsOf(att),
+        instrumentId: this.player?.instrument,
+        canOpenPlan: this.hasPlan(att),
+      },
+      initialBreakpoint: 0.75,
+      breakpoints: [0, 0.75, 1],
+      handleBehavior: 'none',
+    });
+    await modal.present();
+    const { role } = await modal.onDidDismiss();
+    if (role === ATTENDANCE_SONGS_OPEN_PLAN) {
+      await this.openPlanViewer(att);
+    }
   }
 
   // ── Dienstplan ─────────────────────────────────────────────
@@ -710,6 +760,15 @@ export class SignoutPage implements OnInit {
     }
 
     // On the current card plan, infos, attachment, route and files are chips already
+    if (this.songsOf(attendance).length && !hideQuickActions) {
+      const cancelBtn = buttons.find(btn => btn.role === 'destructive');
+      const cancelIndex = buttons.indexOf(cancelBtn);
+      buttons.splice(cancelIndex, 0, {
+        text: translate('attendanceSongs.show'),
+        handler: () => this.openAttendanceSongs(attendance),
+      });
+    }
+
     // Add plan viewing option if share_plan is true
     if (attendance.attendance?.share_plan && attendance.attendance?.plan && !(hideQuickActions && this.hasPlan(attendance))) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
@@ -1014,7 +1073,6 @@ export class SignoutPage implements OnInit {
     event.target.complete();
   }
 
-  trackByHistoryId = (_: number, item: History): number => item.id;
 
   async openPlanViewer(attendance: PersonAttendance) {
     const attType = this.db.attendanceTypes().find((type: AttendanceType) => type.id === attendance.typeId);
@@ -1052,263 +1110,12 @@ export class SignoutPage implements OnInit {
   }
 
   async openSongOptions(song: Song) {
-    if (!this.hasSongNotesForPlayer(song)) {
-      Utils.showToast(translate('signout.noScoresForInstrument'), 'danger', 4000);
-    }
-
-    const buttons = [];
-
-    if (song.link) {
-      buttons.push({
-        text: translate('signout.openScoreLink'),
-        handler: () => this.openSongLink(song.link),
-      });
-    }
-
-    // Get files for player's instrument or Chor notes
-    let files = song.files.filter((file: SongFile) => file.instrumentId === this.player.instrument);
-
-    // For choir type, also include files with "Chor (alle)"
-    if (this.db.tenant().type === 'choir') {
-      const choirFiles = song.files.filter((file: SongFile) => Utils.isChoirAllFile(file));
-      files = [...files, ...choirFiles];
-      // Remove duplicates if a file is both for the instrument and has "Chor" note
-      files = files.filter((file, index, self) =>
-        index === self.findIndex(f => f.fileName === file.fileName)
-      );
-    }
-
-    if (files.length === 1) {
-      if (!isPlatform('ios')) {
-        buttons.push({
-          text: translate('signout.downloadScores'),
-          handler: async () => {
-            const file = files[0];
-            if (file) {
-              if (Utils.downloadInMacBrowser(file.url, file.fileName)) { return; }
-              const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
-              Utils.downloadFileNative(blob, file.fileName);
-            }
-          },
-        });
-      }
-
-      buttons.push({
-        text: translate('signout.showScores'),
-        handler: () => {
-          const file = files[0];
-          if (file) {
-            Utils.openFileNative(file.url, file.fileName);
-          }
-        },
-      });
-
-      buttons.push({
-        text: translate('signout.printScores'),
-        handler: async () => {
-          const file = files[0];
-          if (file) {
-            await this.printService.printSongFile(song, file);
-          }
-        },
-      });
-    } else if (files.length > 1) {
-      if (!isPlatform('ios')) {
-        buttons.push({
-          text: translate('signout.downloadScores'),
-          handler: async () => {
-            const fileOptions = files.map((file: SongFile) => {
-              return {
-                text: file.fileName,
-                role: '',
-                handler: async () => {
-                  if (Utils.downloadInMacBrowser(file.url, file.fileName)) { return; }
-                  const blob = await this.db.downloadSongFile(file.storageName ?? file.url.split('/').pop(), song.id);
-                  Utils.downloadFileNative(blob, file.fileName);
-                },
-              };
-            });
-
-            fileOptions.push({
-              text: translate('common.cancel'),
-              role: 'destructive',
-              handler: () => Promise.resolve(),
-            });
-
-            const fileActionSheet = await this.actionSheetController.create({
-              header: translate('signout.chooseScoresFor', { song: `${song.number}. ${song.name}` }),
-              buttons: fileOptions,
-            });
-
-            await fileActionSheet.present();
-          },
-        });
-      }
-
-      buttons.push({
-        text: translate('signout.showScores'),
-        handler: async () => {
-          const fileOptions = files.map((file: SongFile) => {
-            return {
-              text: file.fileName,
-              role: '',
-              handler: () => {
-                Utils.openFileNative(file.url, file.fileName);
-              },
-            };
-          });
-
-          fileOptions.push({
-            text: translate('common.cancel'),
-            role: 'destructive',
-            handler: () => Promise.resolve(),
-          });
-
-          const fileActionSheet = await this.actionSheetController.create({
-            header: translate('signout.chooseScoresFor', { song: `${song.number}. ${song.name}` }),
-            buttons: fileOptions,
-          });
-
-          await fileActionSheet.present();
-        },
-      });
-
-      buttons.push({
-        text: translate('signout.printScores'),
-        handler: async () => {
-          const fileOptions = files.map((file: SongFile) => {
-            return {
-              text: file.fileName,
-              role: '',
-              handler: async () => {
-                await this.printService.printSongFile(song, file);
-              },
-            };
-          });
-
-          fileOptions.push({
-            text: translate('common.cancel'),
-            role: 'destructive',
-            handler: () => Promise.resolve(),
-          });
-
-          const fileActionSheet = await this.actionSheetController.create({
-            header: translate('signout.printScoresFor', { song: `${song.number}. ${song.name}` }),
-            buttons: fileOptions,
-          });
-
-          await fileActionSheet.present();
-        },
-      });
-    }
-
-    const audioFile = song.files.find(f => f.instrumentId === 1);
-    if (audioFile) {
-      buttons.push({
-        text: translate('signout.listenRecording'),
-        handler: () => {
-          this.audioPlayer.play(audioFile, `${song.number} ${song.name}`);
-        },
-      });
-      buttons.push({
-        text: translate('signout.downloadRecording'),
-        handler: async () => {
-          if (Utils.downloadInMacBrowser(audioFile.url, audioFile.fileName)) { return; }
-          const blob = await this.db.downloadSongFile(audioFile.storageName ?? audioFile.url.split('/').pop(), song.id);
-          Utils.downloadFileNative(blob, audioFile.fileName);
-        },
-      });
-    }
-
-    const liedtextFiles = song.files.filter((file: SongFile) => file.instrumentId === 2);
-    if (liedtextFiles.length === 1) {
-      buttons.push({
-        text: translate('signout.viewLyrics'),
-        handler: () => {
-          const file = liedtextFiles[0];
-          Utils.openFileNative(file.url, file.fileName);
-        },
-      });
-    } else if (liedtextFiles.length > 1) {
-      buttons.push({
-        text: translate('signout.viewLyrics'),
-        handler: async () => {
-          const fileOptions = liedtextFiles.map((file: SongFile) => {
-            return {
-              text: file.fileName,
-              role: '',
-              handler: () => {
-                Utils.openFileNative(file.url, file.fileName);
-              },
-            };
-          });
-
-          fileOptions.push({
-            text: translate('common.cancel'),
-            role: 'destructive',
-            handler: () => Promise.resolve(),
-          });
-
-          const fileActionSheet = await this.actionSheetController.create({
-            header: translate('signout.chooseLyricsFor', { song: `${song.number}. ${song.name}` }),
-            buttons: fileOptions,
-          });
-
-          await fileActionSheet.present();
-        },
-      });
-    }
-
-    buttons.push({
-      text: translate('common.cancel'),
-      handler: () => { },
-      role: 'destructive',
-      data: {
-        action: 'cancel',
-      },
-    });
-
-    if (buttons.length === 1) {
-      Utils.showToast(translate('signout.noSongActions'), 'warning', 4000);
-      return;
-    }
-
-    const actionSheet = await this.actionSheetController.create({
-      header: `${song.number}. ${song.name}`,
-      buttons,
-    });
-
-    await actionSheet.present();
+    await this.songActions.openSongOptions(song, this.player?.instrument);
   }
 
   async printAllCurrentFiles(): Promise<void> {
-    const filesToPrint: { song: Song; file: SongFile }[] = [];
-
-    // Collect all files for the player's instrument from upcoming songs
-    for (const group of this.upcomingSongs) {
-      for (const his of group.history) {
-        if (his.song?.files) {
-          // Get files for player's instrument
-          let file = his.song.files.find(f => f.instrumentId === this.player.instrument);
-
-          // For choir type, also check for files with "Chor (alle)" if no instrument file found
-          if (!file && this.db.tenant().type === 'choir') {
-            file = his.song.files.find(f => Utils.isChoirAllFile(f));
-          }
-
-          if (file) {
-            filesToPrint.push({ song: his.song, file });
-          }
-        }
-      }
-    }
-
-    if (filesToPrint.length === 0) {
-      Utils.showToast(translate('signout.noScoresFound'), 'warning');
-      return;
-    }
-
-    await this.printService.printEntries(filesToPrint, 'aktuelle_noten.pdf');
+    const songs = this.upcomingSongs.flatMap(group => group.items.map(entry => entry.song)).filter(Boolean);
+    await this.songActions.printScores(songs, this.player?.instrument, 'aktuelle_noten.pdf');
   }
 
   showDeadlineInfo(attendance: PersonAttendance): boolean {
@@ -1332,19 +1139,7 @@ export class SignoutPage implements OnInit {
    * For choir attendance types, also check if there are files with "Chor (alle)".
    */
   hasSongNotesForPlayer(song: Song): boolean {
-    if (!song) {return false;}
-
-    // Check if song has the player's instrument in instrument_ids
-    const hasInstrumentId = song.instrument_ids?.includes(this.player.instrument);
-
-    // For choir type, also check for files with "Chor (alle)"
-    const tenantType = this.db.tenant().type;
-    if (tenantType === 'choir') {
-      const hasChoirNote = song.files?.some(file => Utils.isChoirAllFile(file));
-      return hasInstrumentId || hasChoirNote;
-    }
-
-    return hasInstrumentId;
+    return this.songActions.hasNotesForInstrument(song, this.player?.instrument);
   }
 
   openPauseModal(): void {

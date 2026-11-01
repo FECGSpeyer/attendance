@@ -35,6 +35,34 @@ export class HistoryService {
     return data;
   }
 
+  /**
+   * Werke of several Termine for the members' views (song id, Termin, conductor name).
+   * Queried in chunks so long Termin lists stay below the URL length limit.
+   */
+  async getHistoryForAttendances(attendanceIds: number[], tenantId: number): Promise<{ songId: number; attendance_id: number; conductorName: string }[]> {
+    const ids = [...new Set(attendanceIds.filter(Boolean))];
+    const result: { songId: number; attendance_id: number; conductorName: string }[] = [];
+    for (let i = 0; i < ids.length; i += 150) {
+      const { data, error } = await supabase
+        .from('history')
+        .select('id, songId, attendance_id, otherConductor, person_id(firstName, lastName)')
+        .eq('tenantId', tenantId)
+        .in('attendance_id', ids.slice(i, i + 150))
+        .order('id', { ascending: true });
+      if (error) {
+        throw new Error(error.message);
+      }
+      for (const his of (data ?? []) as any[]) {
+        result.push({
+          songId: his.songId,
+          attendance_id: his.attendance_id,
+          conductorName: his.person_id ? `${his.person_id.firstName} ${his.person_id.lastName}` : his.otherConductor || '',
+        });
+      }
+    }
+    return result;
+  }
+
   async updateHistoryEntry(id: number, history: Partial<History>): Promise<History[]> {
     const dbFields = pickHistoryFields(history);
     const { data, error } = await supabase

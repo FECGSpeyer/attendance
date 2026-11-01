@@ -63,9 +63,14 @@
             <ion-item
               [class.group-child]="!!field.groupId"
               [class.active-slot]="liveMode && i === activeFieldIndex"
-              [class.done-slot]="liveMode && i < activeFieldIndex">
+              [class.done-slot]="liveMode && i < activeFieldIndex"
+              [button]="!!songOf(field)" [detail]="false"
+              (click)="openSong(field)">
                 <ion-label>
                     <h2>{{ fieldName(field) }}</h2>
+                    @if (songOf(field)) {
+                    <p class="open-scores"><ion-icon name="musical-notes-outline"></ion-icon> {{ 'planViewer.openScores' | transloco }}</p>
+                    }
                     @if (isInstrumentMissing(field)) {
                     <p class="ion-text-wrap" style="color: var(--ion-color-danger);">{{ 'planning.noScoresInstrument' | transloco }}</p>
                     }

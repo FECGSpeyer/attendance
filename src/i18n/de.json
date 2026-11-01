@@ -3212,5 +3212,17 @@
   "fileViewer": {
     "noPreview": "Für diese Datei gibt es keine Vorschau. Lade sie herunter, um sie zu öffnen.",
     "downloadFailed": "Datei konnte nicht heruntergeladen werden"
+  },
+  "attendanceSongs": {
+    "title": "Werke",
+    "chip": "{count, plural, one {# Werk} other {# Werke}}",
+    "show": "Werke anzeigen",
+    "printAll": "Alle Noten drucken",
+    "noScoresForYou": "Für dich sind keine Noten hinterlegt",
+    "openRunSheet": "Ablaufplan öffnen",
+    "tileEvents": "{count, plural, one {Nächster Termin} other {# Termine}}"
+  },
+  "planViewer": {
+    "openScores": "Noten öffnen"
   }
 }

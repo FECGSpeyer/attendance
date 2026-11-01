@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()" [attr.aria-label]="'common.close' | transloco">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="songs-title">{{ 'attendanceSongs.title' | transloco }}</div>
+      @if (title || subtitle) {
+        <div class="songs-subtitle">{{ title }}@if (title && subtitle) { · }{{ subtitle }}</div>
+      }
+    </ion-title>
+    @if (canPrint) {
+      <ion-buttons slot="end">
+        <ion-button (click)="print()" [attr.aria-label]="'attendanceSongs.printAll' | transloco">
+          <ion-icon slot="icon-only" name="print-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-list [inset]="true">
+    @for (entry of entries; track entry.songId) {
+      <ion-item [button]="canTap(entry)" [detail]="false" (click)="open(entry)" [class.missing]="missingNotes(entry)">
+        <ion-label>
+          <h2>{{ entry.name }}</h2>
+          @if (missingNotes(entry)) {
+            <p class="missing-text">{{ 'attendanceSongs.noScoresForYou' | transloco }}</p>
+          } @else if (entry.conductorName) {
+            <p>{{ 'signout.conductor' | transloco: { name: entry.conductorName } }}</p>
+          }
+        </ion-label>
+        @if (entry.song?.link) {
+          <ion-button slot="end" fill="clear" size="small" (click)="openLink(entry.song.link, $event)"
+            [attr.aria-label]="'signout.openScoreLink' | transloco">
+            <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+          </ion-button>
+        }
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (canOpenPlan) {
+    <ion-list [inset]="true">
+      <ion-item button detail="true" (click)="dismiss('plan')">
+        <ion-icon slot="start" name="document-text-outline" color="primary"></ion-icon>
+        <ion-label color="primary">{{ 'attendanceSongs.openRunSheet' | transloco }}</ion-label>
+      </ion-item>
+    </ion-list>
+  }
+</ion-content>
