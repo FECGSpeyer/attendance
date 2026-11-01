@@ -1,6 +1,15 @@
 {
   "versions": [
     {
+      "version": "4.17.26",
+      "date": "1.11.2026",
+      "changes": [
+        "🎵 Werke je Termin: Unter „Meine Anwesenheit“ zeigt jeder Termin mit Werken die Markierung „♪ n Werke“, auch vergangene Termine. Ein Tipp öffnet die Werke des Termins mit Noten anzeigen, herunterladen und drucken. Werke aus dem Ablaufplan erscheinen auch, wenn der Plan nicht freigegeben ist.",
+        "📄 Ablaufplan: Mitglieder öffnen die Noten eines Werks direkt per Tipp auf die Zeile.",
+        "🎶 Aktuelle Werke zeigen jetzt auch die Werke aus dem Ablaufplan."
+      ]
+    },
+    {
       "version": "4.17.25",
       "date": "1.11.2026",
       "changes": [
