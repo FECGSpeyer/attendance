@@ -1,0 +1,63 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button text="" defaultHref="tabs/settings"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ 'autoMessages.title' | transloco }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <p class="intro">{{ 'autoMessages.intro' | transloco }}</p>
+
+  @if (loading) {
+    <div class="noDataContainer"><ion-spinner></ion-spinner></div>
+  } @else {
+    @if (rules.length > 0) {
+      <ion-list-header><ion-label>{{ 'autoMessages.rules' | transloco }}</ion-label></ion-list-header>
+      <ion-list [inset]="true">
+        @for (rule of rules; track rule.id) {
+          <ion-item>
+            <ion-label class="ion-text-wrap rule-row" (click)="open(rule)">
+              <h2>{{ rule.name }}</h2>
+              <p>{{ rule.summary }}</p>
+              <div class="chips">
+                @for (c of rule.chips; track c) {
+                  <span class="chip">{{ c }}</span>
+                }
+              </div>
+            </ion-label>
+            <ion-toggle slot="end" [checked]="rule.enabled" (ionChange)="toggle(rule, $event)" [attr.aria-label]="'autoMessages.active' | transloco"></ion-toggle>
+          </ion-item>
+        }
+      </ion-list>
+      @if (lastWeek.sent > 0) {
+        <p class="hint">{{ 'autoMessages.lastWeek' | transloco: { count: lastWeek.people } }}</p>
+      }
+    }
+
+    <div class="actions">
+      <ion-button expand="block" (click)="create()">
+        <ion-icon slot="start" name="add-outline"></ion-icon>
+        {{ 'autoMessages.newRule' | transloco }}
+      </ion-button>
+    </div>
+
+    <ion-list-header><ion-label>{{ 'autoMessages.startFromTemplate' | transloco }}</ion-label></ion-list-header>
+    <ion-list [inset]="true">
+      @for (tpl of templates; track tpl) {
+        <ion-item button detail="true" (click)="create(tpl)">
+          <ion-label class="ion-text-wrap">
+            {{ 'autoMessages.tplName.' + tpl | transloco }}
+            <p>{{ 'autoMessages.tplHint.' + tpl | transloco }}</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+    <p class="hint bottom">{{ 'autoMessages.whoCanUse' | transloco }}</p>
+  }
+</ion-content>

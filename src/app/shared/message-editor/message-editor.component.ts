@@ -159,6 +159,19 @@ export class MessageEditorComponent implements AfterViewInit, OnDestroy {
     return this.editor?.isActive(name) ?? false;
   }
 
+  /** Inserts plain text at the cursor (e.g. a placeholder like {vorname}). */
+  insertText(text: string): void {
+    this.editor?.chain().focus().insertContent(text).run();
+  }
+
+  /** Replaces the whole content (e.g. when starting from a template). */
+  setContent(content: JSONContent): void {
+    if (!this.editor) return;
+    this.editor.commands.setContent(content);
+    this.empty = this.editor.isEmpty;
+    this.contentChange.emit(this.editor.getJSON());
+  }
+
   async editLink(): Promise<void> {
     if (!this.editor) return;
     const current = (this.editor.getAttributes('link')['href'] as string) ?? '';

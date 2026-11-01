@@ -1,11 +1,14 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { AlertController, LoadingController, ModalController } from '@ionic/angular/lazy';
+import { Component, Input, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { AlertController, IonicModule, LoadingController, ModalController } from '@ionic/angular/lazy';
 import { JSONContent } from '@tiptap/core';
 import { DbService } from 'src/app/services/db.service';
 import { MessageService } from 'src/app/services/message/message.service';
 import { Group, MessageRecipientCounts } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
-import { translate } from '@jsverse/transloco';
+import { TranslocoModule, translate } from '@jsverse/transloco';
+import { MessageEditorComponent } from 'src/app/shared/message-editor/message-editor.component';
 
 interface Draft {
   title: string;
@@ -20,7 +23,8 @@ interface Draft {
   selector: 'app-message-compose',
   templateUrl: './message-compose.component.html',
   styleUrls: ['./message-compose.component.scss'],
-  standalone: false
+  standalone: true,
+  imports: [CommonModule, FormsModule, IonicModule, TranslocoModule, MessageEditorComponent],
 })
 export class MessageComposeComponent implements OnInit {
   private db = inject(DbService);
@@ -28,6 +32,17 @@ export class MessageComposeComponent implements OnInit {
   private modalController = inject(ModalController);
   private alertController = inject(AlertController);
   private loadingController = inject(LoadingController);
+
+  /**
+   * Preset mode ("Unentschuldigte anschreiben" on a Termin): fixed recipients,
+   * prefilled text, linked to the Termin so recipients can answer.
+   */
+  @Input() playerIds: number[] | null = null;
+  @Input() attendanceId: number | null = null;
+  @Input() allowResponses = false;
+  @Input() recipientsLabel = '';
+  @Input() presetTitle = '';
+  @Input() presetContent: JSONContent | null = null;
 
   title = '';
   content: JSONContent | null = null;
@@ -49,6 +64,13 @@ export class MessageComposeComponent implements OnInit {
 
   ngOnInit(): void {
     this.groups = (this.db.groups() ?? []).filter(g => g.id !== undefined);
+    if (this.isPreset) {
+      this.title = this.presetTitle;
+      this.initialContent = this.presetContent;
+      this.content = this.presetContent;
+      void this.loadCounts();
+      return;
+    }
     try {
       const raw = localStorage.getItem(this.draftKey);
       if (raw) {
@@ -61,6 +83,10 @@ export class MessageComposeComponent implements OnInit {
       // Drafts are a convenience only.
     }
     void this.loadCounts();
+  }
+
+  get isPreset(): boolean {
+    return !!this.playerIds?.length;
   }
 
   get groupIds(): number[] | null {
@@ -76,7 +102,7 @@ export class MessageComposeComponent implements OnInit {
       && this.title.trim().length > 0
       && this.hasText
       && (this.push || this.email)
-      && (this.audience === 'all' || this.selectedGroups.size > 0)
+      && (this.isPreset || this.audience === 'all' || this.selectedGroups.size > 0)
       && (this.counts?.recipients ?? 0) > 0;
   }
 
@@ -110,15 +136,16 @@ export class MessageComposeComponent implements OnInit {
   async loadCounts(): Promise<void> {
     const request = ++this.countsRequest;
     this.countsError = false;
-    if (this.audience === 'groups' && this.selectedGroups.size === 0) {
+    if (!this.isPreset && this.audience === 'groups' && this.selectedGroups.size === 0) {
       this.counts = { recipients: 0, push: 0, email: 0, unreachable: 0 };
       return;
     }
     try {
       const counts = await this.messages.getRecipientCounts(
         this.db.tenant().id,
-        this.groupIds,
+        this.isPreset ? null : this.groupIds,
         { push: this.push, email: this.email },
+        this.playerIds,
       );
       if (request === this.countsRequest) {
         this.counts = counts;
@@ -166,8 +193,11 @@ export class MessageComposeComponent implements OnInit {
         tenantId: this.db.tenant().id,
         title: this.title.trim(),
         content: this.content!,
-        groupIds: this.groupIds,
+        groupIds: this.isPreset ? null : this.groupIds,
         channels: { push: this.push, email: this.email },
+        playerIds: this.playerIds,
+        attendanceId: this.attendanceId,
+        allowResponses: this.allowResponses,
       });
       try {
         localStorage.removeItem(this.draftKey);
@@ -186,6 +216,7 @@ export class MessageComposeComponent implements OnInit {
   }
 
   private saveDraft(): void {
+    if (this.isPreset) return;
     try {
       localStorage.setItem(this.draftKey, JSON.stringify({ title: this.title, content: this.content } as Draft));
     } catch {

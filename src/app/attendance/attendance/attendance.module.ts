@@ -14,6 +14,7 @@ import { FilesFolderPickerComponent } from 'src/app/shared/files-folder-picker/f
 import { PlanChipsComponent } from 'src/app/planning/plan-chips/plan-chips.component';
 import { PlanMinutesPipe } from 'src/app/planning/plan-minutes.pipe';
 import { TranslocoModule } from '@jsverse/transloco';
+import { AutoMessagePanelComponent } from '../auto-message-panel/auto-message-panel.component';
 
 @NgModule({
   imports: [
@@ -26,6 +27,7 @@ import { TranslocoModule } from '@jsverse/transloco';
     FilesFolderPickerComponent,
     PlanChipsComponent,
     PlanMinutesPipe,
+    AutoMessagePanelComponent,
   ],
   declarations: [AttendancePage, StatusInfoComponent, AdHocReminderModalComponent],
   exports: [AttendancePage],

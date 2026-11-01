@@ -9,6 +9,11 @@ export interface SendMessageParams {
   content: JSONContent;
   groupIds: number[] | null;
   channels: { push: boolean; email: boolean };
+  /** Only these people (instead of groups), e.g. the unexcused of a Termin. */
+  playerIds?: number[] | null;
+  /** Termin the message is about; with allowResponses recipients can answer. */
+  attendanceId?: number | null;
+  allowResponses?: boolean;
 }
 
 /**
@@ -125,9 +130,9 @@ export class MessageService {
     return (data ?? []) as unknown as Message[];
   }
 
-  async getRecipientCounts(tenantId: number, groupIds: number[] | null, channels: { push: boolean; email: boolean }): Promise<MessageRecipientCounts> {
+  async getRecipientCounts(tenantId: number, groupIds: number[] | null, channels: { push: boolean; email: boolean }, playerIds: number[] | null = null): Promise<MessageRecipientCounts> {
     const { data, error } = await supabase.functions.invoke('send-message', {
-      body: { tenantId, groupIds, channels, dryRun: true },
+      body: { tenantId, groupIds, playerIds, channels, dryRun: true },
     });
 
     if (error) {

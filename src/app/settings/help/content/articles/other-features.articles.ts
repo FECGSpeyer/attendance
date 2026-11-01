@@ -50,6 +50,47 @@ Tippst du auf die Push-Nachricht oder auf den Eintrag in der Glocke (Benachricht
 Push-Nachrichten für Mitteilungen schaltest du in den Benachrichtigungen über den Schalter "Mitteilungen" ein oder aus. Die E-Mail und der Eintrag in der Glocke kommen trotzdem.`,
   },
   {
+    id: 'other-auto-messages',
+    title: 'Automatische Nachrichten nach einem Termin',
+    categoryId: 'other',
+    keywords: ['automatisch', 'automatische nachricht', 'nachfassen', 'unentschuldigt', 'nicht abgemeldet', 'gefehlt', 'vermisst', 'zu spät', 'keine rückmeldung', 'regel', 'erinnerung nach termin', 'in folge', 'aussetzen', 'rückmeldung prüfen', 'grund nachtragen'],
+    body: `Mit automatischen Nachrichten bekommen [[Mitglied|Mitglieder]] nach einem Termin von selbst eine Nachricht, z. B. wenn sie unentschuldigt gefehlt haben, ohne sich abzumelden. [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] richten das unter Einstellungen → Kommunikation → Automatische Nachrichten ein. Es passiert nichts, solange keine Regel eingeschaltet ist.
+
+**Regel anlegen**
+1. Tippe auf "Neue Regel" oder starte mit einer Vorlage.
+2. Wähle, wann geschickt wird: unentschuldigt gefehlt, zu spät ohne Abmeldung oder keine Rückmeldung.
+3. Wähle, wie oft: jedes Mal, erst ab einer bestimmten Zahl in Folge oder ab einer Zahl in einem Zeitraum.
+4. Grenze optional auf Termintypen und Gruppen ein und stelle die Wartezeit nach Terminende ein (Standard: 2 Stunden).
+5. Nimm eine Vorlage oder schreibe einen eigenen Text. Platzhalter wie {vorname}, {termin} und {datum} werden für jede Person ausgefüllt. Die Vorlage bekommt jedes Mitglied in seiner App-Sprache, einen eigenen Text so, wie du ihn schreibst.
+6. Wähle die Kanäle (Push/Telegram, E-Mail) und ob Mitglieder antworten dürfen.
+7. Tippe auf "Vorschau mit den letzten Terminen". Du siehst, wer bei den letzten Terminen angeschrieben worden wäre. Erst dann einschalten.
+
+**Wann geht etwas raus?**
+Nur wenn bei dem Termin wirklich Anwesenheit erfasst wurde und die Wartezeit vorbei ist. Abgemeldete, Pausierte und Ausgetretene bekommen nie eine Nachricht. Jede Person bekommt pro Regel und Termin höchstens eine Nachricht. Termine vor dem Einschalten werden nicht nachgeschickt.
+
+**Am Termin**
+Im Termin siehst du oben, wann die Nachricht rausgeht. Mit "Diesmal aussetzen" bekommt für diesen Termin niemand die Nachricht. Nach dem Versand siehst du, an wie viele Personen sie ging und wer sie gelesen hat. Mit "Unentschuldigte anschreiben" schickst du auch ohne Regel eine vorausgefüllte Mitteilung an alle Unentschuldigten dieses Termins.
+
+**Rückmeldungen prüfen**
+Antwortet ein Mitglied mit einem Grund oder "Ich war doch da", erscheint das im Termin unter "Rückmeldungen". Mit "Entschuldigen" bzw. "Auf anwesend" änderst du den Status, mit "Ablehnen" bleibt er. Die Person bekommt in beiden Fällen Bescheid. In der Regel kannst du einstellen, dass ein Grund sofort entschuldigt. "Ich war doch da" wird immer geprüft.
+
+**Kopie und Verlauf**
+Optional bekommen Admins und Verantwortliche oder Stimmführer (nur für ihre Gruppe) eine Sammelinfo pro Termin. Unter "Verlauf" einer Regel siehst du, wie viele Personen angeschrieben wurden, wie viele gelesen und geantwortet haben und warum ein Termin übersprungen wurde.`,
+  },
+  {
+    id: 'other-auto-messages-reply',
+    title: 'Auf eine automatische Nachricht antworten',
+    categoryId: 'other',
+    keywords: ['grund nachtragen', 'nachträglich entschuldigen', 'ich war doch da', 'falsch eingetragen', 'unentschuldigt', 'krank', 'rückmeldung', 'automatische nachricht'],
+    body: `Hast du bei einem Termin gefehlt, ohne dich abzumelden, kann dir deine Instanz automatisch eine Nachricht schicken. Du findest sie auch im Benachrichtigungscenter (Glocke).
+
+In der Nachricht siehst du den Termin und deinen Status. Darunter gibt es zwei Knöpfe:
+- **Grund nachtragen:** Wähle einen Grund (z. B. krank) und schreibe optional etwas dazu. Der Grund steht dann als Notiz am Termin. Je nach Einstellung bist du sofort entschuldigt, oder die Verantwortlichen bestätigen es.
+- **Ich war doch da:** Die Verantwortlichen bekommen einen Hinweis und können dich auf anwesend setzen.
+
+Solange deine Rückmeldung noch geprüft wird, kannst du sie ändern. Du bekommst Bescheid, sobald sie übernommen oder abgelehnt wurde. Antworten kannst du bis 7 Tage nach dem Termin.`,
+  },
+  {
     id: 'other-history',
     title: 'Historie',
     categoryId: 'other',

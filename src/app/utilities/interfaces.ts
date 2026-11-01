@@ -837,6 +837,15 @@ export interface Message {
   status: 'sending' | 'sent';
   created_at: string;
   sent_at: string | null;
+  /** Set for automatic messages (Automatische Nachrichten). */
+  auto_rule_id?: string | null;
+  /** Termin the message is about (automatic or "Unentschuldigte anschreiben"). */
+  attendance_id?: number | null;
+  allow_responses?: boolean;
+  /** Shared placeholder values: termin, date (YYYY-MM-DD), uhrzeit, instanz. */
+  vars?: Record<string, string> | null;
+  /** Template texts per language (automatic messages from a template). */
+  i18n?: Record<string, { title: string; html: string; text: string }> | null;
 }
 
 export interface MessageRecipient {
@@ -858,6 +867,86 @@ export interface MessageRecipient {
   email_bounced_at: string | null;
   email_failed: boolean;
   read_at: string | null;
+  person_attendance_id?: string | null;
+  /** Per-person placeholder values: vorname, name, anzahl. */
+  vars?: Record<string, string | number> | null;
+  lang?: string | null;
+}
+
+export type AutoMessageFrequency = 'each' | 'streak' | 'window';
+
+/** Rule of "Automatische Nachrichten" (table auto_message_rules). */
+export interface AutoMessageRule {
+  id?: string;
+  tenantId: number;
+  name: string;
+  enabled: boolean;
+  enabled_at?: string | null;
+  statuses: number[];
+  type_ids: string[] | null;
+  group_ids: number[] | null;
+  delay_minutes: number;
+  frequency: AutoMessageFrequency;
+  frequency_count: number;
+  frequency_days: number;
+  channels: string[];
+  use_template: boolean;
+  template_key: string;
+  title: string | null;
+  body_json: Record<string, unknown> | null;
+  allow_responses: boolean;
+  instant_excuse: boolean;
+  copy_responsibles: boolean;
+  copy_voice_leaders: boolean;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AutoMessageRun {
+  id: string;
+  rule_id: string;
+  tenantId: number;
+  attendance_id: number;
+  status: 'sent' | 'none' | 'not_recorded' | 'suspended';
+  message_id: string | null;
+  recipient_count: number;
+  created_by: string | null;
+  created_by_name: string | null;
+  created_at: string;
+}
+
+/** Answer of a member to a Termin message (table attendance_responses). */
+export interface AttendanceResponse {
+  id: string;
+  tenantId: number;
+  attendance_id: number;
+  person_attendance_id: string;
+  player_id: number | null;
+  user_id: string | null;
+  message_id: string | null;
+  kind: 'reason' | 'was_present';
+  reason_code: string | null;
+  text: string | null;
+  state: 'pending' | 'accepted' | 'rejected';
+  decided_by: string | null;
+  decided_by_name: string | null;
+  decided_at: string | null;
+  created_at: string;
+}
+
+/** Preview of a rule for one past Termin (send-auto-messages dry run). */
+export interface AutoMessagePreviewTermin {
+  attendanceId: number;
+  title: string;
+  date: string;
+  startTime: string | null;
+  sendAt: string;
+  recorded: boolean;
+  people: { id: number; name: string; groupId: number | null; count: number; email: boolean; app: boolean }[];
+  excused: number;
+  paused: number;
+  counts: MessageRecipientCounts;
 }
 
 export interface MessageRecipientCounts {

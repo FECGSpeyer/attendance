@@ -18,7 +18,8 @@ import { TranslocoModule } from '@jsverse/transloco';
     IonicModule,
     MessageListPageRoutingModule,
     MessageEditorComponent,
+    MessageComposeComponent,
   ],
-  declarations: [MessageListPage, MessageComposeComponent]
+  declarations: [MessageListPage]
 })
 export class MessageListPageModule { }

@@ -104,6 +104,14 @@ const routes: Routes = [
         loadChildren: () => import('./../messages/message-list/message-list.module').then(m => m.MessageListPageModule)
       },
       {
+        path: 'settings/auto-messages',
+        loadChildren: () => import('./../settings/auto-messages/list/auto-message-list.module').then(m => m.AutoMessageListPageModule)
+      },
+      {
+        path: 'settings/auto-messages/:id',
+        loadChildren: () => import('./../settings/auto-messages/rule/auto-message-rule.module').then(m => m.AutoMessageRulePageModule)
+      },
+      {
         path: 'messages/:id',
         loadChildren: () => import('./../messages/message-detail/message-detail.module').then(m => m.MessageDetailPageModule)
       },
