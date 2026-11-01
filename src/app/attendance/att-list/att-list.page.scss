@@ -50,3 +50,13 @@ ion-item.ev-today-item {
     font-weight: 600;
   }
 }
+
+// Archivierte Termine (nur für Admins/Verantwortliche sichtbar) gedimmt anzeigen.
+.ev-archived {
+  opacity: 0.6;
+}
+
+.ev-archived__icon {
+  vertical-align: -2px;
+  margin-right: 4px;
+}

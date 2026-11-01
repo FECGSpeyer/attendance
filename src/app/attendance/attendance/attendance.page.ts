@@ -30,6 +30,7 @@ import { openPlanShareSheet } from 'src/app/planning/plan-share-sheet/plan-share
 import { DutyAssignModalComponent, DutyCandidate } from 'src/app/duty/duty-assign-modal/duty-assign-modal.component';
 import { dutyFill, dutyFillColor, dutyRequired, dutyStateAfterStatus, isCancelled, isDutyType, matchingUnavailability, occupiesDuty } from 'src/app/utilities/duty';
 import { translate } from '@jsverse/transloco';
+import { canArchiveAttendance } from 'src/app/utilities/archived';
 
 @Component({
     selector: 'app-attendance',
@@ -2205,6 +2206,44 @@ export class AttendancePage implements OnInit, OnDestroy {
 
   async showLegend(): Promise<void> {
     await this.legendModal.present();
+  }
+
+  /** Archivieren nur für Admins/Verantwortliche und nur bei vergangenen Terminen. */
+  canToggleArchived(): boolean {
+    return canArchiveAttendance(this.attendance, this.db.tenantUser()?.role);
+  }
+
+  async toggleArchived(): Promise<void> {
+    if (!this.attendance?.id || !this.canToggleArchived()) { return; }
+    const archive = !this.attendance.archived;
+
+    if (archive) {
+      const alert = await this.alertController.create({
+        header: translate('attendance.archiveConfirmHeader'),
+        message: translate('attendance.archiveConfirmMessage'),
+        buttons: [
+          { text: translate('common.cancel'), role: 'cancel' },
+          { text: translate('attendance.archive'), role: 'confirm' },
+        ],
+      });
+      await alert.present();
+      const { role } = await alert.onDidDismiss();
+      if (role !== 'confirm') { return; }
+    }
+
+    const patch: Partial<Attendance> = {
+      archived: archive,
+      archived_at: archive ? new Date().toISOString() : null,
+      archived_by: archive ? (this.db.user?.id ?? null) : null,
+    };
+    try {
+      await this.db.updateAttendance(patch, this.attendance.id);
+      this.attendance = { ...this.attendance, ...patch };
+      Utils.showToast(translate(archive ? 'attendance.archivedToast' : 'attendance.restoredToast'), 'success');
+    } catch (e) {
+      console.error('[attendance] toggle archived failed', e);
+      Utils.showToast(translate('attendance.archiveFailed'), 'danger');
+    }
   }
 
   async sendAdHocReminder(playerAppId?: string): Promise<void> {

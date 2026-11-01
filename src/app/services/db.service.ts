@@ -39,6 +39,7 @@ import { ChurchService } from './church/church.service';
 import { FeedbackService } from './feedback/feedback.service';
 import { HolidayService } from './holiday/holiday.service';
 import { CrossTenantService } from './cross-tenant/cross-tenant.service';
+import { canSeeArchivedAttendances, filterArchivedForRole } from '../utilities/archived';
 import { AdminService } from './admin/admin.service';
 import { HandoverService } from './handover/handover.service';
 import { GroupCategoryService } from './group-category/group-category.service';
@@ -2649,7 +2650,7 @@ export class DbService {
       res = data;
     }
 
-    return res.map((att: any): Attendance => {
+    return filterArchivedForRole(res ?? [], this.tenantUser()?.role).map((att: any): Attendance => {
       if (att.plan) {
         att.plan.time = dayjs(att.plan.time).isValid() ? dayjs(att.plan.time).format('HH:mm') : att.plan.time;
       }
@@ -2712,11 +2713,13 @@ export class DbService {
   async getPersonAttendances(id: number, all: boolean = false): Promise<PersonAttendance[]> {
     const { data } = await supabase
       .from('person_attendances')
-      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, attType:type_id(id, highlight, include_in_average, name, color, registration_fields, duty_mode))')
+      .select('*, attendance:attendance_id(id, date, type, typeInfo, songs, type_id, start_time, end_time, deadline, duration_days, plan, extra_plans, share_plan, description, attachment_url, attachment_name, files_folder, place, archived, attType:type_id(id, highlight, include_in_average, name, color, registration_fields, duty_mode))')
       .eq('person_id', id)
       .gt('attendance.date', all ? dayjs('2020-01-01').toISOString() : this.getCurrentAttDate()) as any;
 
-    return data.filter((a: any) => Boolean(a.attendance)).map((att: any): PersonAttendance => {
+    // Archivierte Termine fallen für Mitglieder ganz raus, also auch aus ihrem Durchschnitt.
+    const showArchived = canSeeArchivedAttendances(this.tenantUser()?.role);
+    return (data ?? []).filter((a: any) => Boolean(a.attendance) && (showArchived || !a.attendance.archived)).map((att: any): PersonAttendance => {
       const attText = Utils.getAttText(att);
       const attType = att.attendance.attType ?? this.attendanceTypes().find((type: AttendanceType) => type.id === att.attendance.type_id);
       let title = '';
@@ -4152,7 +4155,8 @@ export class DbService {
             return [];
           }
 
-          const attendances = await this.getPersonAttendancesForTenant(personId, tu.tenantId);
+          const attendances = (await this.getPersonAttendancesForTenant(personId, tu.tenantId))
+            .filter(att => canSeeArchivedAttendances(tu.role) || !att.attendance?.archived);
           const tenant = tenants?.find(t => t.id === tu.tenantId);
           const tenantColor = this.getTenantColor(tu.tenantId);
           const attendanceTypes = this.crossTenantAttendanceTypes.get(tu.tenantId) || [];

@@ -113,6 +113,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
             .select('id, date, plan, typeInfo, tenantId')
             .in('tenantId', this.tenantIds)
             .eq('is_org_plan', true)
+            .eq('archived', false)
             .not('plan', 'is', null)
             .order('date', { ascending: true })
         : Promise.resolve({ data: [] }),

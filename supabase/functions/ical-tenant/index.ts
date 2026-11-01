@@ -161,6 +161,8 @@ Deno.serve(async (req: Request) => {
     .from('attendance')
     .select('id, date, type_id, typeInfo, start_time, end_time, duration_days, plan, deadline, place, attendanceType:type_id(name, start_time, end_time, all_day, duration_days, color, duty_mode)')
     .eq('tenantId', tenantId)
+    // Archivierte Termine sehen nur Admins/Verantwortliche in der App, nicht im Kalender-Abo.
+    .eq('archived', false)
     .order('date', { ascending: true });
 
   if (assignedIds !== null) {

@@ -246,6 +246,7 @@ Deno.serve(async (req: Request) => {
           .select('id, date, start_time, end_time, place, plan, extra_plans, typeInfo, tenantId')
           .in('tenantId', tenantIds)
           .eq('is_org_plan', true)
+          .eq('archived', false)
           .not('plan', 'is', null)
           .gte('date', from)
           .lte('date', `${to}T23:59:59`)

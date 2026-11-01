@@ -979,7 +979,10 @@
     "unknownConductor": "Director desconocido",
     "enterConductor": "Introduce el director",
     "presentOf": "{present} de {total} presentes",
-    "eventsSelected": "{count, plural, one {# evento seleccionado} other {# eventos seleccionados}}"
+    "eventsSelected": "{count, plural, one {# evento seleccionado} other {# eventos seleccionados}}",
+    "showArchived": "Mostrar archivados",
+    "archivedCount": "{count, plural, one {# evento archivado} other {# eventos archivados}}",
+    "archived": "Archivado"
   },
   "dateDialog": {
     "changeDate": "Cambiar fecha",
@@ -1162,7 +1165,16 @@
     "onlyNeutralHint": "Solo se envía a quienes aún no han respondido",
     "emailLink": "Enlace en el correo",
     "send": "Enviar",
-    "presentNotAssigned": "Presentes, sin asignar"
+    "presentNotAssigned": "Presentes, sin asignar",
+    "archive": "Archivar",
+    "restore": "Restaurar",
+    "archiveConfirmHeader": "¿Archivar evento?",
+    "archiveConfirmMessage": "Los miembros ya no verán este evento ni su asistencia. Los administradores y responsables lo siguen viendo y pueden restaurarlo en cualquier momento.",
+    "archivedToast": "Evento archivado",
+    "restoredToast": "Evento restaurado",
+    "archiveFailed": "No se pudo modificar el evento.",
+    "archivedBanner": "Archivado",
+    "archivedBannerHint": "Oculto para los miembros. Solo los administradores y responsables ven este evento."
   },
   "people": {
     "searchPerson": "Buscar persona...",

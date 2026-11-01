@@ -84,6 +84,22 @@ Wische im Termin eine Person nach links, tippe auf die drei Punkte und wähle "E
 Für allgemeine Nachrichten ohne Terminbezug nutze stattdessen die Mitteilungen (Einstellungen → Kommunikation → Mitteilungen).`,
   },
   {
+    id: 'att-archive',
+    title: 'Termine archivieren',
+    categoryId: 'attendance',
+    keywords: ['archivieren', 'archiv', 'archiviert', 'ausblenden', 'verstecken', 'termin verbergen', 'wiederherstellen', 'für mitglieder unsichtbar', 'archivierte anzeigen'],
+    body: `Als Admin oder Verantwortlicher kannst du vergangene Termine archivieren, die für die Mitglieder nicht relevant sind, zum Beispiel eine interne Besprechung.
+
+Öffne dazu einen vergangenen Termin, tippe oben rechts auf das Menü (⋮) und dann auf „Archivieren“. Bei Terminen, die heute stattfinden, noch laufen oder in der Zukunft liegen, gibt es diesen Eintrag nicht.
+
+Was dann passiert:
+- Mitglieder, Helfer, Stimmführer, Eltern und [[Beobachter]] sehen den Termin nicht mehr, auch nicht ihre eigene Anwesenheit dazu. Er zählt auch nicht mehr in ihrem eigenen Durchschnitt.
+- Der Termin verschwindet aus dem Kalender-Abo, aus den Ablaufplänen der Organisation und aus geteilten Plan-Links.
+- Admins und Verantwortliche sehen ihn weiterhin, mit dem Hinweis „Archiviert“. In der Statistik und im Durchschnitt zählt er für sie weiter mit.
+
+In der Terminübersicht sind archivierte Termine ausgeblendet. Über den Filter oben rechts holst du sie mit „Archivierte anzeigen“ zurück; sie erscheinen dann abgeblendet mit Archiv-Symbol. Zum Rückgängigmachen öffnest du den Termin und wählst im Menü „Wiederherstellen“. Es wird nichts gelöscht.`,
+  },
+  {
     id: 'att-options-menu',
     title: 'Optionen und Ansicht im Termin',
     categoryId: 'attendance',

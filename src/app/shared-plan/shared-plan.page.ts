@@ -91,6 +91,8 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       .select('id, date, duration_days, plan, extra_plans, type_id, typeInfo, share_key, share_edit_key')
       .eq('id', id)
       .eq('share_key', key)
+      // Archivierte Termine sind auch über den Freigabe-Link nicht mehr sichtbar.
+      .eq('archived', false)
       .single();
 
     if (!data || !data.plan) {
