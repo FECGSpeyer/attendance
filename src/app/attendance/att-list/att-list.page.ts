@@ -17,6 +17,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
 import { PlanningPage } from 'src/app/planning/planning.page';
 import { Utils } from 'src/app/utilities/Utils';
 import { createAttendanceForType, personsForAttendanceType } from 'src/app/utilities/attendance-create';
+import { uniqueDates } from 'src/app/utilities/unique-dates';
 import { AttendanceStatus, DefaultAttendanceType, Role } from 'src/app/utilities/constants';
 import { averagePersons, dutyFill, dutyFillColor, dutyRequired, isCancelled, isDutyType, isoWeekday, occupiedCount, occupiesDuty, weekdayLongNames } from 'src/app/utilities/duty';
 import { RealtimeChannel } from '@supabase/supabase-js';
@@ -30,6 +31,7 @@ import { translate } from '@jsverse/transloco';
 })
 export class AttListPage implements OnInit {
   public dates: string[] = [new Date().toISOString()];
+  public creatingAttendance = false;
   public dateString: string = format(new Date(), 'dd.MM.yyyy');
   public type = 'uebung';
   public type_id = '';
@@ -341,15 +343,31 @@ export class AttListPage implements OnInit {
       return;
     }
 
-    this.dateString = value.length === 1 ? this.formatDate(value[0]) : translate('attList.eventsSelected', { count: value.length });
+    const days = uniqueDates(Array.isArray(value) ? value : [value]);
+    this.dateString = days.length === 1 ? this.formatDate(days[0]) : translate('attList.eventsSelected', { count: days.length });
   }
 
   async addAttendance(modal: IonModal): Promise<void> {
-    if (!this.dates?.length) {
+    // Guard against a double tap: the second tap would otherwise run the whole
+    // creation again before the loading overlay is shown.
+    if (this.creatingAttendance) {
+      return;
+    }
+    const dates = uniqueDates(this.dates);
+    if (!dates.length) {
       Utils.showToast(translate('attList.chooseOneDate'), 'warning');
       return;
     }
 
+    this.creatingAttendance = true;
+    try {
+      await this.createAttendances(modal, dates);
+    } finally {
+      this.creatingAttendance = false;
+    }
+  }
+
+  private async createAttendances(modal: IonModal, dates: string[]): Promise<void> {
     const loading = await Utils.getLoadingElement();
     await loading.present();
 
@@ -372,7 +390,7 @@ export class AttListPage implements OnInit {
     const allPersons = await personsForAttendanceType(this.db, type);
     const unavailability = await this.db.dutySvc.getUnavailabilityForTenant(this.db.tenant().id);
 
-    for (const date of this.dates) {
+    for (const date of dates) {
       const attendance_id = await createAttendanceForType(this.db, type, {
         date,
         notes: this.notes,
@@ -394,7 +412,7 @@ export class AttListPage implements OnInit {
     }
 
     await loading.dismiss();
-    Utils.showToast(this.dates.length === 1 ? translate('attList.eventAdded') : translate('attList.eventsAdded'), 'success');
+    Utils.showToast(dates.length === 1 ? translate('attList.eventAdded') : translate('attList.eventsAdded'), 'success');
     await modal.dismiss();
 
     // Refresh directly instead of relying solely on the `att-changes` realtime
@@ -445,7 +463,7 @@ export class AttListPage implements OnInit {
   get dutyWeekdays(): { weekday: number; label: string; count: number; required: number }[] {
     const type = this.db.attendanceTypes().find(t => t.id === this.type_id);
     const counts = new Map<number, number>();
-    for (const date of this.dates ?? []) {
+    for (const date of uniqueDates(this.dates)) {
       const wd = isoWeekday(date);
       counts.set(wd, (counts.get(wd) ?? 0) + 1);
     }

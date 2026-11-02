@@ -547,7 +547,7 @@
             }
 
             <ion-item-group>
-              <ion-item color="primary" [disabled]="dates.length === 0" button detail="false"
+              <ion-item color="primary" [disabled]="dates.length === 0 || creatingAttendance" button detail="false"
                 (click)="addAttendance(addAttModal)">
                 @if (dates.length === 1) {
                   <ion-label>{{ 'attList.addEvent' | transloco }}</ion-label>

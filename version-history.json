@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.2",
+      "date": "2.11.2026",
+      "changes": [
+        "🐛 Termine anlegen: Ein schneller Doppeltipp auf „Termin anlegen“ legt den Termin nicht mehr doppelt an, und derselbe Tag wird auch bei mehrfacher Auswahl nur einmal angelegt."
+      ]
+    },
+    {
       "version": "4.19.1",
       "date": "2.11.2026",
       "changes": [
