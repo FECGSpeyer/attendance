@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.19.0",
+      "date": "2.11.2026",
+      "changes": [
+        "🧭 Seitenleiste auf Tablet und Computer: Statt der Tabs unten gibt es links eine einklappbare Seitenleiste mit mehr Bereichen (z. B. Teamorganisation, Ablaufpläne, Dateiablage, Statistik), Zählern für offene Aufgaben und neue Anmeldungen, Instanzwechsel oben und Ausloggen unten. Einklappen per Symbol oben links oder Strg/⌘ + B. Auf dem Handy bleiben die Tabs.",
+        "🗓️ Termine auf großen Bildschirmen: Anstehende Termine links, vergangene Termine mit Durchschnitt rechts."
+      ]
+    },
+    {
       "version": "4.18.0",
       "date": "2.11.2026",
       "changes": [
