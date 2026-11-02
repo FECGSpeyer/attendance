@@ -45,10 +45,13 @@
   }
 
   @if (responses.length > 0) {
-    <ion-list [inset]="true">
-      <ion-list-header><ion-label>{{ 'autoMessages.panelResponses' | transloco: { count: pending.length } }}</ion-label></ion-list-header>
+    <ion-list-header>
+      <ion-label>{{ 'autoMessages.panelResponses' | transloco: { count: pending.length } }}</ion-label>
+    </ion-list-header>
+    <ion-list [inset]="true" class="responses">
       @for (r of responses; track r.id) {
-        <ion-item>
+        <ion-item lines="full">
+          <ion-icon slot="start" [name]="r.kind === 'was_present' ? 'hand-right-outline' : 'chatbubble-ellipses-outline'" color="medium" aria-hidden="true"></ion-icon>
           <ion-label class="ion-text-wrap">
             <h3>{{ nameOf(r) || ('common.unknown' | transloco) }}</h3>
             @if (r.kind === 'was_present') {
@@ -56,16 +59,15 @@
             } @else {
               <p>{{ 'autoMessages.reason.' + (r.reason_code || 'other') | transloco }}{{ r.text ? ': ' + r.text : '' }}</p>
             }
-            @if (r.state !== 'pending') {
+            @if (r.state === 'pending') {
+              <div class="decide">
+                <ion-button size="small" (click)="decide(r, true)" [disabled]="busy.has(r.id)">{{ (r.kind === 'was_present' ? 'autoMessages.setPresent' : 'autoMessages.excuse') | transloco }}</ion-button>
+                <ion-button size="small" fill="outline" color="medium" (click)="decide(r, false)" [disabled]="busy.has(r.id)">{{ 'autoMessages.reject' | transloco }}</ion-button>
+              </div>
+            } @else {
               <p class="decided">{{ ('autoMessages.respState.' + r.state) | transloco }}{{ r.decided_by_name ? ' · ' + r.decided_by_name : '' }}</p>
             }
           </ion-label>
-          @if (r.state === 'pending') {
-            <div slot="end" class="decide">
-              <ion-button size="small" fill="clear" color="medium" (click)="decide(r, false)" [disabled]="busy.has(r.id)">{{ 'autoMessages.reject' | transloco }}</ion-button>
-              <ion-button size="small" (click)="decide(r, true)" [disabled]="busy.has(r.id)">{{ (r.kind === 'was_present' ? 'autoMessages.setPresent' : 'autoMessages.excuse') | transloco }}</ion-button>
-            </div>
-          }
         </ion-item>
       }
     </ion-list>
