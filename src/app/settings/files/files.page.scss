@@ -131,3 +131,18 @@
     --padding-start: 0;
   }
 }
+
+.entry-checkbox {
+  margin-inline-end: 16px;
+  pointer-events: none;
+}
+
+ion-item.entry-selected {
+  --background: rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
+.selection-actions {
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: var(--ion-safe-area-bottom, 0px);
+}

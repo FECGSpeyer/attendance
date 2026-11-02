@@ -1,4 +1,19 @@
 <ion-header>
+  @if (selectionMode) {
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="exitSelection()" [attr.aria-label]="'files.selectionDone' | transloco">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'files.selectedCount' | transloco: { count: selectedPaths.size } }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSelectAll()">
+        {{ (allVisibleSelected ? 'files.selectNone' : 'files.selectAll') | transloco }}
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  } @else {
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="goBack()">
@@ -7,11 +22,17 @@
     </ion-buttons>
     <ion-title>{{ 'files.title' | transloco }}</ion-title>
     <ion-buttons slot="end">
+      @if (canEditEntries && entries.length) {
+      <ion-button fill="clear" (click)="startSelection()" [attr.aria-label]="'files.select' | transloco">
+        <ion-icon slot="icon-only" name="checkmark-circle-outline"></ion-icon>
+      </ion-button>
+      }
       <ion-button fill="clear" (click)="filesMenuPopover.present($event)">
         <ion-icon slot="icon-only" name="ellipsis-vertical"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  }
 </ion-header>
 
 <ion-popover #filesMenuPopover>
@@ -26,6 +47,12 @@
         <ion-icon name="folder-open-outline" slot="start"></ion-icon>
         {{ 'files.createFolder' | transloco }}
       </ion-item>
+      @if (entries.length) {
+      <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); startSelection()">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        {{ 'files.selectMultiple' | transloco }}
+      </ion-item>
+      }
       }
       <ion-item button detail="false" (click)="filesMenuPopover.dismiss(); shareEntry()">
         <ion-icon name="share-social-outline" slot="start"></ion-icon>
@@ -151,7 +178,11 @@
   } @else {
   <ion-list [inset]="true">
     @for (entry of filteredEntries; track entry.path; let last = $last; let i = $index) {
-    <ion-item [lines]="last ? 'none' : 'inset'" button (click)="openFolder(entry)">
+    <ion-item [lines]="last ? 'none' : 'inset'" button detail="false" (click)="onEntryClick(entry)"
+      [class.entry-selected]="selectionMode && isSelected(entry)">
+      @if (selectionMode) {
+      <ion-checkbox slot="start" class="entry-checkbox" [checked]="isSelected(entry)" aria-hidden="true"></ion-checkbox>
+      }
       @if (isImageEntry(entry) && getImagePreviewUrl(entry)) {
       <ion-thumbnail slot="start" class="file-thumb">
         <img [src]="getImagePreviewUrl(entry)" [alt]="entry.name" />
@@ -171,7 +202,7 @@
         }
       </ion-label>
       <ion-button slot="end" fill="clear" color="medium" [id]="'file-actions-trigger-' + i"
-        (click)="$event.stopPropagation()">
+        [class.ion-hide]="selectionMode" (click)="$event.stopPropagation()">
         <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
       </ion-button>
 
@@ -209,6 +240,10 @@
               <ion-icon name="swap-horizontal-outline" slot="start"></ion-icon>
               {{ 'files.move' | transloco }}
             </ion-item>
+            <ion-item button (click)="actionPopover.dismiss(); startSelection(entry)">
+              <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+              {{ 'files.selectMultiple' | transloco }}
+            </ion-item>
             <ion-item button (click)="handleEntryAction('delete', entry, actionPopover)">
               <ion-icon name="trash-outline" slot="start"></ion-icon>
               {{ 'common.delete' | transloco }}
@@ -230,3 +265,20 @@
     </ng-template>
   </ion-modal>
 </ion-content>
+
+@if (selectionMode) {
+<ion-footer>
+  <ion-toolbar>
+    <div class="selection-actions">
+      <ion-button fill="clear" [disabled]="!selectedPaths.size" (click)="moveSelected()">
+        <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
+        {{ 'files.move' | transloco }}
+      </ion-button>
+      <ion-button fill="clear" color="danger" [disabled]="!selectedPaths.size" (click)="deleteSelected()">
+        <ion-icon slot="start" name="trash-outline"></ion-icon>
+        {{ 'common.delete' | transloco }}
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
+}

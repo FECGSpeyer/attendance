@@ -2,13 +2,14 @@ import { currentIntlLocale } from '../../i18n/languages';
 import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonPopover, NavController } from '@ionic/angular/lazy';
+import { AlertController, IonPopover, ModalController, NavController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService, AudioQueueItem } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
 import { Utils } from 'src/app/utilities/Utils';
 import { translate } from '@jsverse/transloco';
 import { currentLanguage } from '../../i18n/languages';
+import { FilesMoveModalComponent, FilesMoveResult } from './files-move-modal/files-move-modal.component';
 
 @Component({
   selector: 'app-files',
@@ -34,12 +35,16 @@ export class FilesPage implements OnInit {
   public sortDirection: 'asc' | 'desc' = 'asc';
   public canEditEntries = false;
   public usedBytes: number | null = null;
+  public selectionMode = false;
+  public selectedPaths = new Set<string>();
+  private selectionFolder = '';
 
   constructor(
     public db: DbService,
     private filesSvc: FilesService,
     private navCtrl: NavController,
     private alertController: AlertController,
+    private modalController: ModalController,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -121,6 +126,7 @@ export class FilesPage implements OnInit {
     try {
       const loadedEntries = await this.filesSvc.listEntries(this.db.tenant().id, this.currentPath);
       this.entries = this.sortEntries(loadedEntries);
+      this.syncSelection();
       await this.loadImagePreviews();
       if (this.canEditEntries) {
         void this.loadUsage();
@@ -960,42 +966,204 @@ export class FilesPage implements OnInit {
   }
 
   async moveEntry(entry: StorageEntry): Promise<void> {
+    await this.moveEntries([entry]);
+  }
+
+  // ---- Mehrfachauswahl ----
+
+  get selectedEntries(): StorageEntry[] {
+    return this.entries.filter((entry) => this.selectedPaths.has(entry.path));
+  }
+
+  get allVisibleSelected(): boolean {
+    const visible = this.filteredEntries;
+    return visible.length > 0 && visible.every((entry) => this.selectedPaths.has(entry.path));
+  }
+
+  startSelection(entry?: StorageEntry): void {
     if (!this.canEditEntries) {
       Utils.showToast(translate('files.noEditRights'), 'warning');
       return;
     }
+    this.selectionMode = true;
+    this.selectionFolder = this.currentPath;
+    this.selectedPaths = new Set(entry ? [entry.path] : []);
+  }
+
+  exitSelection(): void {
+    this.selectionMode = false;
+    this.selectedPaths = new Set();
+  }
+
+  isSelected(entry: StorageEntry): boolean {
+    return this.selectedPaths.has(entry.path);
+  }
+
+  toggleSelection(entry: StorageEntry): void {
+    const next = new Set(this.selectedPaths);
+    if (next.has(entry.path)) {
+      next.delete(entry.path);
+    } else {
+      next.add(entry.path);
+    }
+    this.selectedPaths = next;
+  }
+
+  toggleSelectAll(): void {
+    const visible = this.filteredEntries;
+    const next = new Set(this.selectedPaths);
+    if (this.allVisibleSelected) {
+      visible.forEach((entry) => next.delete(entry.path));
+    } else {
+      visible.forEach((entry) => next.add(entry.path));
+    }
+    this.selectedPaths = next;
+  }
+
+  onEntryClick(entry: StorageEntry): void {
+    if (this.selectionMode) {
+      this.toggleSelection(entry);
+      return;
+    }
+    void this.openFolder(entry);
+  }
+
+  /** Auswahl gilt nur im Ordner, in dem sie begonnen wurde; nicht mehr vorhandene Einträge fallen raus. */
+  private syncSelection(): void {
+    if (!this.selectionMode) {
+      return;
+    }
+    if (this.currentPath !== this.selectionFolder) {
+      this.exitSelection();
+      return;
+    }
+    const existing = new Set(this.entries.map((entry) => entry.path));
+    this.selectedPaths = new Set([...this.selectedPaths].filter((path) => existing.has(path)));
+  }
+
+  async moveSelected(): Promise<void> {
+    const entries = this.selectedEntries;
+    if (!entries.length) {
+      return;
+    }
+    const moved = await this.moveEntries(entries);
+    if (moved) {
+      this.exitSelection();
+    }
+  }
+
+  async deleteSelected(): Promise<void> {
+    const entries = this.selectedEntries;
+    if (!entries.length || !this.canEditEntries) {
+      return;
+    }
 
     const alert = await this.alertController.create({
-      header: translate('files.move'),
-      message: translate('files.moveHint'),
-      inputs: [{
-        type: 'text',
-        name: 'target',
-        placeholder: 'z. B. Dokumente/2026'
-      }],
+      header: translate('files.deleteSelectedHeader', { count: entries.length }),
+      message: translate('files.deleteSelectedMessage', { count: entries.length }),
       buttons: [{
         text: translate('common.cancel'),
         role: 'cancel'
       }, {
-        text: translate('files.move'),
-        handler: async (data: { target: string }) => {
+        text: translate('common.delete'),
+        role: 'destructive',
+        handler: async () => {
           const loading = await Utils.getLoadingElement(999999);
           await loading.present();
-
+          let failed = 0;
           try {
-            await this.filesSvc.moveEntry(this.db.tenant().id, entry.path, data?.target || '', entry.isFolder);
-            Utils.showToast(translate('files.moved'), 'success');
-            await this.loadEntries();
-          } catch (error: any) {
-            Utils.showToast(translate('files.moveFailed', { error: error.message || error }), 'danger');
+            for (const entry of entries) {
+              try {
+                await this.filesSvc.deleteEntry(this.db.tenant().id, entry.path, entry.isFolder);
+              } catch {
+                failed++;
+              }
+            }
           } finally {
             await loading.dismiss();
           }
+          const ok = entries.length - failed;
+          if (failed) {
+            Utils.showToast(translate('files.deleteSummary', { ok, failed }), 'warning');
+          } else {
+            Utils.showToast(translate('files.deletedMany', { count: ok }), 'success');
+          }
+          this.exitSelection();
+          await this.loadEntries();
         }
       }]
     });
 
     await alert.present();
+  }
+
+  /**
+   * Öffnet die Ordnerstruktur zur Zielwahl und verschiebt die Einträge.
+   * Gibt true zurück, wenn verschoben wurde (auch teilweise).
+   */
+  private async moveEntries(entries: StorageEntry[]): Promise<boolean> {
+    if (!this.canEditEntries) {
+      Utils.showToast(translate('files.noEditRights'), 'warning');
+      return false;
+    }
+
+    const modal = await this.modalController.create({
+      component: FilesMoveModalComponent,
+      componentProps: {
+        tenantId: this.db.tenant().id,
+        items: entries,
+        currentPath: this.currentPath,
+      },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<FilesMoveResult>();
+    if (role !== 'confirm' || !data) {
+      return false;
+    }
+
+    const tenantId = this.db.tenant().id;
+    const loading = await Utils.getLoadingElement(999999);
+    await loading.present();
+
+    let ok = 0;
+    let skipped = 0;
+    let failed = 0;
+    let lastError = '';
+    try {
+      // Gleichnamige Einträge im Ziel nicht überschreiben, sondern überspringen.
+      const existingNames = new Set((await this.filesSvc.listEntries(tenantId, data.target)).map((entry) => entry.name));
+      for (const entry of entries) {
+        if (existingNames.has(entry.name)) {
+          skipped++;
+          continue;
+        }
+        try {
+          await this.filesSvc.moveEntry(tenantId, entry.path, data.target, entry.isFolder);
+          ok++;
+        } catch (error: any) {
+          failed++;
+          lastError = error?.message || String(error);
+        }
+      }
+    } catch (error: any) {
+      Utils.showToast(translate('files.moveFailed', { error: error.message || error }), 'danger');
+      return false;
+    } finally {
+      await loading.dismiss();
+    }
+
+    if (entries.length === 1 && failed) {
+      Utils.showToast(translate('files.moveFailed', { error: lastError }), 'danger');
+    } else if (entries.length === 1 && skipped) {
+      Utils.showToast(translate('files.moveExists', { name: entries[0].name }), 'warning');
+    } else if (skipped || failed) {
+      Utils.showToast(translate('files.moveSummary', { ok, skipped, failed }), 'warning');
+    } else {
+      Utils.showToast(translate('files.movedMany', { count: ok }), 'success');
+    }
+
+    await this.loadEntries();
+    return ok > 0;
   }
 
   goBack(): void {

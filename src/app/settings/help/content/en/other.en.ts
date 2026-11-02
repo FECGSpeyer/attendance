@@ -170,7 +170,7 @@ Instance-specific [[Additional field|additional fields]] remain alongside and st
   },
   'other-files': {
     title: 'File storage',
-    keywords: ['files', 'folder', 'upload', 'recordings', 'documents', 'direct link', 'share link', 'share', 'all members', 'storage', 'storage space', 'limit', 'full', 'gb', 'more storage', 'request'],
+    keywords: ['files', 'folder', 'upload', 'recordings', 'documents', 'direct link', 'share link', 'share', 'all members', 'storage', 'storage space', 'limit', 'full', 'gb', 'more storage', 'request', 'move', 'multiple', 'select', 'mark', 'multi-select', 'folder structure', 'target folder'],
     body: `In the file storage your instance keeps shared files in folders, e.g. recordings, documents or pictures. You find it under Settings → File storage.
 
 **Who can see it?** Every instance has file storage. [[Administrator|Administrators]], [[Person in charge|people in charge]] and helpers always see it. An [[Administrator]] can also share it with all members under Settings → Roles & permissions with "File storage for all members". [[Applicant|Applicants]] never have access.
@@ -179,6 +179,8 @@ Instance-specific [[Additional field|additional fields]] remain alongside and st
 
 - **Uploading and creating folders** is for [[Administrator|administrators]] and [[Person in charge|people in charge]]. You find both in the menu (three dots at the top right).
 - **Sorting** by name, date changed or file size, ascending or descending, also via the menu.
+- **Selecting multiple:** Tap the check mark icon at the top or "Select multiple" in the menu. Then tap files and folders to mark them, or "All" for the whole folder. At the bottom you move or delete all marked entries at once. The X at the top left ends the selection. This is for [[Administrator|administrators]] and [[Person in charge|people in charge]].
+- **Moving:** Via "Move" (on one entry or for the selection) you see the folder structure as a tree. The arrow expands subfolders, tapping a folder chooses it as the target. With the folder icon at the top you create a new target folder right there. If the target already has an entry with the same name, it is skipped and nothing is overwritten. You cannot move a folder into itself.
 - **Sharing a link:** Via "Share link to this folder" or by sharing a file you get a direct link. Whoever opens it lands directly in this folder or file in the app after logging in.
 - **Folder on the event:** For an event you can set a folder under "Folder in file storage" (e.g. the recordings of this event). Members then jump directly into this folder from their sign-in page and the overview.
 

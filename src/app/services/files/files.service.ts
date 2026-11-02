@@ -415,7 +415,7 @@ export class FilesService {
 
     if (isFolder) {
       const sourceNormalized = this.normalizeRelativePath(relativePath);
-      if (normalizedTarget.startsWith(sourceNormalized)) {
+      if (normalizedTarget === sourceNormalized || normalizedTarget.startsWith(`${sourceNormalized}/`)) {
         throw new Error(translate('svc.folderIntoItself'));
       }
 

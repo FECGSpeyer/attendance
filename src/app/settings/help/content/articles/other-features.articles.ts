@@ -211,7 +211,7 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     id: 'other-files',
     title: 'Dateiablage',
     categoryId: 'other',
-    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freigeben', 'alle mitglieder', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb', 'mehr speicher', 'anfragen'],
+    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freigeben', 'alle mitglieder', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb', 'mehr speicher', 'anfragen', 'verschieben', 'mehrere', 'auswählen', 'markieren', 'mehrfachauswahl', 'ordnerstruktur', 'zielordner'],
     body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage.
 
 **Wer sieht sie?** Die Dateiablage gibt es in jeder Instanz. [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer sehen sie immer. Ein [[Administrator]] kann sie unter Einstellungen → Rollen & Berechtigungen mit „Dateiablage für alle Mitglieder“ zusätzlich für alle Mitglieder freigeben. [[Bewerber]] haben nie Zugriff.
@@ -220,6 +220,8 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
 
 - **Hochladen und Ordner anlegen** dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Beides findest du im Menü (drei Punkte oben rechts).
 - **Sortieren** nach Name, Änderungsdatum oder Dateigröße, auf- oder absteigend, ebenfalls über das Menü.
+- **Mehrere auswählen:** Tippe oben auf das Häkchen-Symbol oder im Menü auf „Mehrere auswählen“. Dann markierst du Dateien und Ordner per Tippen, mit „Alle“ den ganzen Ordner. Unten verschiebst oder löschst du alle markierten Einträge auf einmal. Mit dem X oben links beendest du die Auswahl. Das dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]].
+- **Verschieben:** Über „Verschieben“ (bei einem Eintrag oder für die Auswahl) siehst du die Ordnerstruktur als Baum. Mit dem Pfeil klappst du Unterordner auf, ein Tipp auf einen Ordner wählt ihn als Ziel. Über das Ordner-Symbol oben legst du direkt einen neuen Zielordner an. Gibt es im Ziel schon einen Eintrag mit gleichem Namen, wird dieser übersprungen und nichts überschrieben. Einen Ordner kannst du nicht in sich selbst verschieben.
 - **Link teilen:** Über "Link zu diesem Ordner teilen" bzw. das Teilen einer Datei erhältst du einen Direktlink. Wer ihn öffnet, landet nach der Anmeldung direkt in der App bei diesem Ordner bzw. dieser Datei.
 - **Ordner am Termin:** Bei einem Termin kann unter "Ordner in der Dateiablage" ein Ordner hinterlegt werden (z. B. die Aufnahmen dieses Termins). Mitglieder springen dann von ihrer Anmeldeseite und der Übersicht direkt in diesen Ordner.
 

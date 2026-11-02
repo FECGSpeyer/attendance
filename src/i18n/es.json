@@ -730,6 +730,18 @@
     "noSubfolders": "No hay subcarpetas.",
     "loadFailed": "Error al cargar las carpetas: {error}"
   },
+  "filesMove": {
+    "title": "{count, plural, one {Mover} other {Mover # entradas}}",
+    "hint": "Toca una carpeta para elegirla como destino. Con la flecha despliegas las subcarpetas.",
+    "root": "Archivos",
+    "expand": "Desplegar",
+    "collapse": "Plegar",
+    "beingMoved": "Se está moviendo",
+    "currentFolder": "Carpeta actual",
+    "target": "Destino: {path}",
+    "chooseTarget": "Elige una carpeta de destino.",
+    "moveHere": "{count, plural, one {Mover aquí} other {Mover # entradas aquí}}"
+  },
   "imageViewer": {
     "loadFailed": "No se pudo cargar la imagen",
     "zoomOut": "Alejar",
@@ -2569,9 +2581,21 @@
     "newName": "Nombre nuevo",
     "renamed": "Entrada renombrada.",
     "renameFailed": "Error al renombrar: {error}",
-    "moveHint": "Carpeta de destino relativa a la raíz. Déjalo vacío para la raíz.",
     "moved": "Entrada movida.",
-    "moveFailed": "Error al mover: {error}"
+    "moveFailed": "Error al mover: {error}",
+    "select": "Seleccionar",
+    "selectMultiple": "Seleccionar varios",
+    "selectedCount": "{count, plural, =0 {Nada seleccionado} one {# seleccionado} other {# seleccionados}}",
+    "selectAll": "Todos",
+    "selectNone": "Ninguno",
+    "selectionDone": "Terminar selección",
+    "deleteSelectedHeader": "{count, plural, one {¿Eliminar # entrada?} other {¿Eliminar # entradas?}}",
+    "deleteSelectedMessage": "{count, plural, one {La entrada seleccionada se eliminará definitivamente.} other {Las # entradas seleccionadas se eliminarán definitivamente, las carpetas con todo su contenido.}}",
+    "deleteSummary": "{ok} eliminadas, {failed} con error.",
+    "deletedMany": "{count, plural, one {Entrada eliminada.} other {# entradas eliminadas.}}",
+    "moveExists": "Ya existe «{name}» en la carpeta de destino. No se movió nada.",
+    "moveSummary": "{ok} movidas, {skipped} omitidas (ya existen en el destino), {failed} con error.",
+    "movedMany": "{count, plural, one {Entrada movida.} other {# entradas movidas.}}"
   },
   "typeSettings": {
     "types": "Tipos",

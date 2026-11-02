@@ -730,6 +730,18 @@
     "noSubfolders": "No subfolders.",
     "loadFailed": "Could not load the folders: {error}"
   },
+  "filesMove": {
+    "title": "{count, plural, one {Move} other {Move # entries}}",
+    "hint": "Tap a folder to choose it as the target. Use the arrow to expand subfolders.",
+    "root": "File storage",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "beingMoved": "Being moved",
+    "currentFolder": "Current folder",
+    "target": "Target: {path}",
+    "chooseTarget": "Choose a target folder.",
+    "moveHere": "{count, plural, one {Move here} other {Move # entries here}}"
+  },
   "imageViewer": {
     "loadFailed": "Image could not be loaded",
     "zoomOut": "Zoom out",
@@ -2569,9 +2581,21 @@
     "newName": "New name",
     "renamed": "Entry renamed.",
     "renameFailed": "Renaming failed: {error}",
-    "moveHint": "Target folder relative to the root. Leave empty for root.",
     "moved": "Entry moved.",
-    "moveFailed": "Moving failed: {error}"
+    "moveFailed": "Moving failed: {error}",
+    "select": "Select",
+    "selectMultiple": "Select multiple",
+    "selectedCount": "{count, plural, =0 {Nothing selected} one {# selected} other {# selected}}",
+    "selectAll": "All",
+    "selectNone": "None",
+    "selectionDone": "End selection",
+    "deleteSelectedHeader": "{count, plural, one {Delete # entry?} other {Delete # entries?}}",
+    "deleteSelectedMessage": "{count, plural, one {The selected entry will be deleted permanently.} other {The # selected entries will be deleted permanently, folders including all their content.}}",
+    "deleteSummary": "{ok} deleted, {failed} failed.",
+    "deletedMany": "{count, plural, one {Entry deleted.} other {# entries deleted.}}",
+    "moveExists": "“{name}” already exists in the target folder. Nothing was moved.",
+    "moveSummary": "{ok} moved, {skipped} skipped (already in target), {failed} failed.",
+    "movedMany": "{count, plural, one {Entry moved.} other {# entries moved.}}"
   },
   "typeSettings": {
     "types": "Types",

@@ -1,0 +1,55 @@
+.move-hint {
+  margin: 16px 20px 0;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.folder-tree {
+  ion-item {
+    --padding-start: 4px;
+    --min-height: 48px;
+  }
+
+  ion-item.selected {
+    --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  }
+
+  .tree-indent {
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  .tree-toggle {
+    margin: 0 2px 0 0;
+    --padding-start: 6px;
+    --padding-end: 6px;
+
+    ion-spinner {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .tree-leaf {
+    font-size: 6px;
+    opacity: 0.5;
+  }
+
+  ion-icon[slot='start'] {
+    margin-inline-end: 12px;
+  }
+}
+
+.move-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 12px calc(6px + var(--ion-safe-area-bottom, 0px));
+}
+
+.move-target {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

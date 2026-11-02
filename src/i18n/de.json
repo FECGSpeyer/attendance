@@ -730,6 +730,18 @@
     "noSubfolders": "Keine Unterordner vorhanden.",
     "loadFailed": "Fehler beim Laden der Ordner: {error}"
   },
+  "filesMove": {
+    "title": "{count, plural, one {Verschieben} other {# Einträge verschieben}}",
+    "hint": "Tippe auf einen Ordner, um ihn als Ziel zu wählen. Mit dem Pfeil klappst du Unterordner auf.",
+    "root": "Dateiablage",
+    "expand": "Aufklappen",
+    "collapse": "Zuklappen",
+    "beingMoved": "Wird verschoben",
+    "currentFolder": "Aktueller Ordner",
+    "target": "Ziel: {path}",
+    "chooseTarget": "Wähle einen Zielordner.",
+    "moveHere": "{count, plural, one {Hierher verschieben} other {# Einträge hierher verschieben}}"
+  },
   "imageViewer": {
     "loadFailed": "Bild konnte nicht geladen werden",
     "zoomOut": "Verkleinern",
@@ -2569,9 +2581,21 @@
     "newName": "Neuer Name",
     "renamed": "Eintrag wurde umbenannt.",
     "renameFailed": "Umbenennen fehlgeschlagen: {error}",
-    "moveHint": "Zielordner relativ zum Tenant-Root. Leer lassen für Root.",
     "moved": "Eintrag wurde verschoben.",
-    "moveFailed": "Verschieben fehlgeschlagen: {error}"
+    "moveFailed": "Verschieben fehlgeschlagen: {error}",
+    "select": "Auswählen",
+    "selectMultiple": "Mehrere auswählen",
+    "selectedCount": "{count, plural, =0 {Nichts ausgewählt} one {# ausgewählt} other {# ausgewählt}}",
+    "selectAll": "Alle",
+    "selectNone": "Keine",
+    "selectionDone": "Auswahl beenden",
+    "deleteSelectedHeader": "{count, plural, one {# Eintrag löschen?} other {# Einträge löschen?}}",
+    "deleteSelectedMessage": "{count, plural, one {Der ausgewählte Eintrag wird endgültig gelöscht.} other {Die # ausgewählten Einträge werden endgültig gelöscht, Ordner mit ihrem ganzen Inhalt.}}",
+    "deleteSummary": "{ok} gelöscht, {failed} fehlgeschlagen.",
+    "deletedMany": "{count, plural, one {Eintrag wurde gelöscht.} other {# Einträge wurden gelöscht.}}",
+    "moveExists": "Im Zielordner gibt es schon „{name}“. Nichts verschoben.",
+    "moveSummary": "{ok} verschoben, {skipped} übersprungen (gibt es im Ziel schon), {failed} fehlgeschlagen.",
+    "movedMany": "{count, plural, one {Eintrag wurde verschoben.} other {# Einträge wurden verschoben.}}"
   },
   "typeSettings": {
     "types": "Typen",

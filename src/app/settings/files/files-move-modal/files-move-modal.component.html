@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">{{ 'common.cancel' | transloco }}</ion-button>
+    </ion-buttons>
+    <ion-title>{{ 'filesMove.title' | transloco: { count: items.length } }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="createFolder()" [attr.aria-label]="'files.createFolder' | transloco">
+        <ion-icon slot="icon-only" name="folder-open-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content color="light">
+  <p class="move-hint">{{ 'filesMove.hint' | transloco }}</p>
+  <ion-list [inset]="true" class="folder-tree">
+    @for (node of visibleNodes; track node.path; let last = $last) {
+    <ion-item button detail="false" [lines]="last ? 'none' : 'inset'"
+      [class.selected]="selectedPath === node.path" [disabled]="isBlocked(node)"
+      (click)="select(node)">
+      <div slot="start" class="tree-indent" [style.width.px]="node.depth * 18"></div>
+      <ion-button slot="start" fill="clear" size="small" class="tree-toggle" color="medium"
+        [attr.aria-label]="(node.expanded ? 'filesMove.collapse' : 'filesMove.expand') | transloco"
+        (click)="toggle(node, $event)">
+        @if (node.loading) {
+        <ion-spinner name="crescent"></ion-spinner>
+        } @else if (node.loaded && !node.children.length) {
+        <ion-icon slot="icon-only" name="ellipse" class="tree-leaf"></ion-icon>
+        } @else {
+        <ion-icon slot="icon-only" [name]="node.expanded ? 'chevron-down' : 'chevron-forward'"></ion-icon>
+        }
+      </ion-button>
+      <ion-icon slot="start" [name]="node.path ? (node.expanded ? 'folder-open-outline' : 'folder-outline') : 'home-outline'"
+        [color]="selectedPath === node.path ? 'primary' : 'medium'"></ion-icon>
+      <ion-label>
+        <h3>{{ node.path ? node.name : rootLabel }}</h3>
+        @if (isMovedItem(node)) {
+        <p>{{ 'filesMove.beingMoved' | transloco }}</p>
+        } @else if (isCurrent(node)) {
+        <p>{{ 'filesMove.currentFolder' | transloco }}</p>
+        }
+      </ion-label>
+      @if (selectedPath === node.path) {
+      <ion-icon slot="end" name="checkmark-circle" color="primary"></ion-icon>
+      }
+    </ion-item>
+    }
+  </ion-list>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <div class="move-footer">
+      <ion-note class="move-target">
+        @if (selectedPath !== null) {
+        {{ 'filesMove.target' | transloco: { path: selectedLabel } }}
+        } @else {
+        {{ 'filesMove.chooseTarget' | transloco }}
+        }
+      </ion-note>
+      <ion-button expand="block" [disabled]="!canConfirm" (click)="confirm()">
+        <ion-icon slot="start" name="swap-horizontal-outline"></ion-icon>
+        {{ 'filesMove.moveHere' | transloco: { count: items.length } }}
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>
