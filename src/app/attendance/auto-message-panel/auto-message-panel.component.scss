@@ -41,13 +41,34 @@
   }
 }
 
+.responses {
+  margin-top: 0;
+
+  ion-item:last-of-type {
+    --border-width: 0;
+    --inner-border-width: 0;
+  }
+
+  h3 {
+    font-weight: 600;
+  }
+}
+
 .decide {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+
+  ion-button {
+    margin: 0;
+    --padding-start: 14px;
+    --padding-end: 14px;
+  }
 }
 
 .decided {
   color: var(--ion-color-medium);
   font-size: 0.8rem;
+  margin-top: 4px;
 }
