@@ -168,6 +168,12 @@
               <ion-label>{{ 'attendance.sendReminder' | transloco }}</ion-label>
             </ion-item>
             }
+            @if (autoPanel?.isManager && autoPanel?.started && autoPanel!.unexcused.length > 0) {
+            <ion-item button detail="false" (click)="autoPanel?.writeUnexcused(); optionsPopover.dismiss()">
+              <ion-icon slot="start" name="chatbubble-ellipses-outline"></ion-icon>
+              <ion-label>{{ 'autoMessages.writeUnexcusedMenu' | transloco: { count: autoPanel!.unexcused.length } }}</ion-label>
+            </ion-item>
+            }
             @if (canToggleArchived()) {
             <ion-item button detail="false" (click)="toggleArchived(); optionsPopover.dismiss()">
               <ion-icon slot="start" [name]="attendance?.archived ? 'arrow-undo-outline' : 'archive-outline'"></ion-icon>
@@ -231,7 +237,7 @@
     </ion-item>
   </ion-list>
   }
-  <app-auto-message-panel [attendance]="attendance" [people]="players"></app-auto-message-panel>
+  <app-auto-message-panel #autoPanel [attendance]="attendance" [people]="players"></app-auto-message-panel>
   <ion-list [inset]="true" class="marginBottom">
     <ion-item-group>
       <ion-accordion-group>
