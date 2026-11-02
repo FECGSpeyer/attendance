@@ -184,26 +184,28 @@
     </ion-list>
 
     <ion-list-header><ion-label>{{ 'autoMessages.responses' | transloco }}</ion-label></ion-list-header>
-    <ion-list [inset]="true">
-      <ion-item>
-        <ion-toggle [(ngModel)]="rule.allow_responses">
-          <ion-label class="ion-text-wrap">
-            {{ 'autoMessages.allowResponses' | transloco }}
-            <p>{{ 'autoMessages.allowResponsesHint' | transloco }}</p>
-          </ion-label>
-        </ion-toggle>
-      </ion-item>
-      @if (rule.allow_responses) {
-        <ion-radio-group [(ngModel)]="rule.instant_excuse">
+    <!-- The radio group wraps the whole list: inside an inset list it would
+         get its own rounded corners on iOS and look like a second card. -->
+    <ion-radio-group [(ngModel)]="rule.instant_excuse">
+      <ion-list [inset]="true">
+        <ion-item>
+          <ion-toggle [(ngModel)]="rule.allow_responses">
+            <ion-label class="ion-text-wrap">
+              {{ 'autoMessages.allowResponses' | transloco }}
+              <p>{{ 'autoMessages.allowResponsesHint' | transloco }}</p>
+            </ion-label>
+          </ion-toggle>
+        </ion-item>
+        @if (rule.allow_responses) {
           <ion-item>
             <ion-radio [value]="false" justify="start" labelPlacement="end">{{ 'autoMessages.excuseAfterCheck' | transloco }}</ion-radio>
           </ion-item>
           <ion-item>
             <ion-radio [value]="true" justify="start" labelPlacement="end">{{ 'autoMessages.excuseInstant' | transloco }}</ion-radio>
           </ion-item>
-        </ion-radio-group>
-      }
-    </ion-list>
+        }
+      </ion-list>
+    </ion-radio-group>
     @if (rule.allow_responses) {
       <p class="hint">{{ 'autoMessages.responsesHint' | transloco: { days: 7 } }}</p>
     }
