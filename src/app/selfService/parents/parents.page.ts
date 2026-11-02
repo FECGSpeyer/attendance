@@ -46,7 +46,7 @@ export class ParentsPage implements OnInit {
   public showAllPast = false;
   public readonly pastPreviewCount = PAST_PREVIEW_COUNT;
   public upcomingSongs: { date: string; items: AttendanceSong[] }[] = [];
-  /** Werke per Termin id (Ablaufplan + Werke of the Termin). */
+  /** Werke selected for each Termin, by Termin id. */
   private attendanceSongs = new Map<number, AttendanceSong[]>();
   public songsModalOpen = false;
   public absenceReasons: string[] = [];
@@ -486,7 +486,7 @@ export class ParentsPage implements OnInit {
     const byAttendance = groupHistoryByAttendance(history);
     const map = new Map<number, AttendanceSong[]>();
     for (const att of this.attendances) {
-      const list = songsForAttendance(att, byAttendance.get(att.id) ?? [], songs);
+      const list = songsForAttendance(byAttendance.get(att.id) ?? [], songs);
       if (list.length) {
         map.set(att.id, list);
       }

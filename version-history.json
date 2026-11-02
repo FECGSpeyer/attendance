@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.17.27",
+      "date": "2.11.2026",
+      "changes": [
+        "🎵 Werke je Termin: Die Markierung „♪ n Werke“ zeigt jetzt nur die Werke, die beim Termin unter „Werke“ ausgewählt wurden, nicht mehr die Werke aus dem Ablaufplan. „Aktuelle Werke“ ebenso."
+      ]
+    },
+    {
       "version": "4.17.26",
       "date": "1.11.2026",
       "changes": [

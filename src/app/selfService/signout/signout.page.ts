@@ -32,7 +32,7 @@ import { translate } from '@jsverse/transloco';
 })
 export class SignoutPage implements OnInit {
   private songActions = inject(SongActionsService);
-  /** Werke per Termin id (Ablaufplan + Werke of the Termin). */
+  /** Werke selected for each Termin, by Termin id. */
   private attendanceSongs = new Map<number, AttendanceSong[]>();
   @ViewChild('signoutAccordionGroup') signoutAccordionGroup: IonAccordionGroup;
   @ViewChild('excusePicker') excusePicker: ExcuseReasonPickerComponent;
@@ -381,7 +381,7 @@ export class SignoutPage implements OnInit {
     const map = new Map<number, AttendanceSong[]>();
     for (const att of this.personAttendances) {
       const id = this.attIdOf(att);
-      const list = songsForAttendance(att.attendance, byAttendance.get(id) ?? [], this.songs);
+      const list = songsForAttendance(byAttendance.get(id) ?? [], this.songs);
       if (list.length) {
         map.set(id, list);
       }
