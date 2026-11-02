@@ -4,9 +4,6 @@
       <ion-back-button text="" defaultHref="/tabs/settings/auto-messages"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ (isNew ? 'autoMessages.newRule' : 'autoMessages.rule') | transloco }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="save()" [disabled]="saving || loading" strong="true">{{ 'common.save' | transloco }}</ion-button>
-    </ion-buttons>
   </ion-toolbar>
   @if (!isNew) {
     <ion-toolbar>
@@ -273,5 +270,13 @@
     } @else {
       <div class="bottom"></div>
     }
+  }
+
+  @if (!loading && tab === 'rule') {
+    <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button (click)="save()" [disabled]="saving" [attr.aria-label]="'common.save' | transloco">
+        <ion-icon name="save-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
   }
 </ion-content>

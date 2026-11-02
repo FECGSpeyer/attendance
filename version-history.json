@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.6",
+      "date": "2.11.2026",
+      "changes": [
+        "💾 Automatische Nachrichten: Eine Regel speicherst du jetzt wie auf den anderen Seiten über den runden Speichern-Button unten rechts statt über den Button oben in der Kopfzeile."
+      ]
+    },
+    {
       "version": "4.19.5",
       "date": "2.11.2026",
       "changes": [
