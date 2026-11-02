@@ -4,6 +4,8 @@ import { Role } from '../utilities/constants';
 import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios27';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
+import { LayoutService, SIDE_PANEL_FIXED_MIN_WIDTH } from '../services/layout/layout.service';
+import { SIDE_NAV_MENU_ID } from './side-nav/side-nav.component';
 
 @Component({
     selector: 'app-tabs',
@@ -22,12 +24,20 @@ export class TabsPage {
   public showDashboardTab = false;
   public hasMultipleTenants = false;
   readonly registeredGestures: registeredEffect[] = [];
+  readonly sideNavMenuId = SIDE_NAV_MENU_ID;
+  readonly splitPaneWhen = `(min-width: ${SIDE_PANEL_FIXED_MIN_WIDTH}px)`;
 
   constructor(
     private db: DbService,
-    private router: Router
+    private router: Router,
+    public layout: LayoutService,
   ) {
     this.initialize();
+
+    // Seiten blenden ihre eigene Glocke aus, solange das Sidepanel sie zeigt.
+    effect(() => {
+      document.body.classList.toggle('side-panel-active', this.layout.sidePanel());
+    });
   }
 
   initialize() {

@@ -1,25 +1,34 @@
+<!-- Mit Sidepanel (Tablet/Desktop) entfallen hier alle Einträge, die schon im Panel stehen. -->
+@let sp = layout.sidePanel();
 <ion-header translucent="true">
   <ion-toolbar color="light">
-    <ion-buttons slot="start">
-      <ion-button id="tenant-switcher-settings-top">
-        {{ db.tenant()?.longName }}
-        <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <ion-popover trigger="tenant-switcher-settings-top" triggerAction="click" dismissOnSelect="true" style="--width: 220px">
-      <ng-template>
-        <ion-list lines="none">
-          @for (tenant of db.tenants(); track tenant.id) {
-            <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
-              <ion-label>{{ tenant.longName }}</ion-label>
-              @if (tenant.id === db.tenant()?.id) {
-                <ion-badge slot="end" color="primary">{{ 'settings.current' | transloco }}</ion-badge>
-              }
-            </ion-item>
-          }
-        </ion-list>
-      </ng-template>
-    </ion-popover>
+    <!-- Tablet hochkant: öffnet das Sidepanel (sonst automatisch ausgeblendet) -->
+    <ion-buttons slot="start"><ion-menu-button menu="side-nav" autoHide="true"></ion-menu-button></ion-buttons>
+    @if (sp) {
+      <!-- Mit Sidepanel sitzt der Instanzwechsel im Panel -->
+      <ion-title>{{ 'settings.settings' | transloco }}</ion-title>
+    } @else {
+      <ion-buttons slot="start">
+        <ion-button id="tenant-switcher-settings-top">
+          {{ db.tenant()?.longName }}
+          <ion-icon slot="end" name="chevron-down-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-popover trigger="tenant-switcher-settings-top" triggerAction="click" dismissOnSelect="true" style="--width: 220px">
+        <ng-template>
+          <ion-list lines="none">
+            @for (tenant of db.tenants(); track tenant.id) {
+              <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
+                <ion-label>{{ tenant.longName }}</ion-label>
+                @if (tenant.id === db.tenant()?.id) {
+                  <ion-badge slot="end" color="primary">{{ 'settings.current' | transloco }}</ion-badge>
+                }
+              </ion-item>
+            }
+          </ion-list>
+        </ng-template>
+      </ion-popover>
+    }
     <ion-buttons slot="end">
       <app-notification-bell></app-notification-bell>
     </ion-buttons>
@@ -277,7 +286,7 @@
   }
 
   <!-- ==================== STIMMFÜHRER ==================== -->
-  @if (isVoiceLeader && !isGeneral) {
+  @if (isVoiceLeader && !isGeneral && !sp) {
   <ion-list [inset]="true" class="category-list">
     <ion-list-header>
       <ion-label>
@@ -331,7 +340,7 @@
   }
 
   <!-- ==================== KOMMUNIKATION ==================== -->
-  @if (isAdmin) {
+  @if (isAdmin && !sp) {
   <ion-list [inset]="true" class="category-list">
     <ion-list-header>
       <ion-label>
@@ -510,7 +519,7 @@
   }
 
   <!-- ==================== WERKE & PROBEN ==================== -->
-  @if (!isGeneral && !isApplicant) {
+  @if (!isGeneral && !isApplicant && (!sp || isAdmin || isHelper)) {
   <ion-list [inset]="true" class="category-list">
     <ion-list-header>
       <ion-label>
@@ -519,17 +528,19 @@
       </ion-label>
     </ion-list-header>
     <ion-item-group>
+      @if (!sp) {
       <ion-item routerLink="songs" button>
         <ion-icon name="library-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.songs' | transloco }}</ion-label>
       </ion-item>
+      }
       @if (isAdmin || isHelper) {
       <ion-item detail="false" button (click)="openHistoryModal()">
         <ion-icon name="time-outline" slot="start"></ion-icon>
         <ion-label>{{ 'history.title' | transloco }}</ion-label>
       </ion-item>
       }
-      @if (db.canAccessFiles()) {
+      @if (db.canAccessFiles() && !sp) {
       <ion-item routerLink="files" button lines="none">
         <ion-icon name="folder-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.fileStorage' | transloco }}</ion-label>
@@ -540,7 +551,7 @@
   }
 
   <!-- Allgemeine Instanzen haben keinen Block "Werke & Proben", die Dateiablage steht dann allein. -->
-  @if (isGeneral && db.canAccessFiles()) {
+  @if (isGeneral && db.canAccessFiles() && !sp) {
   <ion-list [inset]="true" class="category-list">
     <ion-list-header>
       <ion-label>
@@ -570,10 +581,12 @@
     </ion-list-header>
     <ion-item-group>
       @if (showPlanning) {
+      @if (!sp) {
       <ion-item lines="full" detail="false" button (click)="openPlanning()">
         <ion-icon name="list-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.runSheets' | transloco }}</ion-label>
       </ion-item>
+      }
       <ion-item routerLink="/tabs/settings/planung" detail="false" button [lines]="db.organisation() || showTeam ? 'full' : 'none'">
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.adHocPlanning' | transloco }}</ion-label>
@@ -648,10 +661,12 @@
         <ion-label>{{ 'settings.subscribeCalendar' | transloco }}</ion-label>
       </ion-item>
       @if (isAdmin) {
+      @if (!sp) {
       <ion-item detail="false" button (click)="openStats()">
         <ion-icon name="stats-chart-outline" slot="start"></ion-icon>
         <ion-label>{{ 'stats.title' | transloco }}</ion-label>
       </ion-item>
+      }
       <ion-item detail="false" button (click)="openExport()">
         <ion-icon name="download-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.export' | transloco }}</ion-label>
@@ -747,10 +762,12 @@
         <ion-label>{{ 'settings.changePassword' | transloco }}</ion-label>
       </ion-item>
 
+      @if (!sp) {
       <ion-item routerLink="help" button detail="true">
         <ion-icon name="help-circle-outline" slot="start"></ion-icon>
         <ion-label>{{ 'settings.help' | transloco }}</ion-label>
       </ion-item>
+      }
 
       <ion-item detail="false" button id="feedback-button">
         <ion-icon name="chatbubble-ellipses-outline" slot="start"></ion-icon>
@@ -777,10 +794,12 @@
       </ion-item>
       }
 
+      @if (!sp) {
       <ion-item lines="none" color="danger" button (click)="logout()">
         <ion-icon slot="start" name="log-out-outline"></ion-icon>
         <ion-label>{{ 'settings.logout' | transloco }}</ion-label>
       </ion-item>
+      }
     </ion-item-group>
 
     <ion-item lines="none" routerLink="delete-account" button detail="false" class="delete-account-link">

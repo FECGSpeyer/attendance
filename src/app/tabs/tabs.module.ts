@@ -8,6 +8,7 @@ import { TabsPageRoutingModule } from './tabs-routing.module';
 import { TabsPage } from './tabs.page';
 import { AudioPlayerComponent } from '../shared/audio-player/audio-player.component';
 import { TranslocoModule } from '@jsverse/transloco';
+import { SideNavComponent } from './side-nav/side-nav.component';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { TranslocoModule } from '@jsverse/transloco';
     FormsModule,
     TabsPageRoutingModule,
     AudioPlayerComponent,
+    SideNavComponent,
   ],
   declarations: [TabsPage]
 })

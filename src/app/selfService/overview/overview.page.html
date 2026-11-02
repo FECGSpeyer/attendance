@@ -1,5 +1,7 @@
 ﻿<ion-header translucent="true">
   <ion-toolbar>
+    <!-- Tablet hochkant: öffnet das Sidepanel (sonst automatisch ausgeblendet) -->
+    <ion-buttons slot="start"><ion-menu-button menu="side-nav" autoHide="true"></ion-menu-button></ion-buttons>
     <ion-title>{{ 'selfService.allEvents' | transloco }}</ion-title>
     <ion-buttons slot="end">
       <ion-button id="legend-button-overview">

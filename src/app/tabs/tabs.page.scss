@@ -13,3 +13,26 @@ ion-tab-bar.ios:not(.ios26-disabled):has(:nth-child(5)) {
     margin-inline-start: 0;
   }
 }
+
+// Sidepanel (Tablet/Desktop): Tabbar ausblenden, Breite des festen Panels.
+ion-tab-bar.side-nav-hidden {
+  display: none;
+}
+
+ion-split-pane {
+  --side-width: 272px;
+  --side-min-width: 272px;
+  --side-max-width: 272px;
+  --border: 0;
+}
+
+ion-split-pane.side-nav-collapsed {
+  --side-width: 72px;
+  --side-min-width: 72px;
+  --side-max-width: 72px;
+}
+
+ion-menu.side-nav-menu {
+  --width: 300px;
+  --max-width: 85vw;
+}

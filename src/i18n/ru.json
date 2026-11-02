@@ -3435,5 +3435,17 @@
       "other": "Другое"
     },
     "writeUnexcusedMenu": "Написать неуважительно отсутствующим ({count})"
+  },
+  "nav": {
+    "label": "Главная навигация",
+    "collapse": "Свернуть боковую панель",
+    "expand": "Развернуть боковую панель",
+    "close": "Закрыть меню",
+    "shortcut": "Ctrl/⌘ + B",
+    "instances": "{count, plural, one {# экземпляр} few {# экземпляра} many {# экземпляров} other {# экземпляра}}",
+    "groupOverview": "Обзор",
+    "groupTeam": "Команда",
+    "groupAdmin": "Управление",
+    "groupAccount": "Аккаунт"
   }
 }

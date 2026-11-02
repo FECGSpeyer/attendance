@@ -1,8 +1,18 @@
+<!-- Ab Tablet-Breite ersetzt das Sidepanel die Tabbar: unter 992 px als
+     Overlay (Menü-Symbol in den Seiten), darüber fest daneben (Split-Pane). -->
+<ion-split-pane contentId="tabs-main" [when]="splitPaneWhen" [class.side-nav-collapsed]="layout.collapsed()">
+  <ion-menu contentId="tabs-main" [menuId]="sideNavMenuId" type="overlay" [disabled]="!layout.sidePanel()" class="side-nav-menu">
+    @if (layout.sidePanel()) {
+      <app-side-nav />
+    }
+  </ion-menu>
+
+<div class="ion-page" id="tabs-main">
 <ion-tabs>
 
   <app-audio-player />
 
-  <ion-tab-bar slot="bottom">
+  <ion-tab-bar slot="bottom" [class.side-nav-hidden]="layout.sidePanel()">
     @if (showDashboardTab) {
       <ion-tab-button tab="home-dashboard">
         <ion-icon name="grid-outline"></ion-icon>
@@ -73,3 +83,5 @@
   </ion-tab-bar>
 
 </ion-tabs>
+</div>
+</ion-split-pane>

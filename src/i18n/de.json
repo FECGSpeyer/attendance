@@ -3435,5 +3435,17 @@
       "other": "Sonstiges"
     },
     "writeUnexcusedMenu": "Unentschuldigte anschreiben ({count})"
+  },
+  "nav": {
+    "label": "Hauptnavigation",
+    "collapse": "Seitenleiste einklappen",
+    "expand": "Seitenleiste ausklappen",
+    "close": "Menü schließen",
+    "shortcut": "Strg/⌘ + B",
+    "instances": "{count, plural, one {# Instanz} other {# Instanzen}}",
+    "groupOverview": "Übersicht",
+    "groupTeam": "Team",
+    "groupAdmin": "Verwaltung",
+    "groupAccount": "Konto"
   }
 }

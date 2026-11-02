@@ -22,6 +22,7 @@ import { translate } from '@jsverse/transloco';
 import { LocaleService } from 'src/app/i18n/locale.service';
 import { currentLanguage, ENABLED_LANGUAGES, LANGUAGE_NAMES } from 'src/app/i18n/languages';
 
+import { LayoutService } from 'src/app/services/layout/layout.service';
 @Component({
     selector: 'app-settings',
     templateUrl: './settings.page.html',
@@ -81,6 +82,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     private actionSheetController: ActionSheetController,
     private teams: TeamsService,
     public liveUpdate: LiveUpdateService,
+    public layout: LayoutService,
     private locale: LocaleService,
   ) {
     effect(async () => {

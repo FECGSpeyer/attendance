@@ -552,3 +552,9 @@ ion-item.plan-group-child {
     }
   }
 }
+
+// Sidepanel (Tablet/Desktop): Die Glocke sitzt im Panel-Kopf, die Kopien in
+// den Seiten-Toolbars entfallen.
+body.side-panel-active app-notification-bell:not(.in-side-nav) {
+  display: none;
+}

@@ -3435,5 +3435,17 @@
       "other": "Otro"
     },
     "writeUnexcusedMenu": "Escribir a los no justificados ({count})"
+  },
+  "nav": {
+    "label": "Navegación principal",
+    "collapse": "Contraer barra lateral",
+    "expand": "Expandir barra lateral",
+    "close": "Cerrar menú",
+    "shortcut": "Ctrl/⌘ + B",
+    "instances": "{count, plural, one {# instancia} other {# instancias}}",
+    "groupOverview": "Resumen",
+    "groupTeam": "Equipo",
+    "groupAdmin": "Administración",
+    "groupAccount": "Cuenta"
   }
 }

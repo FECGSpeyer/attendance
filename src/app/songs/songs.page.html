@@ -4,6 +4,9 @@
       <ion-buttons slot="start">
         <ion-back-button text="" [defaultHref]="tenantData ? '/' : 'tabs/settings'"></ion-back-button>
       </ion-buttons>
+    } @else {
+      <!-- Tablet hochkant: öffnet das Sidepanel (sonst automatisch ausgeblendet) -->
+      <ion-buttons slot="start"><ion-menu-button menu="side-nav" autoHide="true"></ion-menu-button></ion-buttons>
     }
     @if (tenantData) {
       <ion-title>{{ tenantData.longName }}</ion-title>

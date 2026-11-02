@@ -1,0 +1,113 @@
+<nav class="side-nav" [class.rail]="layout.collapsed()" [attr.aria-label]="'nav.label' | transloco">
+
+  <!-- Kopfzeile: Ein-/Ausklappen links (im Overlay: Schließen), Glocke rechts -->
+  <div class="sn-top">
+    @if (layout.sidePanelFixed()) {
+      <button type="button" class="sn-icon-btn" (click)="toggleCollapsed()"
+        [attr.aria-label]="(layout.collapsed() ? 'nav.expand' : 'nav.collapse') | transloco"
+        [attr.aria-expanded]="!layout.collapsed()"
+        [title]="((layout.collapsed() ? 'nav.expand' : 'nav.collapse') | transloco) + ' (' + ('nav.shortcut' | transloco) + ')'">
+        <svg class="sn-sidebar-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="16" rx="2.5" />
+          <path d="M9 4v16" />
+        </svg>
+      </button>
+    } @else {
+      <button type="button" class="sn-icon-btn" (click)="closeOverlay()" [attr.aria-label]="'nav.close' | transloco" [title]="'nav.close' | transloco">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+    }
+    <app-notification-bell class="in-side-nav"></app-notification-bell>
+  </div>
+
+  <!-- Instanz -->
+  <button type="button" class="sn-tenant" id="side-nav-tenant" [disabled]="!hasMultipleTenants()"
+    [title]="db.tenant()?.longName" [attr.aria-label]="hasMultipleTenants() ? ('settings.switchTenant' | transloco) + ': ' + db.tenant()?.longName : db.tenant()?.longName">
+    @if (db.tenant()?.logo_url) {
+      <img class="sn-logo" [src]="db.tenant()?.logo_url" alt="" />
+    } @else {
+      <span class="sn-logo sn-logo--text">{{ tenantInitials() }}</span>
+    }
+    @if (!layout.collapsed()) {
+      <span class="sn-tenant-text">
+        <b>{{ db.tenant()?.longName }}</b>
+        @if (hasMultipleTenants()) {
+          <span>{{ 'nav.instances' | transloco: { count: db.tenants()?.length } }}</span>
+        }
+      </span>
+      @if (hasMultipleTenants()) {
+        <ion-icon name="chevron-down-outline" class="sn-tenant-chevron"></ion-icon>
+      }
+    }
+  </button>
+  @if (hasMultipleTenants()) {
+    <ion-popover trigger="side-nav-tenant" triggerAction="click" dismissOnSelect="true" [side]="layout.collapsed() ? 'end' : 'bottom'" alignment="start" style="--width: 240px">
+      <ng-template>
+        <ion-list lines="none">
+          @for (tenant of db.tenants(); track tenant.id) {
+            <ion-item button detail="false" (click)="onTenantChange(tenant.id)">
+              <ion-label>{{ tenant.longName }}</ion-label>
+              @if (tenant.id === db.tenant()?.id) {
+                <ion-badge slot="end" color="primary">{{ 'settings.current' | transloco }}</ion-badge>
+              }
+            </ion-item>
+          }
+        </ion-list>
+      </ng-template>
+    </ion-popover>
+  }
+
+  <!-- Navigation -->
+  <div class="sn-nav">
+    @for (group of groups(); track group.id; let first = $first) {
+      @if (layout.collapsed()) {
+        @if (!first) { <div class="sn-sep" role="separator"></div> }
+      } @else if (group.labelKey) {
+        <div class="sn-section">{{ group.labelKey | transloco }}</div>
+      } @else if (!first) {
+        <div class="sn-sep" role="separator"></div>
+      }
+      @for (item of group.items; track item.id) {
+        @let label = item.labelKey | transloco;
+        @let count = badgeFor(item);
+        <button type="button" class="sn-item" [class.active]="activeId() === item.id" (click)="onItem(item)"
+          [attr.aria-current]="activeId() === item.id ? 'page' : null"
+          [attr.aria-label]="count ? label + ' (' + count + ')' : label"
+          [title]="layout.collapsed() ? label : ''">
+          <ion-icon [name]="item.icon" aria-hidden="true"></ion-icon>
+          @if (!layout.collapsed()) {
+            <span class="sn-label">{{ label }}</span>
+          }
+          @if (count) {
+            <span class="sn-count">{{ count > 99 ? '99+' : count }}</span>
+          }
+        </button>
+      }
+    }
+  </div>
+
+  <!-- Fuß: Profil und Abmelden -->
+  <div class="sn-foot">
+    <button type="button" class="sn-user" (click)="openProfile()" [title]="userName()" [attr.aria-label]="userName()">
+      @if (userImg()) {
+        <img class="sn-avatar" [src]="userImg()" alt="" (error)="userImg.set(null)" />
+      } @else {
+        <span class="sn-avatar sn-avatar--text">{{ initialsOf(userName()) }}</span>
+      }
+      @if (!layout.collapsed()) {
+        <span class="sn-user-text">
+          <b>{{ userName() }}</b>
+          @if (roleKey()) {
+            <span>{{ roleKey() | transloco }}</span>
+          }
+        </span>
+      }
+    </button>
+    <button type="button" class="sn-item sn-logout" (click)="logout()" [title]="layout.collapsed() ? ('settings.logout' | transloco) : ''" [attr.aria-label]="'settings.logout' | transloco">
+      <ion-icon name="log-out-outline" aria-hidden="true"></ion-icon>
+      @if (!layout.collapsed()) {
+        <span class="sn-label">{{ 'settings.logout' | transloco }}</span>
+      }
+    </button>
+  </div>
+</nav>
