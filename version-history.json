@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.3",
+      "date": "2.11.2026",
+      "changes": [
+        "🖼️ Personen übergeben: Beim Überführen in eine andere Instanz wird jetzt auch das Profilbild mit übernommen."
+      ]
+    },
+    {
       "version": "4.19.2",
       "date": "2.11.2026",
       "changes": [

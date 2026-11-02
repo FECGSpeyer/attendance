@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { supabase } from '../base/supabase';
 import { User } from '@supabase/supabase-js';
+import { DEFAULT_IMAGE } from '../../utilities/constants';
 
 @Injectable({
   providedIn: 'root'
@@ -56,6 +57,48 @@ export class ImageService {
     }
 
     return data.publicUrl;
+  }
+
+  /**
+   * Copy a person's profile picture to another player row (e.g. after a
+   * handover into another instance). Pictures from our `profiles` bucket are
+   * duplicated to `profiles/<targetId>`, so the new row owns its own file and
+   * later changes on either side stay independent. Any other URL is reused
+   * as-is. Default avatars, empty values and `data:` URLs are skipped.
+   * Returns the URL written to the target row, or null if nothing was copied.
+   */
+  async copyProfileImage(sourceImg: string | null | undefined, targetId: number): Promise<string | null> {
+    if (!sourceImg || sourceImg.startsWith('data:') || sourceImg === DEFAULT_IMAGE) {
+      return null;
+    }
+
+    let url = sourceImg;
+    const marker = '/storage/v1/object/public/profiles/';
+    const markerIndex = sourceImg.indexOf(marker);
+    if (markerIndex !== -1) {
+      const sourcePath = decodeURIComponent(sourceImg.slice(markerIndex + marker.length).split('?')[0]);
+      const targetPath = `${targetId}`;
+      if (sourcePath && sourcePath !== targetPath) {
+        await supabase.storage.from('profiles').remove([targetPath]);
+        const { error } = await supabase.storage.from('profiles').copy(sourcePath, targetPath);
+        if (!error) {
+          const { data } = supabase.storage.from('profiles').getPublicUrl(targetPath);
+          // Cache-bust in case an older picture with the same id was cached.
+          url = `${data.publicUrl}?v=${Date.now()}`;
+        }
+      }
+    }
+
+    const { error: updateError } = await supabase
+      .from('player')
+      .update({ img: url })
+      .match({ id: targetId });
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+
+    return url;
   }
 
   /**

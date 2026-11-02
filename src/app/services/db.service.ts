@@ -3821,7 +3821,16 @@ export class DbService {
       });
     }
 
-    await this.addPlayer(newPerson, true, groupId === mainGroup ? Role.RESPONSIBLE : Role.PLAYER, targetTenant.id);
+    const { userId: newPlayerId } = await this.addPlayer(newPerson, true, groupId === mainGroup ? Role.RESPONSIBLE : Role.PLAYER, targetTenant.id);
+
+    // addPlayer never writes `img` (pickPersonFields leaves it out), so the
+    // profile picture has to be carried over separately.
+    try {
+      await this.imageSvc.copyProfileImage(person.img, newPlayerId);
+    } catch (error) {
+      console.error('handoverPerson: copying profile image failed', error);
+    }
+
     if (stayInInstance) {
       await this.updatePlayer({
         ...person,

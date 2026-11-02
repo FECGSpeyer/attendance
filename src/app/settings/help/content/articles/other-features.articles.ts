@@ -197,8 +197,8 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     id: 'other-handover',
     title: 'Personen übergeben',
     categoryId: 'other',
-    keywords: ['übergabe', 'mitglied transferieren', 'zwischen instanzen verschieben'],
-    body: `Die [[Übergabe]] verschiebt einzelne Personen von deiner Instanz in eine andere Instanz derselben [[Organisation]] — z. B. wenn jemand von einem Vor- in den Hauptchor wechselt. Du wählst die Personen und die Ziel-Instanz aus, ordnest ihre bisherige [[Gruppe]] einer passenden Gruppe in der Ziel-Instanz zu und entscheidest, ob die Person auch in der Ursprungsinstanz bestehen bleiben soll.`,
+    keywords: ['übergabe', 'mitglied transferieren', 'zwischen instanzen verschieben', 'überführen', 'profilbild', 'prüfung'],
+    body: `Die [[Übergabe]] verschiebt einzelne Personen von deiner Instanz in eine andere Instanz derselben [[Organisation]] — z. B. wenn jemand von einem Vor- in den Hauptchor wechselt. Du wählst die Personen und die Ziel-Instanz aus, ordnest ihre bisherige [[Gruppe]] einer passenden Gruppe in der Ziel-Instanz zu und entscheidest, ob die Person auch in der Ursprungsinstanz bestehen bleiben soll. Stammdaten wie Name, Geburtstag und Notizen sowie das Profilbild werden dabei mit übernommen.`,
   },
   {
     id: 'other-teams',

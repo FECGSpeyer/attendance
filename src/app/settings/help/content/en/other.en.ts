@@ -160,8 +160,8 @@ Instance-specific [[Additional field|additional fields]] remain alongside and st
   },
   'other-handover': {
     title: 'Handing over people',
-    keywords: ['handover', 'transfer member', 'move between instances'],
-    body: `[[Handover]] moves individual people from your instance to another instance of the same [[Organisation|organisation]], e.g. when someone moves from a junior choir to the main choir. You choose the people and the target instance, map their current [[Group|group]] to a matching group in the target instance and decide whether the person should also remain in the original instance.`,
+    keywords: ['handover', 'transfer member', 'move between instances', 'transfer', 'profile picture', 'exam'],
+    body: `[[Handover]] moves individual people from your instance to another instance of the same [[Organisation|organisation]], e.g. when someone moves from a junior choir to the main choir. You choose the people and the target instance, map their current [[Group|group]] to a matching group in the target instance and decide whether the person should also remain in the original instance. Personal details such as name, birthday and notes as well as the profile picture are carried over.`,
   },
   'other-teams': {
     title: 'Microsoft Teams integration',
