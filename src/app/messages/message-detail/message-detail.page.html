@@ -14,7 +14,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light">
+<ion-content color="light" class="tabbar-safe">
   @if (isManager) {
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content></ion-refresher-content>

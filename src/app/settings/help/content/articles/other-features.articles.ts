@@ -54,7 +54,7 @@ Push-Nachrichten für Mitteilungen schaltest du in den Benachrichtigungen über 
     title: 'Automatische Nachrichten nach einem Termin',
     categoryId: 'other',
     keywords: ['automatisch', 'automatische nachricht', 'nachfassen', 'unentschuldigt', 'nicht abgemeldet', 'gefehlt', 'vermisst', 'zu spät', 'keine rückmeldung', 'regel', 'erinnerung nach termin', 'in folge', 'aussetzen', 'rückmeldung prüfen', 'grund nachtragen'],
-    body: `Mit automatischen Nachrichten bekommen [[Mitglied|Mitglieder]] nach einem Termin von selbst eine Nachricht, z. B. wenn sie unentschuldigt gefehlt haben, ohne sich abzumelden. [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] richten das unter Einstellungen → Kommunikation → Automatische Nachrichten ein. Es passiert nichts, solange keine Regel eingeschaltet ist.
+    body: `Mit automatischen Nachrichten bekommen [[Mitglied|Mitglieder]] nach einem Termin von selbst eine Nachricht, z. B. wenn sie unentschuldigt gefehlt haben, ohne sich abzumelden. [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]] richten das unter Einstellungen → Mitteilungen → Automatische Nachrichten ein. Es passiert nichts, solange keine Regel eingeschaltet ist.
 
 **Regel anlegen**
 1. Tippe auf "Neue Regel" oder starte mit einer Vorlage.
