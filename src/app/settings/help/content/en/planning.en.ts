@@ -180,13 +180,13 @@ If you are already signed in, tap the event and choose "Edit sign-up fields" to 
   'self-event-songs': {
     title: 'Viewing the pieces of an event',
     keywords: ['pieces', 'songs', 'sheet music', 'event pieces', 'current pieces', 'run sheet', 'what are we singing', 'what are we playing', 'print sheet music', 'download sheet music', 'past events'],
-    body: `If [[Piece|pieces]] are attached to an event, the event shows the marker "♪ 3 pieces" under "My attendance". This applies to the next event, the upcoming events and also past events, so you can also see what was sung last Sunday, for example.
+    body: `If [[Piece|pieces]] are selected for an event, the event shows the marker "♪ 3 pieces" under "My attendance". This applies to the next event, the upcoming events and also past events, so you can also see what was sung last Sunday, for example.
 
-Tap the marker to see the event's pieces. They are listed in the order of the [[Run sheet|run sheet]], followed by pieces that are only entered for the event. You also see pieces from the run sheet when the run sheet itself is not shared with you. A piece with a red background has no sheet music for your voice or instrument.
+Tap the marker to see the pieces selected for the event under "Pieces". A piece with a red background has no sheet music for your voice or instrument.
 
 Tap a piece to show, download or print its sheet music, listen to the recording or open the lyrics, just like in "Current pieces". The printer icon at the top right prints all sheet music of the event at once. If the run sheet is shared, open it at the bottom with "Open run sheet". In the run sheet itself you can also tap a piece to open its sheet music.
 
-The "Current pieces" tile still collects all pieces of the upcoming events, now including the pieces from the run sheet. As a [[Parent|parent]] you see the pieces of your children's events and can open the link stored for a piece.`,
+The "Current pieces" tile still collects all pieces of the upcoming events. As a [[Parent|parent]] you see the pieces of your children's events and can open the link stored for a piece.`,
   },
   'self-pause': {
     title: 'Entering a planned absence',

@@ -25,13 +25,13 @@ Bist du schon angemeldet, tippst du den Termin an und wählst „Anmeldefelder a
     title: 'Werke eines Termins ansehen',
     categoryId: 'self-service',
     keywords: ['werke', 'lieder', 'stücke', 'noten', 'termin werke', 'aktuelle werke', 'ablaufplan', 'was singen wir', 'was spielen wir', 'noten drucken', 'noten herunterladen', 'vergangene termine'],
-    body: `Hängen an einem Termin [[Werk|Werke]], steht unter "Meine Anwesenheit" am Termin die Markierung „♪ 3 Werke“. Das gilt für den nächsten Termin, die anstehenden und auch die vergangenen Termine. So siehst du z. B. auch, was am letzten Sonntag gesungen wurde.
+    body: `Sind bei einem Termin [[Werk|Werke]] ausgewählt, steht unter "Meine Anwesenheit" am Termin die Markierung „♪ 3 Werke“. Das gilt für den nächsten Termin, die anstehenden und auch die vergangenen Termine. So siehst du z. B. auch, was am letzten Sonntag gesungen wurde.
 
-Tippe die Markierung an, um die Werke des Termins zu sehen. Die Werke stehen in der Reihenfolge des [[Ablaufplan|Ablaufplans]], danach folgen Werke, die nur beim Termin eingetragen sind. Werke aus dem Ablaufplan siehst du auch dann, wenn der Ablaufplan selbst nicht für dich freigegeben ist. Ist ein Werk rot hinterlegt, sind für deine Stimme bzw. dein Instrument keine Noten hinterlegt.
+Tippe die Markierung an, um die Werke zu sehen, die beim Termin unter „Werke“ ausgewählt wurden. Ist ein Werk rot hinterlegt, sind für deine Stimme bzw. dein Instrument keine Noten hinterlegt.
 
 Tippst du ein Werk an, kannst du wie bei „Aktuelle Werke“ die Noten anzeigen, herunterladen oder drucken, die Aufnahme anhören oder den Liedtext öffnen. Mit dem Drucker-Symbol oben rechts druckst du alle Noten des Termins auf einmal. Ist der Ablaufplan freigegeben, öffnest du ihn unten mit „Ablaufplan öffnen“. Auch im Ablaufplan selbst kannst du ein Werk antippen, um seine Noten zu öffnen.
 
-Die Kachel „Aktuelle Werke“ zeigt weiterhin alle Werke der kommenden Termine gesammelt, jetzt ebenfalls inklusive der Werke aus dem Ablaufplan. Als [[Elternteil]] siehst du die Werke der Termine deiner Kinder und kannst den hinterlegten Link des Werks öffnen.`,
+Die Kachel „Aktuelle Werke“ zeigt weiterhin alle Werke der kommenden Termine gesammelt. Als [[Elternteil]] siehst du die Werke der Termine deiner Kinder und kannst den hinterlegten Link des Werks öffnen.`,
   },
   {
     id: 'self-pause',
