@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.19.1",
+      "date": "2.11.2026",
+      "changes": [
+        "🗂️ Dateiablage: Mehrere Dateien und Ordner auf einmal markieren (Häkchen oben oder im Menü) und gemeinsam verschieben oder löschen.",
+        "📁 Verschieben zeigt jetzt die Ordnerstruktur als aufklappbaren Baum, in dem du das Ziel antippst. Neue Zielordner legst du direkt im Dialog an, gleichnamige Einträge im Ziel werden nicht überschrieben."
+      ]
+    },
+    {
       "version": "4.19.0",
       "date": "2.11.2026",
       "changes": [
