@@ -326,11 +326,46 @@ export class AttendancePage implements OnInit, OnDestroy {
 
     void this.db.getPersonIdForTenant(this.ownedTenantId).then(id => this.myPersonId = id);
 
-    this.songs = await this.db.getSongs();
-    this.filteredSongs = [...this.songs];
     this.instruments = this.db.groups().filter((instrument: Group) => instrument.maingroup !== true);
-    this.groupCategories = await this.db.getGroupCategories();
     this.mainGroup = this.db.getMainGroup().id;
+    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
+    this.withExcuses = this.db.tenant().withExcuses;
+
+    // Start every independent load at once instead of one after another.
+    // Before, Werke, Kategorien and Dirigenten were awaited in sequence
+    // before the Termin itself was even requested, so the persons list had
+    // to wait for 4+ round trips (more for tenants with thousands of Werke,
+    // which load in pages). Now the Termin fetch runs in parallel and the
+    // list renders as soon as it is back; the rest fills in afterwards.
+    // Each side load swallows its own error so it can't block the list.
+    const attendancePromise = this.fetchAttendance('modal_open');
+    const songsPromise = this.db.getSongs().catch((e) => {
+      console.warn('[attendance] songs load failed:', e);
+      return [] as Song[];
+    });
+    const categoriesPromise = this.db.getGroupCategories().catch((e) => {
+      console.warn('[attendance] group categories load failed:', e);
+      return [] as GroupCategory[];
+    });
+    const conductorsPromise = this.db.getConductors(true).catch((e) => {
+      console.warn('[attendance] conductors load failed:', e);
+      return [] as Person[];
+    });
+    const historyPromise = this.db.getHistoryByAttendanceId(this.attendanceId).catch((e) => {
+      console.warn('[attendance] history load failed:', e);
+      return [] as History[];
+    });
+    const prefsPromise = Promise.all([
+      this.storage.get('attendanceViewMode'),
+      this.storage.get('attendanceShowAvatars'),
+      this.storage.get('attendanceShowRegFields'),
+      this.storage.get(`attSortField${this.attendanceId}`),
+      this.storage.get(`attSortLevel${this.attendanceId}`),
+      this.storage.get(`attSortDir${this.attendanceId}`),
+    ]).catch(() => [] as any[]);
+    // Avoid unhandled-rejection noise if we bail out before awaiting these.
+    void attendancePromise.catch(() => undefined);
+
     // Bind so we can remove it on teardown(). The previous inline arrow
     // leaked — every dead page instance kept its handler, and on a
     // cold-start visibility flip both the dead and live pages re-fetched
@@ -354,13 +389,21 @@ export class AttendancePage implements OnInit, OnDestroy {
       }
     };
     document.addEventListener('visibilitychange', this.onVisibilityChange);
-    this.isGeneral = this.db.tenant().type === DefaultAttendanceType.GENERAL;
-    this.conductors = await this.db.getConductors(true);
-    this.activeConductors = this.conductors.filter((con: Person) => !con.left);
-    this.historyEntry.person_id = this.activeConductors[0]?.id;
-    this.withExcuses = this.db.tenant().withExcuses;
+
+    // Sort/view preferences are local reads and change how the list looks,
+    // so apply them before the first render to avoid a visible re-sort.
+    const [viewMode, showAvatars, showRegFields, savedSortField, savedSortLevel, savedSortDir] = await prefsPromise;
+    this.attendanceViewMode = viewMode || AttendanceViewMode.CLICK;
+    this.showAvatars = showAvatars ?? false;
+    this.showRegFields = showRegFields ?? true;
+    if (savedSortField) {
+      this.extraFieldSortId = savedSortField;
+      this.extraFieldSortLevel = savedSortLevel || null;
+      this.extraFieldSortDir = savedSortDir === 'desc' ? 'desc' : 'asc';
+    }
+
     try {
-      this.attendance = await this.fetchAttendance('modal_open');
+      this.attendance = await attendancePromise;
     } catch (e) {
       console.error('[attendance] failed to load attendance after retries + fallback:', e);
       Utils.showToast(translate('attendance.loadFailedReopen'), 'danger');
@@ -415,19 +458,6 @@ export class AttendancePage implements OnInit, OnDestroy {
     // try/catch means a future regression can't take the persons list down
     // with it. AttendanceSecondaryInitFailed surfaces such regressions.
     try {
-      this.historyEntries = await this.db.getHistoryByAttendanceId(this.attendanceId);
-      this.attendanceViewMode = await this.storage.get('attendanceViewMode') || AttendanceViewMode.CLICK;
-      this.showAvatars = (await this.storage.get('attendanceShowAvatars')) ?? false;
-      this.showRegFields = (await this.storage.get('attendanceShowRegFields')) ?? true;
-      const savedSortField = await this.storage.get(`attSortField${this.attendanceId}`);
-      const savedSortLevel = await this.storage.get(`attSortLevel${this.attendanceId}`);
-      const savedSortDir = await this.storage.get(`attSortDir${this.attendanceId}`);
-      if (savedSortField) {
-        this.extraFieldSortId = savedSortField;
-        this.extraFieldSortLevel = savedSortLevel || null;
-        this.extraFieldSortDir = savedSortDir === 'desc' ? 'desc' : 'asc';
-      }
-
       void this.listenOnNetworkChanges();
       this.selectedSongs = this.attendance.songs || [];
       this.type = await this.resolveAttendanceType();
@@ -442,6 +472,19 @@ export class AttendancePage implements OnInit, OnDestroy {
       }
 
       this.subsribeOnChannels();
+
+      // Werke, Dirigenten and history only feed the Werke section, so they
+      // fill in last without holding back status buttons or realtime.
+      const [songs, groupCategories, conductors, historyEntries] = await Promise.all([
+        songsPromise, categoriesPromise, conductorsPromise, historyPromise,
+      ]);
+      this.songs = songs ?? [];
+      this.filteredSongs = [...this.songs];
+      this.groupCategories = groupCategories ?? [];
+      this.conductors = conductors ?? [];
+      this.activeConductors = this.conductors.filter((con: Person) => !con.left);
+      this.historyEntry.person_id = this.activeConductors[0]?.id;
+      this.historyEntries = historyEntries ?? [];
     } catch (e) {
       console.error('[attendance] secondary init failed (persons list still rendered):', e);
       this.tracking.track(TrackingEvent.AttendanceSecondaryInitFailed, {

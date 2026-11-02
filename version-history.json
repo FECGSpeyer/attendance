@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.4",
+      "date": "2.11.2026",
+      "changes": [
+        "⚡ Termine: Ein Termin öffnet jetzt schneller. Die Personenliste erscheint sofort, Werke und Dirigenten laden im Hintergrund nach."
+      ]
+    },
+    {
       "version": "4.19.3",
       "date": "2.11.2026",
       "changes": [

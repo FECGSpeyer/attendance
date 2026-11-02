@@ -66,4 +66,33 @@ describe('AttendancePage', () => {
   it('should initialize with online status true', () => {
     expect(component.isOnline).toBe(true);
   });
+
+  it('renders the persons list without waiting for Werke, Kategorien and Dirigenten', async () => {
+    const never = new Promise<never>(() => undefined);
+    const db: any = dbServiceMock;
+    db.checkToken = vi.fn().mockResolvedValue(undefined);
+    db.canAccessFiles = vi.fn().mockReturnValue(false);
+    db.getPersonIdForTenant = vi.fn().mockResolvedValue(null);
+    db.getSongs = vi.fn().mockReturnValue(never);
+    db.getGroupCategories = vi.fn().mockReturnValue(never);
+    db.getConductors = vi.fn().mockReturnValue(never);
+    db.getHistoryByAttendanceId = vi.fn().mockReturnValue(never);
+    db.getAttendanceByIdRobust = vi.fn().mockResolvedValue({
+      id: 7,
+      date: new Date().toISOString(),
+      persons: [],
+    });
+    (component as any).attendanceId = 7;
+
+    (component as any).route = { snapshot: { queryParamMap: { get: () => null } } };
+
+    let initError: unknown;
+    void (component as any).init().catch((e: unknown) => { initError = e; });
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(initError).toBeUndefined();
+
+    expect(db.getAttendanceByIdRobust).toHaveBeenCalledWith(7, { context: 'modal_open' });
+    expect(component.attendance?.id).toBe(7);
+  });
 });
