@@ -405,6 +405,15 @@ export class PersonPage implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Name of the selected group, bound to ion-select's selectedText so the
+   * field always shows the group that is actually stored in player.instrument
+   * instead of relying on Ionic re-deriving the text from the option nodes.
+   */
+  getGroupName(groupId: number): string {
+    return this.db.groups().find((g: Group) => g.id === groupId)?.name ?? '';
+  }
+
   onInstrumentChange(byUser = true) {
     if (byUser) {
       this.onChange();

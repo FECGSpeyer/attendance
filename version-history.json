@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.5",
+      "date": "2.11.2026",
+      "changes": [
+        "🎻 Personen: Beim Anlegen oder Bearbeiten zeigt das Feld Gruppe jetzt immer die ausgewählte Gruppe an statt der ersten Gruppe der Liste."
+      ]
+    },
+    {
       "version": "4.19.4",
       "date": "2.11.2026",
       "changes": [
