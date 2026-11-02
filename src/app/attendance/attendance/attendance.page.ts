@@ -32,6 +32,7 @@ import { dutyFill, dutyFillColor, dutyRequired, dutyStateAfterStatus, isCancelle
 import { translate } from '@jsverse/transloco';
 import { canArchiveAttendance } from 'src/app/utilities/archived';
 
+import { AutoMessagePanelComponent } from '../auto-message-panel/auto-message-panel.component';
 @Component({
     selector: 'app-attendance',
     templateUrl: './attendance.page.html',
@@ -45,6 +46,8 @@ export class AttendancePage implements OnInit, OnDestroy {
   @ViewChild('chooser') chooser: ElementRef;
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
   @ViewChild('legendModal') legendModal: IonModal;
+  /** Automatic messages + "Unentschuldigte anschreiben" (menu entry). */
+  @ViewChild('autoPanel') autoPanel?: AutoMessagePanelComponent;
   public players: PersonAttendance[] = [];
   public conductors: Person[] = [];
   public excused: Set<string> = new Set();

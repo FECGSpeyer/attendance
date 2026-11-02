@@ -69,7 +69,7 @@ Push-Nachrichten für Mitteilungen schaltest du in den Benachrichtigungen über 
 Nur wenn bei dem Termin wirklich Anwesenheit erfasst wurde und die Wartezeit vorbei ist. Abgemeldete, Pausierte und Ausgetretene bekommen nie eine Nachricht. Jede Person bekommt pro Regel und Termin höchstens eine Nachricht. Termine vor dem Einschalten werden nicht nachgeschickt.
 
 **Am Termin**
-Im Termin siehst du oben, wann die Nachricht rausgeht. Mit "Diesmal aussetzen" bekommt für diesen Termin niemand die Nachricht. Nach dem Versand siehst du, an wie viele Personen sie ging und wer sie gelesen hat. Mit "Unentschuldigte anschreiben" schickst du auch ohne Regel eine vorausgefüllte Mitteilung an alle Unentschuldigten dieses Termins.
+Im Termin siehst du oben, wann die Nachricht rausgeht. Mit "Diesmal aussetzen" bekommt für diesen Termin niemand die Nachricht. Nach dem Versand siehst du, an wie viele Personen sie ging und wer sie gelesen hat. Über das Menü (⋮) im Termin und "Unentschuldigte anschreiben" schickst du auch ohne Regel eine vorausgefüllte Mitteilung an alle Unentschuldigten dieses Termins.
 
 **Rückmeldungen prüfen**
 Antwortet ein Mitglied mit einem Grund oder "Ich war doch da", erscheint das im Termin unter "Rückmeldungen". Mit "Entschuldigen" bzw. "Auf anwesend" änderst du den Status, mit "Ablehnen" bleibt er. Die Person bekommt in beiden Fällen Bescheid. In der Regel kannst du einstellen, dass ein Grund sofort entschuldigt. "Ich war doch da" wird immer geprüft.

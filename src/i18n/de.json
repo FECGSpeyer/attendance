@@ -3403,8 +3403,6 @@
     "decideReject": "Rückmeldung ablehnen? Der Status bleibt, der Grund bleibt als Notiz stehen.",
     "decidedAccepted": "Übernommen",
     "decidedRejected": "Abgelehnt",
-    "writeUnexcused": "Unentschuldigte anschreiben",
-    "writeUnexcusedHint": "Vorausgefüllte Mitteilung an {count, plural, one {# Person} other {# Personen}}, vor dem Senden änderbar",
     "manualRecipients": "{count, plural, one {# unentschuldigte Person} other {# unentschuldigte Personen}} dieses Termins",
     "manualTitle": "Wir haben euch vermisst",
     "manualBody": "Hallo,\n\nbei {termin} am {datum} wart ihr nicht da und hattet euch nicht abgemeldet.\n\nWenn ihr einen Grund hattet, tragt ihn gern direkt in der App nach. Bitte meldet euch nächstes Mal vorher ab.\nEuer Team von {instanz}",
@@ -3435,6 +3433,7 @@
       "family": "Familie",
       "forgot": "Abmelden vergessen",
       "other": "Sonstiges"
-    }
+    },
+    "writeUnexcusedMenu": "Unentschuldigte anschreiben ({count})"
   }
 }

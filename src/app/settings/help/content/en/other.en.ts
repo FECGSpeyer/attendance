@@ -60,7 +60,7 @@ You switch push messages for announcements on or off in the notifications with t
 Only when attendance was really taken for the event and the wait is over. People who cancelled, paused or left never get a message. Each person gets at most one message per rule and event. Events before switching on are not sent afterwards.
 
 **On the event**
-At the top of the event you see when the message goes out. With "Skip this time" nobody gets the message for this event. After sending you see how many people it went to and who read it. With "Message the unexcused" you send a prefilled announcement to all unexcused people of this event, even without a rule.
+At the top of the event you see when the message goes out. With "Skip this time" nobody gets the message for this event. After sending you see how many people it went to and who read it. Via the menu (⋮) of the event and "Message the unexcused" you send a prefilled announcement to all unexcused people of this event, even without a rule.
 
 **Checking replies**
 When a member replies with a reason or "I was there", it appears in the event under "Replies". With "Excuse" or "Mark present" you change the status, with "Reject" it stays. The person is notified either way. In the rule you can choose that a reason excuses right away. "I was there" is always checked.

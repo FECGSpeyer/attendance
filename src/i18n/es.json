@@ -3403,8 +3403,6 @@
     "decideReject": "¿Rechazar la respuesta? El estado se mantiene y el motivo queda como nota.",
     "decidedAccepted": "Aceptado",
     "decidedRejected": "Rechazado",
-    "writeUnexcused": "Escribir a quienes faltaron sin justificar",
-    "writeUnexcusedHint": "Mensaje rellenado para {count, plural, one {# persona} other {# personas}}, se puede editar antes de enviar",
     "manualRecipients": "{count, plural, one {# persona sin justificar} other {# personas sin justificar}} de este evento",
     "manualTitle": "Os echamos de menos",
     "manualBody": "Hola:\n\nno estuvisteis en {termin} el {datum} y no os habíais dado de baja.\n\nSi teníais un motivo, añadidlo directamente en la app. Por favor, avisad con antelación la próxima vez.\nVuestro equipo de {instanz}",
@@ -3435,6 +3433,7 @@
       "family": "Familia",
       "forgot": "Olvidé darme de baja",
       "other": "Otro"
-    }
+    },
+    "writeUnexcusedMenu": "Escribir a los no justificados ({count})"
   }
 }

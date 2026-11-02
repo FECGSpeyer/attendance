@@ -3403,8 +3403,6 @@
     "decideReject": "Reject the reply? The status stays, the reason stays as a note.",
     "decidedAccepted": "Accepted",
     "decidedRejected": "Rejected",
-    "writeUnexcused": "Message the unexcused",
-    "writeUnexcusedHint": "Prefilled message to {count, plural, one {# person} other {# people}}, editable before sending",
     "manualRecipients": "{count, plural, one {# unexcused person} other {# unexcused people}} of this event",
     "manualTitle": "We missed you",
     "manualBody": "Hi,\n\nyou were not at {termin} on {datum} and had not cancelled.\n\nIf you had a reason, feel free to add it in the app. Please cancel in advance next time.\nYour team at {instanz}",
@@ -3435,6 +3433,7 @@
       "family": "Family",
       "forgot": "Forgot to cancel",
       "other": "Other"
-    }
+    },
+    "writeUnexcusedMenu": "Message the unexcused ({count})"
   }
 }

@@ -70,16 +70,4 @@
       }
     </ion-list>
   }
-
-  @if (unexcused.length > 0) {
-    <ion-list [inset]="true">
-      <ion-item button detail="true" (click)="writeUnexcused()">
-        <ion-icon name="chatbubble-ellipses-outline" slot="start" color="primary"></ion-icon>
-        <ion-label class="ion-text-wrap">
-          {{ 'autoMessages.writeUnexcused' | transloco }}
-          <p>{{ 'autoMessages.writeUnexcusedHint' | transloco: { count: unexcused.length } }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  }
 }
