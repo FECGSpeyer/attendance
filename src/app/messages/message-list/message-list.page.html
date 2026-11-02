@@ -7,10 +7,22 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="light">
+<ion-content color="light" class="tabbar-safe">
   <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
+
+  <ion-list [inset]="true">
+    <ion-item button detail="true" routerLink="/tabs/settings/auto-messages" lines="none">
+      <ion-icon name="timer-outline" slot="start" color="primary"></ion-icon>
+      <ion-label>
+        {{ 'messages.autoEntry' | transloco }}
+        @if (activeRules !== null) {
+          <p>{{ 'messages.autoActive' | transloco: { count: activeRules } }}</p>
+        }
+      </ion-label>
+    </ion-item>
+  </ion-list>
 
   @if (!loading && messages.length === 0) {
     <div class="empty-state">

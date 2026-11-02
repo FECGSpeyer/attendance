@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AlertController, IonItemSliding, ModalController } from '@ionic/angular/lazy';
 import { DbService } from 'src/app/services/db.service';
 import { MessageService } from 'src/app/services/message/message.service';
+import { AutoMessageService } from 'src/app/services/auto-message/auto-message.service';
 import { Message } from 'src/app/utilities/interfaces';
 import { Utils } from 'src/app/utilities/Utils';
 import { MessageComposeComponent } from '../message-compose/message-compose.component';
@@ -26,9 +27,12 @@ export class MessageListPage implements OnInit {
   private modalController = inject(ModalController);
   private alertController = inject(AlertController);
   private router = inject(Router);
+  private autoMessageService = inject(AutoMessageService);
 
   messages: MessageRow[] = [];
   loading = true;
+  /** Number of switched-on automatic message rules (null until loaded). */
+  activeRules: number | null = null;
 
   async ngOnInit(): Promise<void> {
     await this.load();
@@ -47,6 +51,9 @@ export class MessageListPage implements OnInit {
   }
 
   async load(): Promise<void> {
+    this.autoMessageService.getRules(this.db.tenant().id)
+      .then(rules => this.activeRules = rules.filter(r => r.enabled).length)
+      .catch(e => console.error('[message-list] rules load failed:', e));
     try {
       const messages = await this.messageService.getMessages(this.db.tenant().id);
       const stats = await this.messageService.getStats(messages.map(m => m.id));

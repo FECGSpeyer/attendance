@@ -109,7 +109,7 @@
     "configureDashboard": "Configurar panel",
     "communication": "Comunicación",
     "announcements": "Avisos",
-    "messageAll": "Enviar un mensaje a todos",
+    "messagesHint": "Enviar mensajes y hacer seguimiento automático",
     "usersRoles": "Usuarios y roles",
     "admins": "Administradores",
     "parents": "Padres",
@@ -218,9 +218,7 @@
     "passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
     "passwordChanged": "La contraseña se ha cambiado",
     "passwordFailed": "Error al cambiar la contraseña. Inténtalo más tarde.",
-    "yourMobileOptional": "Tu número de móvil (opcional)",
-    "autoMessages": "Mensajes automáticos",
-    "autoMessagesHint": "Hacer seguimiento automático tras los eventos"
+    "yourMobileOptional": "Tu número de móvil (opcional)"
   },
   "login": {
     "linkNote": "Vincula tu cuenta de Attendix con Microsoft una sola vez. Inicia sesión con tus datos de Attendix y después Teams te conectará automáticamente.",
@@ -2019,7 +2017,9 @@
     "sendingNow": "Enviando …",
     "isSending": "Se está enviando el mensaje",
     "sendFailed": "Error al enviar, inténtalo de nuevo.",
-    "emailOpenedApprox": "correo abierto (aprox.)"
+    "emailOpenedApprox": "correo abierto (aprox.)",
+    "autoEntry": "Mensajes automáticos",
+    "autoActive": "{count, plural, =0 {Ninguna regla activa} one {# regla activa} other {# reglas activas}}"
   },
   "teamOrg": {
     "since": "desde {date}",

@@ -45,7 +45,7 @@ You switch push messages for announcements on or off in the notifications with t
   'other-auto-messages': {
     title: 'Automatic messages after an event',
     keywords: ['automatic', 'automatic message', 'follow up', 'unexcused', 'did not cancel', 'absent', 'missed', 'late', 'no reply', 'rule', 'reminder after event', 'in a row', 'skip', 'check replies', 'add reason'],
-    body: `With automatic messages, [[Member|members]] get a message by themselves after an event, e.g. when they were absent without cancelling. [[Administrator|Administrators]] and [[Person in charge|people in charge]] set this up under Settings → Communication → Automatic messages. Nothing happens as long as no rule is switched on.
+    body: `With automatic messages, [[Member|members]] get a message by themselves after an event, e.g. when they were absent without cancelling. [[Administrator|Administrators]] and [[Person in charge|people in charge]] set this up under Settings → Announcements → Automatic messages. Nothing happens as long as no rule is switched on.
 
 **Creating a rule**
 1. Tap "New rule" or start from a template.
