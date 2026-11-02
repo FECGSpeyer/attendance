@@ -103,6 +103,10 @@
       }
     </ion-list>
   } @else if (loaded && allAttendances.length) {
+    <!-- Breite Bildschirme: Kommende links, Vergangene rechts (Container-Query in der SCSS) -->
+    <div class="att-layout">
+    <div class="att-grid" [class.att-grid--two]="(isConductor || isHelper) && oldAttendances.length > 0">
+    <div class="att-col att-col--main">
     @if (myDutyRequests.length) {
       <div class="ev-month">{{ 'duty.myRequestsTitle' | transloco }}</div>
       <ion-list inset="true" class="my-duty-requests">
@@ -228,6 +232,8 @@
       }
     }
 
+    </div>
+    <div class="att-col att-col--side">
     @if (isConductor || isHelper ? oldAttendances.length : viewerAttendances.length) {
       <div class="ev-section">
         <h2>{{ isConductor || isHelper ? 'Vergangen' : 'Termine' }}</h2>
@@ -270,6 +276,9 @@
         }
       </ion-list>
     }
+    </div>
+    </div>
+    </div>
   } @else {
       <div class="noDataContainer">
         <div class="noPersons">

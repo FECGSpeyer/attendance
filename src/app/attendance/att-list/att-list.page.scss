@@ -60,3 +60,32 @@ ion-item.ev-today-item {
   vertical-align: -2px;
   margin-right: 4px;
 }
+
+// ── Breite Bildschirme (Tablet quer, Computer) ──────────────
+// Container-Query statt Media-Query: zählt die Breite neben dem Sidepanel.
+.att-layout {
+  container-type: inline-size;
+}
+
+.att-grid {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+@container (min-width: 760px) {
+  .att-grid--two {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    column-gap: 4px;
+    align-items: start;
+  }
+
+  // Überschrift „Vergangen“ auf Höhe der ersten Zeile links.
+  .att-grid--two .att-col--side > .ev-section:first-child {
+    padding-top: 10px;
+  }
+
+  .att-grid:not(.att-grid--two) {
+    max-width: 760px;
+  }
+}
