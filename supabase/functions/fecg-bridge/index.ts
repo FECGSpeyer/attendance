@@ -5,7 +5,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 // of which tenant_groups stores only the SHA-256.
 //
 // GET ?from=YYYY-MM-DD&to=YYYY-MM-DD   ORG plans with "Beamer-Datei nötig" per row
-//                                      (default: today until 8 weeks ahead)
+//                                      (default: today until 8 weeks ahead), plus the
+//                                      20 most recent plans before `from` (past: true)
 // POST { action: 'point', plan, field, file }   SongBeamer file of a Programmpunkt
 // POST { action: 'song', songId, file }         SongBeamer file of a Werk
 //   file = { name, path } or null to remove it. Points are written through the SQL function
@@ -37,6 +38,7 @@ interface FieldSelection {
 
 interface Plan { time?: string; end?: string; title?: string; label?: string; day?: number; fields?: FieldSelection[] }
 
+const PAST_PLANS_LIMIT = 20;
 const AGENDA_ITEMS_PLACEHOLDER_ID = 'agenda-items-placeholder';
 const AUTO_BEAMER_WORDS = /lied|gedicht/i;
 
@@ -239,35 +241,44 @@ Deno.serve(async (req: Request) => {
   );
   const tenantIds = [...tenants.keys()];
 
-  const [attRes, adhocRes] = await Promise.all([
+  const attSelect = 'id, date, start_time, end_time, place, plan, extra_plans, typeInfo, tenantId';
+  const attQuery = () => supabase
+    .from('attendance')
+    .select(attSelect)
+    .in('tenantId', tenantIds)
+    .eq('is_org_plan', true)
+    .eq('archived', false)
+    .not('plan', 'is', null);
+  const adhocQuery = () => supabase
+    .from('shared_plans')
+    .select('id, date, time, end_time, plan_title, fields')
+    .eq('org_id', org.id);
+  const none = Promise.resolve({ data: [], error: null });
+
+  // Upcoming plans in [from, to], plus the most recent ones before `from`. One Termin can hold
+  // several plans, so up to PAST_PLANS_LIMIT rows each are loaded and the plans cut below.
+  const results = await Promise.all([
     tenantIds.length
-      ? supabase
-          .from('attendance')
-          .select('id, date, start_time, end_time, place, plan, extra_plans, typeInfo, tenantId')
-          .in('tenantId', tenantIds)
-          .eq('is_org_plan', true)
-          .eq('archived', false)
-          .not('plan', 'is', null)
-          .gte('date', from)
-          .lte('date', `${to}T23:59:59`)
-          .order('date', { ascending: true })
-      : Promise.resolve({ data: [], error: null }),
-    supabase
-      .from('shared_plans')
-      .select('id, date, time, end_time, plan_title, fields')
-      .eq('org_id', org.id)
-      .gte('date', from)
-      .lte('date', to)
-      .order('date', { ascending: true }),
+      ? attQuery().gte('date', from).lte('date', `${to}T23:59:59`).order('date', { ascending: true })
+      : none,
+    adhocQuery().gte('date', from).lte('date', to).order('date', { ascending: true }),
+    tenantIds.length
+      ? attQuery().lt('date', from).order('date', { ascending: false }).limit(PAST_PLANS_LIMIT)
+      : none,
+    adhocQuery().lt('date', from).order('date', { ascending: false }).limit(PAST_PLANS_LIMIT),
   ]);
 
-  if ((attRes as any).error || adhocRes.error) {
-    console.error('fecg-bridge load failed', (attRes as any).error ?? adhocRes.error);
+  const failed = results.find((r: any) => r.error) as any;
+  if (failed) {
+    console.error('fecg-bridge load failed', failed.error);
     return json({ error: 'load_failed' }, 500);
   }
 
-  const attRows = ((attRes as any).data ?? []) as any[];
-  const adhocRows = (adhocRes.data ?? []) as any[];
+  const [attUp, adhocUp, attPast, adhocPast] = results.map((r: any) => (r.data ?? []) as any[]);
+  const pastAttIds = new Set(attPast.map(r => r.id));
+  const pastAdhocIds = new Set(adhocPast.map(r => r.id));
+  const attRows = [...attPast, ...attUp];
+  const adhocRows = [...adhocPast, ...adhocUp];
 
   // SongBeamer files of the Werke used in these plans.
   const songIds = new Set<number>();
@@ -283,7 +294,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const beamerActive = !!org.beamer_files_enabled;
-  const plans: unknown[] = [];
+  const plans: any[] = [];
 
   for (const row of attRows) {
     const all = [row.plan, ...(row.extra_plans ?? [])].filter(Boolean) as Plan[];
@@ -295,6 +306,7 @@ Deno.serve(async (req: Request) => {
         planIndex: index,
         tenant: tenants.get(row.tenantId)?.longName ?? tenants.get(row.tenantId)?.shortName ?? null,
         date: String(row.date ?? '').slice(0, 10),
+        past: pastAttIds.has(row.id),
         day: plan.day ?? null,
         label: plan.label ?? null,
         title: plan.title || row.typeInfo || null,
@@ -317,6 +329,7 @@ Deno.serve(async (req: Request) => {
       planIndex: 0,
       tenant: null,
       date: String(row.date ?? '').slice(0, 10),
+      past: pastAdhocIds.has(row.id),
       day: null,
       label: null,
       title: row.plan_title || null,
@@ -330,12 +343,14 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  plans.sort((a: any, b: any) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const byDate = (a: any, b: any) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  const upcoming = plans.filter(p => !p.past).sort(byDate);
+  const past = plans.filter(p => p.past).sort(byDate).slice(-PAST_PLANS_LIMIT);
 
   return json({
     org: { id: org.id, name: org.name, beamerFilesEnabled: beamerActive },
     from,
     to,
-    plans,
+    plans: [...past, ...upcoming],
   });
 });

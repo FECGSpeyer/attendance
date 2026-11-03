@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.7",
+      "date": "3.11.2026",
+      "changes": [
+        "🗂️ Gemeinde App: Neben den kommenden ORG-Plänen kommen jetzt auch die letzten 20 vergangenen mit."
+      ]
+    },
+    {
       "version": "4.19.6",
       "date": "2.11.2026",
       "changes": [

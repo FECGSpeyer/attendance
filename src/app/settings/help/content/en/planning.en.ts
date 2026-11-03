@@ -67,7 +67,7 @@ With "Reset" you can return to the default programme items of the event type at 
   'plan-beamer': {
     title: 'Projector files in the run sheet (Gemeinde App)',
     keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem'],
-    body: `This feature is only available to the organisations FECG Speyer and FECG Schwegenheim, whose org plans appear in the Gemeinde App.
+    body: `This feature is only available to the organisations FECG Speyer and FECG Schwegenheim, whose org plans appear in the Gemeinde App. There you see the org plans of the next 8 weeks plus the 20 most recent past ones.
 
 **Switching on:** Admins switch on **Projector files in the run sheet** under Settings › Organisation › Gemeinde App. There you also create the **connection key** for the Gemeinde App. It is only visible right after you create it. If you renew it, the old key stops working.
 

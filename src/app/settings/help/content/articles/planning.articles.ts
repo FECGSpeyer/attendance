@@ -76,7 +76,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     title: 'Beamer-Dateien im Ablaufplan (Gemeinde App)',
     categoryId: 'planning',
     keywords: ['beamer', 'beamer-datei', 'songbeamer', 'sng', 'projektion', 'folien', 'gemeinde app', 'fecg', 'org-plan', 'programmpunkt bearbeiten', 'feld bearbeiten', 'lied', 'gedicht'],
-    body: `Diese Funktion gibt es nur für die Organisationen FECG Speyer und FECG Schwegenheim, deren ORG-Pläne in der Gemeinde App erscheinen.
+    body: `Diese Funktion gibt es nur für die Organisationen FECG Speyer und FECG Schwegenheim, deren ORG-Pläne in der Gemeinde App erscheinen. Dort siehst du die ORG-Pläne der nächsten 8 Wochen und zusätzlich die letzten 20 vergangenen.
 
 **Einschalten:** Admins schalten unter Einstellungen › Organisation › Gemeinde App **Beamer-Dateien im Ablaufplan** ein. Dort erstellst du auch den **Verbindungsschlüssel** für die Gemeinde App. Er ist nur direkt nach dem Erstellen sichtbar. Erneuerst du ihn, funktioniert der alte nicht mehr.
 
