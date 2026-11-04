@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.9",
+      "date": "4.11.2026",
+      "changes": [
+        "📝 Ablaufplan: Beim Weiterbearbeiten eines begonnenen Plans werden die gespeicherten Programmpunkte wieder sofort angezeigt."
+      ]
+    },
+    {
       "version": "4.19.8",
       "date": "4.11.2026",
       "changes": [

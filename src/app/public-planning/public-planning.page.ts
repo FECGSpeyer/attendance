@@ -78,7 +78,10 @@ export class PublicPlanningPage implements OnInit {
   get rows(): PlanRow[] {
     const fields = this.selectedFields;
     const key = fields.map(f => `${f.id}|${f.groupId ?? ''}|${f.isGroup ? 1 : 0}`).join(';') + '#' + [...this.collapsedGroups].join(';');
-    if (key === this.rowsKey && this.rowsCache.length) { return this.rowsCache; }
+    // The key only covers ids and structure, so also check the rows still point at the
+    // current field objects: a loaded plan can have the same ids as the start row (e.g. '').
+    const sameFields = this.rowsCache.every(row => !row.field || fields[row.index] === row.field);
+    if (key === this.rowsKey && this.rowsCache.length && sameFields) { return this.rowsCache; }
     const rows: PlanRow[] = [];
     const seen = new Map<string, number>();
     const rowKey = (id: string) => {

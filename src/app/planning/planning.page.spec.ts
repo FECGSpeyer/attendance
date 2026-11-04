@@ -51,4 +51,21 @@ describe('PlanningPage', () => {
   it('should have empty songs array', () => {
     expect(component.songs).toEqual([]);
   });
+
+  it('shows a loaded plan even when its first row has the same id as the start row', () => {
+    // First render shows the default start row (id '').
+    expect(component.rows[0].field?.name).toBe(component.selectedFields[0].name);
+
+    // A saved plan whose first row kept the empty id replaces the fields.
+    component.selectedFields = [{ id: '', name: 'Begrüßung und Gebet', time: '15' }];
+
+    expect(component.rows.length).toBe(1);
+    expect(component.rows[0].field?.name).toBe('Begrüßung und Gebet');
+    expect(component.rows[0].field?.time).toBe('15');
+  });
+
+  it('keeps the cached rows while the fields stay the same', () => {
+    const first = component.rows;
+    expect(component.rows).toBe(first);
+  });
 });
