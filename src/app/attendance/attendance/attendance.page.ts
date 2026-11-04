@@ -288,8 +288,9 @@ export class AttendancePage implements OnInit, OnDestroy {
    */
   private async teardown(): Promise<void> {
     await Network.removeAllListeners();
-    await this.sub?.unsubscribe();
-    await this.personAttSub?.unsubscribe();
+    const supabase = this.db.getSupabase();
+    if (this.sub) { await supabase.removeChannel(this.sub); }
+    if (this.personAttSub) { await supabase.removeChannel(this.personAttSub); }
     this.sub = undefined;
     this.personAttSub = undefined;
     this.stopPlanLive();
@@ -457,6 +458,22 @@ export class AttendancePage implements OnInit, OnDestroy {
     // gracefully when its data is missing; wrapping the whole block in a
     // try/catch means a future regression can't take the persons list down
     // with it. AttendanceSecondaryInitFailed surfaces such regressions.
+    // Werke, Dirigenten and history only feed the Werke section. Apply them
+    // as soon as they arrive and independently of the block below, so a
+    // failure there can't leave the Werkauswahl empty (4.19.4 regression:
+    // the realtime subscribe threw and the Werke were never assigned).
+    const sideLoads = Promise.all([
+      songsPromise, categoriesPromise, conductorsPromise, historyPromise,
+    ]).then(([songs, groupCategories, conductors, historyEntries]) => {
+      this.songs = songs ?? [];
+      this.filteredSongs = [...this.songs];
+      this.groupCategories = groupCategories ?? [];
+      this.conductors = conductors ?? [];
+      this.activeConductors = this.conductors.filter((con: Person) => !con.left);
+      this.historyEntry.person_id = this.activeConductors[0]?.id;
+      this.historyEntries = historyEntries ?? [];
+    });
+
     try {
       void this.listenOnNetworkChanges();
       this.selectedSongs = this.attendance.songs || [];
@@ -472,19 +489,6 @@ export class AttendancePage implements OnInit, OnDestroy {
       }
 
       this.subsribeOnChannels();
-
-      // Werke, Dirigenten and history only feed the Werke section, so they
-      // fill in last without holding back status buttons or realtime.
-      const [songs, groupCategories, conductors, historyEntries] = await Promise.all([
-        songsPromise, categoriesPromise, conductorsPromise, historyPromise,
-      ]);
-      this.songs = songs ?? [];
-      this.filteredSongs = [...this.songs];
-      this.groupCategories = groupCategories ?? [];
-      this.conductors = conductors ?? [];
-      this.activeConductors = this.conductors.filter((con: Person) => !con.left);
-      this.historyEntry.person_id = this.activeConductors[0]?.id;
-      this.historyEntries = historyEntries ?? [];
     } catch (e) {
       console.error('[attendance] secondary init failed (persons list still rendered):', e);
       this.tracking.track(TrackingEvent.AttendanceSecondaryInitFailed, {
@@ -492,6 +496,8 @@ export class AttendancePage implements OnInit, OnDestroy {
         message: e?.message ?? String(e),
       });
     }
+
+    await sideLoads;
   }
 
   /**
@@ -546,16 +552,22 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   subsribeOnChannels() {
-    this.sub?.unsubscribe();
-    this.personAttSub?.unsubscribe();
-    this.sub = this.db.getSupabase()
-      .channel('att-changes').on(
+    // Supabase hands back an already joined channel when the topic name is
+    // taken, and adding listeners to it throws. The Termine list keeps its
+    // own 'att-changes' channel open behind this page, so this page needs
+    // topic names of its own.
+    const supabase = this.db.getSupabase();
+    if (this.sub) { void supabase.removeChannel(this.sub); }
+    if (this.personAttSub) { void supabase.removeChannel(this.personAttSub); }
+    const suffix = `${this.attendanceId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    this.sub = supabase
+      .channel(`att-detail-changes-${suffix}`).on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'attendance' },
         (payload: RealtimePostgresChangesPayload<any>) => this.onAttRealtimeChanges(payload))
       .subscribe();
-    this.personAttSub = this.db.getSupabase()
-      .channel('person-changes').on(
+    this.personAttSub = supabase
+      .channel(`att-detail-person-changes-${suffix}`).on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'person_attendances' },
         (payload: RealtimePostgresChangesPayload<any>) => this.onPersonAttRealtimeChanges(payload))

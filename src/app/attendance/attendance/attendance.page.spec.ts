@@ -95,4 +95,44 @@ describe('AttendancePage', () => {
     expect(db.getAttendanceByIdRobust).toHaveBeenCalledWith(7, { context: 'modal_open' });
     expect(component.attendance?.id).toBe(7);
   });
+  it('shows the Werke even when the realtime subscribe throws', async () => {
+    const db: any = dbServiceMock;
+    db.checkToken = vi.fn().mockResolvedValue(undefined);
+    db.canAccessFiles = vi.fn().mockReturnValue(false);
+    db.getPersonIdForTenant = vi.fn().mockResolvedValue(null);
+    db.getSongs = vi.fn().mockResolvedValue([{ id: 1, number: 1, name: 'Werk A' }]);
+    db.getGroupCategories = vi.fn().mockResolvedValue([]);
+    db.getConductors = vi.fn().mockResolvedValue([]);
+    db.getHistoryByAttendanceId = vi.fn().mockResolvedValue([]);
+    db.getAttendanceByIdRobust = vi.fn().mockResolvedValue({
+      id: 7,
+      date: new Date().toISOString(),
+      persons: [],
+    });
+    (component as any).attendanceId = 7;
+    (component as any).route = { snapshot: { queryParamMap: { get: () => null } } };
+    vi.spyOn(component, 'subsribeOnChannels').mockImplementation(() => {
+      throw new Error('cannot add `postgres_changes` callbacks for realtime:att-changes after `subscribe()`.');
+    });
+
+    await (component as any).init();
+
+    expect(component.songs.map(s => s.id)).toEqual([1]);
+    expect(component.filteredSongs.map(s => s.id)).toEqual([1]);
+  });
+
+  it('uses its own realtime topics so it does not reuse the Termine list channel', () => {
+    const topics: string[] = [];
+    const channel: any = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
+    (dbServiceMock as any).getSupabase = vi.fn().mockReturnValue({
+      channel: vi.fn((name: string) => { topics.push(name); return channel; }),
+      removeChannel: vi.fn().mockResolvedValue('ok'),
+    });
+
+    component.subsribeOnChannels();
+
+    expect(topics).toHaveLength(2);
+    expect(topics).not.toContain('att-changes');
+    expect(topics).not.toContain('person-changes');
+  });
 });

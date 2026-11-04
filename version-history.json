@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.8",
+      "date": "4.11.2026",
+      "changes": [
+        "🎵 Termin: Bei „Werke hinzufügen“ werden wieder alle Werke zur Auswahl angezeigt. Live-Aktualisierungen auf der Terminseite funktionieren wieder zuverlässig."
+      ]
+    },
+    {
       "version": "4.19.7",
       "date": "3.11.2026",
       "changes": [
