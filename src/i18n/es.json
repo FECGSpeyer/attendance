@@ -2779,7 +2779,7 @@
     "foreignInfoPh": "No participas en este evento.",
     "reasonPh": "Escribe un motivo...",
     "registerHelper": "Actívalo para permitir que nuevas personas se registren en esta instancia. El enlace se genera automáticamente y se puede copiar tras guardar.",
-    "autoApproveHelper": "Actívalo para aprobar automáticamente los nuevos registros. Si no, hay que aprobarlos a mano.",
+    "autoApproveHelper": "Actívalo para aprobar automáticamente los nuevos registros. Si no, hay que aprobarlos a mano. Si la instancia usa el campo de iglesia, con la aprobación automática siempre hay que elegir la iglesia al registrarse.",
     "shareSongsHelper": "Actívalo para compartir las obras con un enlace público. Cualquiera con el enlace puede verlas, pero no editarlas. El enlace se genera automáticamente y se puede copiar tras guardar.",
     "teachersHelper": "Actívalo para gestionar los profesores de los miembros.",
     "parentsHelper": "Actívalo para que los padres vean la asistencia de sus hijos y gestionen ausencias.",

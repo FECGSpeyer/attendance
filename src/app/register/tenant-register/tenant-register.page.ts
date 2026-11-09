@@ -74,7 +74,7 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
       }
     }
 
-    for (const fieldName of this.tenantData.registration_fields || []) {
+    for (const fieldName of this.getRegistrationFieldIds()) {
       const field = this.tenantData.additional_fields.find(f => f.id === fieldName);
 
       if (field?.id === 'bfecg_church') {
@@ -384,6 +384,21 @@ export class TenantRegisterPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
+  }
+
+  /**
+   * Felder, die im Registrierungsformular abgefragt werden. Bei automatischer
+   * Genehmigung prüft niemand die Anmeldung, daher muss die Gemeinde immer
+   * schon bei der Registrierung gewählt werden, sofern die Instanz das
+   * Gemeinde-Feld nutzt.
+   */
+  getRegistrationFieldIds(): string[] {
+    const fieldIds = [...(this.tenantData.registration_fields || [])];
+    const hasChurchField = this.tenantData.additional_fields?.some(f => f.id === 'bfecg_church');
+    if (this.tenantData.auto_approve_registrations && hasChurchField && !fieldIds.includes('bfecg_church')) {
+      fieldIds.push('bfecg_church');
+    }
+    return fieldIds;
   }
 
   validate(): boolean {

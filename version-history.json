@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.11",
+      "date": "9.11.2026",
+      "changes": [
+        "⛪ Registrierung: Bei automatischer Genehmigung muss jede neue Person ihre Gemeinde gleich bei der Anmeldung auswählen, wenn die Instanz das Gemeinde-Feld nutzt."
+      ]
+    },
+    {
       "version": "4.19.10",
       "date": "9.11.2026",
       "changes": [

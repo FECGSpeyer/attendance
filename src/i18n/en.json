@@ -2779,7 +2779,7 @@
     "foreignInfoPh": "You are not part of this event.",
     "reasonPh": "Enter reason...",
     "registerHelper": "Enable to let new people register in this instance. The link is generated automatically and can be copied after saving.",
-    "autoApproveHelper": "Enable to approve new registrations automatically. Otherwise they must be approved manually.",
+    "autoApproveHelper": "Enable to approve new registrations automatically. Otherwise they must be approved manually. If the instance uses the church field, the church must always be chosen during registration when auto-approval is on.",
     "shareSongsHelper": "Enable to share pieces via a public link. Anyone with the link can view but not edit them. The link is generated automatically and can be copied after saving.",
     "teachersHelper": "Enable to manage the members' teachers.",
     "parentsHelper": "Enable to let parents see their children's attendance and manage absences.",
