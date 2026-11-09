@@ -71,12 +71,10 @@ These fields only apply to the current [[Instance|instance]]. If the instance be
   },
   'settings-registration-link': {
     title: 'Sharing a registration link',
-    keywords: ['invitation link', 'sign-up link', 'enable self-registration', 'copy link', 'auto-approval', 'choose church', 'required field'],
+    keywords: ['invitation link', 'sign-up link', 'enable self-registration', 'copy link'],
     body: `Under "Settings → General" you enable "Allow registration" so new people can register themselves via a link. Attendix creates an individual link (attendix.de/register/…) that you can copy and share, e.g. via WhatsApp or email.
 
-You also define which details are asked for during registration (name, date of birth, photo, [[Group|group]], [[Additional field|additional fields]] …) and whether new registrations are approved automatically or wait for approval as [[Applicant|applicants]].
-
-If your instance uses the "Church" additional field and auto-approval is on, every new person has to choose their church during registration, even if you did not select that field as a registration detail. That way every automatically approved person has a church from the start.`,
+You also define which details are asked for during registration (name, date of birth, photo, [[Group|group]], [[Additional field|additional fields]] …) and whether new registrations are approved automatically or wait for approval as [[Applicant|applicants]].`,
   },
   'settings-delete-account': {
     title: 'Deleting your account completely',

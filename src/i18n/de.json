@@ -2779,7 +2779,7 @@
     "foreignInfoPh": "Du bist bei diesem Termin nicht dabei.",
     "reasonPh": "Grund eingeben...",
     "registerHelper": "Aktivieren, um neuen Personen die Registrierung in dieser Instanz zu erlauben. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden.",
-    "autoApproveHelper": "Aktivieren, um neue Registrierungen automatisch zu genehmigen. Andernfalls müssen neue Registrierungen manuell genehmigt werden. Nutzt die Instanz das Gemeinde-Feld, muss die Gemeinde bei automatischer Genehmigung immer bei der Registrierung gewählt werden.",
+    "autoApproveHelper": "Aktivieren, um neue Registrierungen automatisch zu genehmigen. Andernfalls müssen neue Registrierungen manuell genehmigt werden.",
     "shareSongsHelper": "Aktivieren, um Werke als öffentlichen link zu teilen. Jeder mit dem Link kann die Werke ansehen aber nicht bearbeiten. Der Link wird automatisch generiert und kann nach dem Speichern kopiert werden.",
     "teachersHelper": "Aktivieren, um die Lehrer der Spieler verwalten zu können.",
     "parentsHelper": "Aktivieren, um Eltern die Möglichkeit zu geben, Einsicht in die Anwesenheiten ihrer Kinder zu geben und Abwesenheiten pflegen zu können.",

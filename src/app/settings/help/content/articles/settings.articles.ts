@@ -88,12 +88,10 @@ Diese Felder gelten nur für die aktuelle [[Instanz]]. Gehört die Instanz zu ei
     id: 'settings-registration-link',
     title: 'Registrierungslink freigeben',
     categoryId: 'settings',
-    keywords: ['einladungslink', 'anmeldelink', 'selbstregistrierung aktivieren', 'link kopieren', 'auto-genehmigung', 'gemeinde auswählen', 'pflichtfeld'],
+    keywords: ['einladungslink', 'anmeldelink', 'selbstregistrierung aktivieren', 'link kopieren'],
     body: `Unter "Einstellungen → Allgemein" aktivierst du "Registrierung erlauben", damit neue Personen sich über einen Link selbst anmelden können. Attendix erzeugt dabei einen individuellen Link (attendix.de/register/…), den du kopieren und z. B. per WhatsApp oder E-Mail teilen kannst.
 
-Zusätzlich legst du fest, welche Angaben bei der Anmeldung abgefragt werden (Name, Geburtsdatum, Foto, [[Gruppe]], [[Zusatzfeld|Zusatzfelder]] …) und ob neue Anmeldungen automatisch freigeschaltet werden oder als [[Bewerber]] auf eine Bestätigung warten.
-
-Nutzt deine Instanz das Zusatzfeld "Gemeinde" und ist die automatische Genehmigung eingeschaltet, muss jede neue Person ihre Gemeinde schon bei der Registrierung auswählen, auch wenn du das Feld nicht als Angabe ausgewählt hast. So hat jede automatisch freigeschaltete Person von Anfang an eine Gemeinde.`,
+Zusätzlich legst du fest, welche Angaben bei der Anmeldung abgefragt werden (Name, Geburtsdatum, Foto, [[Gruppe]], [[Zusatzfeld|Zusatzfelder]] …) und ob neue Anmeldungen automatisch freigeschaltet werden oder als [[Bewerber]] auf eine Bestätigung warten.`,
   },
   {
     id: 'settings-delete-account',

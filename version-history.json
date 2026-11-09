@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.12",
+      "date": "9.11.2026",
+      "changes": [
+        "↩️ Registrierung: Die Gemeinde wird bei automatischer Genehmigung wieder nur abgefragt, wenn sie als Registrierungsangabe ausgewählt ist."
+      ]
+    },
+    {
       "version": "4.19.11",
       "date": "9.11.2026",
       "changes": [
