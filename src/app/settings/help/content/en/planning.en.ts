@@ -66,7 +66,7 @@ With "Reset" you can return to the default programme items of the event type at 
   },
   'plan-beamer': {
     title: 'Projector files in the run sheet (Gemeinde App)',
-    keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem'],
+    keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem', 'calendar', 'rehearsal', 'performance', 'link event'],
     body: `This feature is only available to the organisations FECG Speyer and FECG Schwegenheim, whose org plans appear in the Gemeinde App. There you see the org plans of the next 8 weeks plus the 20 most recent past ones.
 
 **Switching on:** Admins switch on **Projector files in the run sheet** under Settings › Organisation › Gemeinde App. There you also create the **connection key** for the Gemeinde App. It is only visible right after you create it. If you renew it, the old key stops working.
@@ -77,7 +77,9 @@ With "Reset" you can return to the default programme items of the event type at 
 
 **Linking the file:** You link the file itself (.sng from the media library) in the Gemeinde App under More › Run sheets. Attendix then shows it on the programme item. If you remember the file for a [[Piece|piece]] there, it appears on the piece page under **SongBeamer file** and applies to every plan containing the piece, as long as the item has no file of its own.
 
-**When saving:** Linked files stay on the programme item even if you edit, rename or move it in Attendix at the same time. If you delete the item or copy the plan, the new item has no file.`,
+**When saving:** Linked files stay on the programme item even if you edit, rename or move it in Attendix at the same time. If you delete the item or copy the plan, the new item has no file.
+
+**Events in the Gemeinde App calendar:** With the same connection key the Gemeinde App also receives all events of this organisation's groups (rehearsals, practices, performances and every other type). It links them to the matching calendar entries there. App admins and the group's leaders then see **Open in Attendix** on the event and land right on that event in Attendix. Archived events are not passed on.`,
   },
   'plan-conductor': {
     title: 'Assigning a lead/conductor',

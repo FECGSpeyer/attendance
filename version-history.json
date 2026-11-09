@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.10",
+      "date": "9.11.2026",
+      "changes": [
+        "🔗 Gemeinde App: Die Verbindung liefert jetzt auch alle Termine der Gruppen (Proben, Vorträge usw.), damit die Gemeinde App sie mit ihrem Kalender verknüpfen und direkt in Attendix öffnen kann."
+      ]
+    },
+    {
       "version": "4.19.9",
       "date": "4.11.2026",
       "changes": [

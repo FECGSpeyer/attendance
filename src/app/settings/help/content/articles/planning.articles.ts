@@ -75,7 +75,7 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
     id: 'plan-beamer',
     title: 'Beamer-Dateien im Ablaufplan (Gemeinde App)',
     categoryId: 'planning',
-    keywords: ['beamer', 'beamer-datei', 'songbeamer', 'sng', 'projektion', 'folien', 'gemeinde app', 'fecg', 'org-plan', 'programmpunkt bearbeiten', 'feld bearbeiten', 'lied', 'gedicht'],
+    keywords: ['beamer', 'beamer-datei', 'songbeamer', 'sng', 'projektion', 'folien', 'gemeinde app', 'fecg', 'org-plan', 'programmpunkt bearbeiten', 'feld bearbeiten', 'lied', 'gedicht', 'kalender', 'probe', 'vortrag', 'termin verknüpfen'],
     body: `Diese Funktion gibt es nur für die Organisationen FECG Speyer und FECG Schwegenheim, deren ORG-Pläne in der Gemeinde App erscheinen. Dort siehst du die ORG-Pläne der nächsten 8 Wochen und zusätzlich die letzten 20 vergangenen.
 
 **Einschalten:** Admins schalten unter Einstellungen › Organisation › Gemeinde App **Beamer-Dateien im Ablaufplan** ein. Dort erstellst du auch den **Verbindungsschlüssel** für die Gemeinde App. Er ist nur direkt nach dem Erstellen sichtbar. Erneuerst du ihn, funktioniert der alte nicht mehr.
@@ -86,7 +86,9 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 
 **Datei verknüpfen:** Die Datei selbst (.sng aus der Mediathek) verknüpfst du in der Gemeinde App unter Mehr › Ablaufpläne. Attendix zeigt sie danach am Programmpunkt an. Merkst du dir dort die Datei für ein [[Werk]], steht sie auf der Werk-Seite unter **SongBeamer-Datei** und gilt in jedem Plan, in dem das Werk vorkommt, solange am Punkt keine eigene Datei hängt.
 
-**Beim Speichern:** Verknüpfte Dateien bleiben am Programmpunkt, auch wenn du den Plan gleichzeitig in Attendix bearbeitest, umbenennst oder verschiebst. Löschst du den Punkt oder kopierst du den Plan, hat der neue Punkt keine Datei.`,
+**Beim Speichern:** Verknüpfte Dateien bleiben am Programmpunkt, auch wenn du den Plan gleichzeitig in Attendix bearbeitest, umbenennst oder verschiebst. Löschst du den Punkt oder kopierst du den Plan, hat der neue Punkt keine Datei.
+
+**Termine im Kalender der Gemeinde App:** Über denselben Verbindungsschlüssel bekommt die Gemeinde App auch alle Termine der Gruppen dieser Organisation (Proben, Übungen, Vorträge und alle anderen Arten). Dort verknüpft sie sie mit den passenden Kalenderterminen. App-Admins und die Leitung der Gruppe sehen am Termin dann **In Attendix öffnen** und landen direkt bei diesem Termin in Attendix. Archivierte Termine werden nicht weitergegeben.`,
   },
   {
     id: 'plan-conductor',

@@ -6,7 +6,11 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 //
 // GET ?from=YYYY-MM-DD&to=YYYY-MM-DD   ORG plans with "Beamer-Datei nötig" per row
 //                                      (default: today until 8 weeks ahead), plus the
-//                                      20 most recent plans before `from` (past: true)
+//                                      20 most recent plans before `from` (past: true).
+//                                      Also `ensembles` (the org's tenants) and `events`
+//                                      (every Termin of those tenants in [from, to], any
+//                                      type, with its Attendix link) so the Gemeinde App
+//                                      can link its calendar entries to them.
 // POST { action: 'point', plan, field, file }   SongBeamer file of a Programmpunkt
 // POST { action: 'song', songId, file }         SongBeamer file of a Werk
 //   file = { name, path } or null to remove it. Points are written through the SQL function
@@ -39,6 +43,7 @@ interface FieldSelection {
 interface Plan { time?: string; end?: string; title?: string; label?: string; day?: number; fields?: FieldSelection[] }
 
 const PAST_PLANS_LIMIT = 20;
+const EVENTS_LIMIT = 2000;
 const AGENDA_ITEMS_PLACEHOLDER_ID = 'agenda-items-placeholder';
 const AUTO_BEAMER_WORDS = /lied|gedicht/i;
 
@@ -268,7 +273,20 @@ Deno.serve(async (req: Request) => {
     adhocQuery().lt('date', from).order('date', { ascending: false }).limit(PAST_PLANS_LIMIT),
   ]);
 
-  const failed = results.find((r: any) => r.error) as any;
+  // Every Termin of the org's ensembles (Probe, Übung, Vortrag, Besprechung …).
+  const eventsResult = tenantIds.length
+    ? await supabase
+      .from('attendance')
+      .select('id, date, start_time, end_time, place, typeInfo, tenantId, type:type_id(name, all_day, duration_days)')
+      .in('tenantId', tenantIds)
+      .eq('archived', false)
+      .gte('date', from)
+      .lte('date', `${to}T23:59:59`)
+      .order('date', { ascending: true })
+      .limit(EVENTS_LIMIT)
+    : { data: [], error: null };
+
+  const failed = [...results, eventsResult].find((r: any) => r.error) as any;
   if (failed) {
     console.error('fecg-bridge load failed', failed.error);
     return json({ error: 'load_failed' }, 500);
@@ -347,10 +365,32 @@ Deno.serve(async (req: Request) => {
   const upcoming = plans.filter(p => !p.past).sort(byDate);
   const past = plans.filter(p => p.past).sort(byDate).slice(-PAST_PLANS_LIMIT);
 
+  const ensembles = tenantIds.map(id => ({
+    id,
+    shortName: tenants.get(id)?.shortName ?? null,
+    name: tenants.get(id)?.longName ?? tenants.get(id)?.shortName ?? null,
+  }));
+
+  const events = ((eventsResult.data ?? []) as any[]).map(row => ({
+    id: row.id,
+    ensembleId: row.tenantId,
+    date: String(row.date ?? '').slice(0, 10),
+    start: row.start_time || null,
+    end: row.end_time || null,
+    allDay: !!row.type?.all_day,
+    days: row.type?.duration_days ?? null,
+    type: row.type?.name ?? null,
+    title: row.typeInfo || null,
+    place: row.place || null,
+    url: `https://attendix.de/open-attendance?id=${row.id}&tenantId=${row.tenantId}`,
+  }));
+
   return json({
     org: { id: org.id, name: org.name, beamerFilesEnabled: beamerActive },
     from,
     to,
     plans: [...past, ...upcoming],
+    ensembles,
+    events,
   });
 });
