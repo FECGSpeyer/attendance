@@ -17,7 +17,7 @@ Für Vorstand oder Leitungsteam gibt es die [[Teamorganisation]]: Tagesordnung i
     title: 'Wie ist die App aufgebaut?',
     categoryId: 'getting-started',
     keywords: ['tabs', 'navigation', 'menü', 'übersicht'],
-    body: `Auf dem Handy findest du unten in der App je nach [[Rolle]] verschiedene Reiter (Tabs), z. B. Dashboard, Anwesenheit, Mitglieder, Werke und „Mehr“. Auf Tablet und Computer steht die Navigation stattdessen in einer Seitenleiste links (siehe „Seitenleiste auf Tablet und Computer“).
+    body: `Auf dem Handy findest du unten in der App je nach [[Rolle]] verschiedene Reiter (Tabs), z. B. Dashboard, Anwesenheit, Mitglieder, Werke und „Mehr“. Auf dem Tablet im Querformat und am Computer steht die Navigation stattdessen in einer Seitenleiste links (siehe „Seitenleiste auf Tablet und Computer“).
 
 - **Dashboard**: Übersicht mit anstehenden Terminen, Geburtstagen und wichtigen Hinweisen (nur für [[Administrator]] und [[Verantwortlicher]]).
 - **Anwesenheit**: Termine anlegen und den [[Anwesenheitsstatus]] der Mitglieder pflegen.
@@ -31,15 +31,15 @@ Mitglieder ohne Verwaltungsrechte sehen stattdessen meist nur "Meine Anwesenheit
     id: 'gs-side-panel',
     title: 'Seitenleiste auf Tablet und Computer',
     categoryId: 'getting-started',
-    keywords: ['seitenleiste', 'sidepanel', 'sidebar', 'menü', 'navigation', 'einklappen', 'ausklappen', 'tablet', 'ipad', 'computer', 'abmelden', 'ausloggen', 'tabbar'],
-    body: `Auf größeren Bildschirmen ersetzt eine Seitenleiste links die Reiter (Tabs) unten. Darin stehen mehr Bereiche direkt, die auf dem Handy unter „Mehr“ liegen, z. B. Teamorganisation, Ablaufpläne, Dateiablage oder Statistik. Welche Einträge du siehst, hängt von deiner [[Rolle]] ab.
+    keywords: ['seitenleiste', 'sidepanel', 'sidebar', 'menü', 'navigation', 'einklappen', 'ausklappen', 'tablet', 'ipad', 'computer', 'abmelden', 'ausloggen', 'tabbar', 'hochkant', 'hochformat', 'querformat', 'drehen'],
+    body: `Auf größeren Bildschirmen im Querformat ersetzt eine Seitenleiste links die Reiter (Tabs) unten. Darin stehen mehr Bereiche direkt, die auf dem Handy unter „Mehr“ liegen, z. B. Teamorganisation, Ablaufpläne, Dateiablage oder Statistik. Welche Einträge du siehst, hängt von deiner [[Rolle]] ab.
 
 - **Oben**: Mit dem Symbol links oben klappst du die Leiste ein und wieder aus. Eingeklappt bleiben nur die Symbole stehen, so hast du mehr Platz für Inhalte. Am Computer geht das auch mit Strg + B (Mac: ⌘ + B). Deine Wahl merkt sich das Gerät. Rechts daneben ist die Glocke mit deinen Benachrichtigungen.
 - **Instanz**: Darunter steht die aktuelle [[Instanz]]. Hast du mehrere, tippst du darauf und wechselst.
 - **Zahlen an Einträgen** zeigen, was auf dich wartet: offene Aufgaben bei der [[Teamorganisation]] und, für [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]], neue Anmeldungen bei „Personen“.
 - **Unten**: dein Name (öffnet die Einstellungen mit deinen Daten) und „Ausloggen“.
 
-Hältst du ein Tablet hochkant, ist die Leiste zunächst versteckt. Öffne sie mit dem Menü-Symbol oben links in der Seite oder wische vom linken Rand. Auf dem Handy bleibt alles wie gewohnt bei den Reitern unten.`,
+Hältst du ein Tablet hochkant, siehst du wie auf dem Handy die Reiter unten. Drehst du es ins Querformat, erscheint automatisch die Seitenleiste, und beim Zurückdrehen wieder die Reiter. Bei kleineren Tablets im Querformat ist die Leiste zunächst versteckt: Öffne sie mit dem Menü-Symbol oben links in der Seite oder wische vom linken Rand.`,
   },
   {
     id: 'gs-switch-instance',

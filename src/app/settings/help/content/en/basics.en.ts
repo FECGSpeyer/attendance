@@ -14,7 +14,7 @@ For the board or leadership team there is [[Team organisation]]: agenda in the r
   'gs-navigation': {
     title: 'How is the app structured?',
     keywords: ['tabs', 'navigation', 'menu', 'overview'],
-    body: `On a phone you find different tabs at the bottom of the app depending on your [[Role|role]], e.g. Dashboard, Attendance, Members, Pieces and "More". On a tablet or computer the navigation sits in a sidebar on the left instead (see "Sidebar on tablet and computer").
+    body: `On a phone you find different tabs at the bottom of the app depending on your [[Role|role]], e.g. Dashboard, Attendance, Members, Pieces and "More". On a tablet in landscape and on a computer the navigation sits in a sidebar on the left instead (see "Sidebar on tablet and computer").
 
 - **Dashboard**: overview of upcoming events, birthdays and important notes (only for [[Administrator]] and [[Person in charge]]).
 - **Attendance**: create events and keep the [[Attendance status|attendance status]] of members.
@@ -26,15 +26,15 @@ Members without management rights usually only see "My attendance" and "Pieces" 
   },
   'gs-side-panel': {
     title: 'Sidebar on tablet and computer',
-    keywords: ['sidebar', 'side panel', 'menu', 'navigation', 'collapse', 'expand', 'tablet', 'ipad', 'computer', 'log out', 'sign out', 'tab bar'],
-    body: `On larger screens a sidebar on the left replaces the tabs at the bottom. It shows more areas directly that are under "More" on a phone, e.g. team organisation, run sheets, file storage or statistics. Which entries you see depends on your [[Role|role]].
+    keywords: ['sidebar', 'side panel', 'menu', 'navigation', 'collapse', 'expand', 'tablet', 'ipad', 'computer', 'log out', 'sign out', 'tab bar', 'portrait', 'landscape', 'upright', 'rotate'],
+    body: `On larger screens in landscape a sidebar on the left replaces the tabs at the bottom. It shows more areas directly that are under "More" on a phone, e.g. team organisation, run sheets, file storage or statistics. Which entries you see depends on your [[Role|role]].
 
 - **Top**: the icon at the top left collapses and expands the sidebar. Collapsed, only the icons remain, giving you more room for content. On a computer you can also press Ctrl + B (Mac: ⌘ + B). Your device remembers your choice. Next to it is the bell with your notifications.
 - **Instance**: below that is the current [[Instance|instance]]. If you have several, tap it to switch.
 - **Numbers on entries** show what is waiting for you: open tasks in [[Team organisation|team organisation]] and, for [[Administrator|administrators]] and [[Person in charge|persons in charge]], new registrations under "People".
 - **Bottom**: your name (opens the settings with your details) and "Log out".
 
-If you hold a tablet upright, the sidebar is hidden at first. Open it with the menu icon at the top left of the page or swipe in from the left edge. On a phone everything stays as usual with the tabs at the bottom.`,
+If you hold a tablet upright, you see the tabs at the bottom just like on a phone. Turn it to landscape and the sidebar appears automatically; turn it back and the tabs return. On smaller tablets in landscape the sidebar is hidden at first: open it with the menu icon at the top left of the page or swipe in from the left edge.`,
   },
   'gs-switch-instance': {
     title: 'Switching between several instances',

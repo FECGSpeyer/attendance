@@ -4,7 +4,7 @@ import { Role } from '../utilities/constants';
 import { registeredEffect, registerTabBarEffect } from '@rdlabo/ionic-theme-ios27';
 import { Utils } from 'src/app/utilities/Utils';
 import { Router } from '@angular/router';
-import { LayoutService, SIDE_PANEL_FIXED_MIN_WIDTH } from '../services/layout/layout.service';
+import { LayoutService } from '../services/layout/layout.service';
 import { SIDE_NAV_MENU_ID } from './side-nav/side-nav.component';
 
 @Component({
@@ -25,7 +25,6 @@ export class TabsPage {
   public hasMultipleTenants = false;
   readonly registeredGestures: registeredEffect[] = [];
   readonly sideNavMenuId = SIDE_NAV_MENU_ID;
-  readonly splitPaneWhen = `(min-width: ${SIDE_PANEL_FIXED_MIN_WIDTH}px)`;
 
   constructor(
     private db: DbService,

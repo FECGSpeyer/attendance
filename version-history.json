@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.14",
+      "date": "10.11.2026",
+      "changes": [
+        "📱 Tablet hochkant: Unten erscheinen wieder die Reiter (Tabbar) statt der Seitenleiste. Im Querformat bleibt die Seitenleiste, beim Drehen wechselt die Ansicht automatisch."
+      ]
+    },
+    {
       "version": "4.19.13",
       "date": "10.11.2026",
       "changes": [

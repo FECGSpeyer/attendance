@@ -1,6 +1,7 @@
-<!-- Ab Tablet-Breite ersetzt das Sidepanel die Tabbar: unter 992 px als
-     Overlay (Menü-Symbol in den Seiten), darüber fest daneben (Split-Pane). -->
-<ion-split-pane contentId="tabs-main" [when]="splitPaneWhen" [class.side-nav-collapsed]="layout.collapsed()">
+<!-- Ab Tablet-Breite im Querformat ersetzt das Sidepanel die Tabbar: unter 992 px
+     als Overlay (Menü-Symbol in den Seiten), darüber fest daneben (Split-Pane).
+     Im Hochformat (Tablet hochkant) bleibt die Tabbar. -->
+<ion-split-pane contentId="tabs-main" [when]="layout.sidePanelFixed()" [class.side-nav-collapsed]="layout.collapsed()">
   <ion-menu contentId="tabs-main" [menuId]="sideNavMenuId" type="overlay" [disabled]="!layout.sidePanel()" class="side-nav-menu">
     @if (layout.sidePanel()) {
       <app-side-nav />
