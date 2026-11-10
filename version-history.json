@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.13",
+      "date": "10.11.2026",
+      "changes": [
+        "🔁 Pausen: Personen, deren Pause automatisch endet, werden zuverlässig wieder in alle kommenden Termine eingetragen. Klappt das nicht, bleibt die Pause bestehen und es wird beim nächsten Öffnen erneut versucht."
+      ]
+    },
+    {
       "version": "4.19.12",
       "date": "9.11.2026",
       "changes": [

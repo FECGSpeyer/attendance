@@ -1906,13 +1906,38 @@ export class DbService {
     }
   }
 
+  /**
+   * Trägt eine Person in alle kommenden Termine ein, in denen sie noch fehlt.
+   * Wirft bei Lade- oder Speicherfehlern, damit Aufrufer (z. B. die automatische
+   * Reaktivierung) nicht still weitermachen und die Person in den Terminen fehlt.
+   */
   async addPlayerToUpcomingAttendances(person: Person, group: number, shiftId?: string) {
-    const attData: Attendance[] = await this.getUpcomingAttendances();
+    const { data: upcoming, error: upcomingError } = await supabase
+      .from('attendance')
+      .select('*')
+      .eq('tenantId', this.tenant().id)
+      .gt('date', dayjs().startOf('day').toISOString())
+      .order('date', { ascending: true });
 
-    if (attData?.length) {
-      // Get existing person_attendances to avoid duplicates
-      const existingPersonAttendances = await this.getPersonAttendances(person.id, false);
-      const existingAttendanceIds = new Set(existingPersonAttendances.map(pa => pa.attendance_id));
+    if (upcomingError) {
+      throw upcomingError;
+    }
+
+    const attData: Attendance[] = (upcoming as any) ?? [];
+
+    if (attData.length) {
+      // Vorhandene Einträge direkt über die Termin-IDs prüfen, um Duplikate zu vermeiden
+      const { data: existing, error: existingError } = await supabase
+        .from('person_attendances')
+        .select('attendance_id')
+        .eq('person_id', person.id)
+        .in('attendance_id', attData.map((att: Attendance) => att.id));
+
+      if (existingError) {
+        throw existingError;
+      }
+
+      const existingAttendanceIds = new Set((existing ?? []).map((pa: any) => pa.attendance_id));
 
       const attToAdd: PersonAttendance[] = attData
         .filter((att: Attendance) => {
@@ -1922,13 +1947,16 @@ export class DbService {
           }
 
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
-          return attType.relevant_groups.length === 0 || attType.relevant_groups.includes(group);
+          if (!attType) {
+            return false;
+          }
+          return !attType.relevant_groups?.length || attType.relevant_groups.includes(group);
         })
         .filter((att: Attendance) => {
           const attType = this.attendanceTypes().find((type: AttendanceType) => type.id === att.type_id);
           if (attType.additional_fields_filter?.key && attType.additional_fields_filter?.option != null && this.tenant().additional_fields?.find(field => field.id === attType.additional_fields_filter.key)) {
             const defaultValue = this.tenant().additional_fields.find(field => field.id === attType.additional_fields_filter.key)?.defaultValue;
-            const additionalField = person.additional_fields[attType.additional_fields_filter.key] ?? defaultValue;
+            const additionalField = person.additional_fields?.[attType.additional_fields_filter.key] ?? defaultValue;
             return additionalField === attType.additional_fields_filter.option;
           }
 
@@ -2263,7 +2291,10 @@ export class DbService {
       if (player.paused) {
         this.removePlayerFromUpcomingAttendances(player.id, undefined, pauseFrom);
       } else {
-        this.addPlayerToUpcomingAttendances(player, player.instrument, player.shift_id);
+        this.addPlayerToUpcomingAttendances(player, player.instrument, player.shift_id).catch((e) => {
+          console.error('Eintragen in kommende Termine fehlgeschlagen', player.id, e);
+          Utils.showToast(translate('svc.addPersonAttendancesFailed'), 'danger');
+        });
       }
     }
 
@@ -2316,6 +2347,16 @@ export class DbService {
     }
 
     for (const player of pausedPlayers || []) {
+      // Erst in die Termine eintragen, dann die Pause aufheben. Schlägt das Eintragen
+      // fehl, bleibt die Person pausiert und wird beim nächsten Aufruf erneut versucht.
+      // Sonst wäre sie reaktiviert, würde aber in allen kommenden Terminen fehlen.
+      try {
+        await this.addPlayerToUpcomingAttendances(player as unknown as Person, player.instrument, player.shift_id);
+      } catch (e) {
+        console.error('Automatische Reaktivierung: Eintragen in Termine fehlgeschlagen', player.id, e);
+        continue;
+      }
+
       const history: PlayerHistoryEntry[] = (player.history as unknown as PlayerHistoryEntry[]) || [];
       history.push({
         date: new Date().toISOString(),
@@ -2323,14 +2364,16 @@ export class DbService {
         type: PlayerHistoryType.UNPAUSED,
       });
 
-      await this.updatePlayer({
-        ...player,
-        paused: false,
-        paused_until: null,
-        history,
-      } as Player, true);
-
-      await this.addPlayerToUpcomingAttendances(player as Person, player.instrument, player.shift_id);
+      try {
+        await this.updatePlayer({
+          ...player,
+          paused: false,
+          paused_until: null,
+          history,
+        } as Player);
+      } catch (e) {
+        console.error('Automatische Reaktivierung fehlgeschlagen', player.id, e);
+      }
     }
   }
 
