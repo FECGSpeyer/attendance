@@ -9,6 +9,13 @@ interface PushPayload {
   data?: Record<string, string>;
   /** iOS: time-sensitive interruption level (shown through Focus modes). */
   urgent?: boolean;
+  /**
+   * New push format (test, only for allow-listed users): iOS subtitle,
+   * stacking per Termin (thread-id) and quiet delivery (no sound,
+   * passive). Android gets the subtitle as first line of the text.
+   * Absent = exactly the old payload.
+   */
+  layout?: { subtitle?: string; threadId?: string; quiet?: boolean };
 }
 
 interface DeviceToken {
@@ -149,6 +156,16 @@ export async function sendPushToUser(
       };
     }
 
+    // Old payload, kept as fallback when the new format is refused.
+    const legacy = payload.layout ? JSON.parse(JSON.stringify(message)) : null;
+    if (payload.layout) {
+      try {
+        applyLayout(message, deviceToken.platform, payload);
+      } catch (e) {
+        console.error('[send-push] layout failed, sending the old format:', e);
+      }
+    }
+
     try {
       const response = await fetch(
         `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
@@ -164,6 +181,19 @@ export async function sendPushToUser(
 
       if (response.ok) {
         sent++;
+      } else if (legacy) {
+        // New format refused: never drop the token for it, send the old one.
+        console.error(`FCM refused new format for token ${deviceToken.id}:`, await response.text());
+        const retry = await fetch(
+          `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(legacy),
+          }
+        );
+        if (retry.ok) sent++;
+        else console.error(`FCM send error (old format) for token ${deviceToken.id}:`, await retry.text());
       } else {
         const errorData = await response.json();
         const errorCode = errorData?.error?.details?.[0]?.errorCode;
@@ -185,4 +215,26 @@ export async function sendPushToUser(
   }
 
   return sent;
+}
+
+/** Adds the new format (see PushPayload.layout) to an FCM message. */
+function applyLayout(message: any, platform: string, payload: PushPayload): void {
+  const layout = payload.layout!;
+  if (platform === 'ios') {
+    const aps = message.message.apns.payload.aps;
+    aps.alert = {
+      title: payload.title,
+      ...(layout.subtitle ? { subtitle: layout.subtitle } : {}),
+      body: payload.body,
+    };
+    if (layout.threadId) aps['thread-id'] = layout.threadId;
+    if (layout.quiet && !payload.urgent) {
+      delete aps.sound;
+      aps['interruption-level'] = 'passive';
+    }
+  } else if (platform === 'android' && layout.subtitle) {
+    message.message.notification.body = payload.body
+      ? `${layout.subtitle}\n${payload.body}`
+      : layout.subtitle;
+  }
 }

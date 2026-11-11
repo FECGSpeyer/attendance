@@ -15,6 +15,32 @@ interface NotificationConfig {
   language?: string | null;
 }
 
+// New push format (test): only for the user ids in PUSH_V2_USERS
+// (comma-separated). Everybody else gets exactly the old texts.
+const PUSH_V2_USERS = new Set(
+  (Deno.env.get('PUSH_V2_USERS') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+);
+
+/** Today in Europe/Berlin as YYYY-MM-DD. */
+function berlinToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date());
+}
+
+/** "Heute" / "Morgen" / "Gestern" / "So 6.12."; days = Termin minus today. */
+function relativeDay(lang: Lang, date: string): { label: string; days: number } {
+  const m = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return { label: formatDate(lang, date), days: 99 };
+  const day = Date.UTC(+m[1], +m[2] - 1, +m[3]);
+  const t0 = berlinToday().split('-').map(Number);
+  const days = Math.round((day - Date.UTC(t0[0], t0[1] - 1, t0[2])) / 86400000);
+  if (days === 0) return { label: t(lang, 'qp2.today'), days };
+  if (days === 1) return { label: t(lang, 'qp2.tomorrow'), days };
+  if (days === -1) return { label: t(lang, 'qp2.yesterday'), days };
+  const weekday = new Intl.DateTimeFormat(lang === 'de' ? 'de-DE' : 'en-GB', { weekday: 'short', timeZone: 'UTC' })
+    .format(new Date(day)).replace('.', '');
+  return { label: `${weekday} ${+m[3]}.${+m[2]}.`, days };
+}
+
 Deno.serve(async (req)=>{
   if (req.method === 'OPTIONS') {
     return new Response('ok', {
@@ -234,6 +260,42 @@ Deno.serve(async (req)=>{
       };
     };
 
+    // New push format (test): event name and group count, only when needed.
+    const v2Users = recipients.filter((r) => r.pushEnabled && PUSH_V2_USERS.has(r.userId)).map((r) => r.userId);
+    let v2TypeName = '';
+    const v2MultiGroup = new Set<string>();
+    if (v2Users.length) {
+      try {
+        const { data: typeRow } = await supabase.from('attendance').select('attType:type_id(name, hide_name)').eq('id', attendanceData.attendance_id).maybeSingle();
+        const at = (typeRow as any)?.attType;
+        if (at && !at.hide_name && at.name) v2TypeName = String(at.name);
+        const { data: memberships } = await supabase.from('tenantUsers').select('userId').in('userId', v2Users);
+        const counts = new Map<string, number>();
+        for (const row of memberships ?? []) counts.set(row.userId, (counts.get(row.userId) ?? 0) + 1);
+        for (const [id, n] of counts) if (n > 1) v2MultiGroup.add(id);
+      } catch (e) {
+        console.error('[quick-processor] v2 lookup failed:', e);
+      }
+    }
+    const buildV2 = (lang: Lang, userId: string) => {
+      const key = type === 'lateSignout' ? 'qp2.late'
+        : type === 'lateSignin' ? 'qp2.onTime'
+        : type === 'signin' || type === 'neutralSignin' ? 'qp2.signin'
+        : type === 'noteUpdate' ? 'qp2.noteUpdate'
+        : 'qp2.signout';
+      const title = t(lang, key, { name });
+      const { label, days } = relativeDay(lang, `${att.date}`);
+      const event = att.typeInfo || v2TypeName || (att.type === 'vortrag' ? t(lang, 'qp2.lecture') : '');
+      const subtitle = [label, event, v2MultiGroup.has(userId) ? att.tenant.longName : ''].filter(Boolean).join(' · ');
+      const detail = type === 'noteUpdate' ? reason
+        : type === 'signin' || type === 'lateSignin' ? notes
+        : type === 'neutralSignin' ? ''
+        : reason;
+      const body = [detail ? String(detail) : '', isParents && type !== 'noteUpdate' ? t(lang, 'qp2.byParent') : '']
+        .filter(Boolean).join(' · ');
+      return { title, subtitle, body, quiet: days > 1 || days < 0 };
+    };
+
     // Send push and/or Telegram per recipient
     const pushTitle = attendanceData.attendance.tenant.longName;
     for (const r of recipients) {
@@ -242,11 +304,23 @@ Deno.serve(async (req)=>{
       const { messageText, pushBody } = buildTexts(r.lang);
 
       if (r.pushEnabled) {
-        pushSent = await sendPushToUser(supabase, r.userId, {
-          title: pushTitle,
-          body: pushBody,
-          data: { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) },
-        });
+        const data = { type: 'attendance', attendanceId: String(attendanceData.attendance_id), tenantId: String(attendanceData.attendance.tenant.id) };
+        let v2: ReturnType<typeof buildV2> | null = null;
+        if (PUSH_V2_USERS.has(r.userId)) {
+          try {
+            v2 = buildV2(r.lang, r.userId);
+          } catch (e) {
+            console.error('[quick-processor] v2 text failed, sending the old one:', e);
+          }
+        }
+        pushSent = await sendPushToUser(supabase, r.userId, v2
+          ? {
+            title: v2.title,
+            body: v2.body,
+            data,
+            layout: { subtitle: v2.subtitle, threadId: `att-${attendanceData.attendance_id}`, quiet: v2.quiet },
+          }
+          : { title: pushTitle, body: pushBody, data });
       }
 
       if (r.chatId && (r.parallelMode || pushSent === 0)) {
