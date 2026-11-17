@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.15",
+      "date": "17.11.2026",
+      "changes": [
+        "🐛 Die Instanz-Auswahl oben links steht jetzt bündig mit den Karten darunter."
+      ]
+    },
+    {
       "version": "4.19.14",
       "date": "10.11.2026",
       "changes": [

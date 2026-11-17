@@ -558,3 +558,10 @@ ion-item.plan-group-child {
 body.side-panel-active app-notification-bell:not(.in-side-nav) {
   display: none;
 }
+
+// Ausgeblendeter Menü-Button (Tablet hochkant, autoHide): Die leere
+// ion-buttons-Gruppe davor behält sonst ihre Abstände und schiebt die
+// Instanz-Auswahl nach rechts, weg von der Kante der Karten darunter.
+ion-buttons:has(> ion-menu-button.menu-button-hidden) {
+  display: none;
+}
