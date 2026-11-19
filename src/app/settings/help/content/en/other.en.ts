@@ -170,13 +170,14 @@ Instance-specific [[Additional field|additional fields]] remain alongside and st
   },
   'other-files': {
     title: 'File storage',
-    keywords: ['files', 'folder', 'upload', 'recordings', 'documents', 'direct link', 'share link', 'share', 'all members', 'storage', 'storage space', 'limit', 'full', 'gb', 'more storage', 'request', 'move', 'multiple', 'select', 'mark', 'multi-select', 'folder structure', 'target folder'],
+    keywords: ['files', 'folder', 'upload', 'recordings', 'documents', 'direct link', 'share link', 'share', 'all members', 'storage', 'storage space', 'limit', 'full', 'gb', 'more storage', 'request', 'move', 'multiple', 'select', 'mark', 'multi-select', 'folder structure', 'target folder', 'back', 'parent folder', 'up one level'],
     body: `In the file storage your instance keeps shared files in folders, e.g. recordings, documents or pictures. You find it under Settings → File storage.
 
 **Who can see it?** Every instance has file storage. [[Administrator|Administrators]], [[Person in charge|people in charge]] and helpers always see it. An [[Administrator]] can also share it with all members under Settings → Roles & permissions with "File storage for all members". [[Applicant|Applicants]] never have access.
 
 **Storage space:** Each instance has a storage limit, 5 GB by default. Administrators and people in charge see at the top of the file storage how much of it is used. From 80 % usage, "Request more storage" appears there. This sends a request to the Attendix admin, optionally with a message on how much you need. If the free space is not enough for an upload, it is not started, and you can request more storage directly from the note or delete files you no longer need.
 
+- **Going back:** The arrow at the top left (and on Android the back button or gesture) takes you up one level when you are in a subfolder. Only in the top folder does it go back to "More". With the path bar you jump straight to a parent folder.
 - **Uploading and creating folders** is for [[Administrator|administrators]] and [[Person in charge|people in charge]]. You find both in the menu (three dots at the top right).
 - **Sorting** by name, date changed or file size, ascending or descending, also via the menu.
 - **Selecting multiple:** Tap the check mark icon at the top or "Select multiple" in the menu. Then tap files and folders to mark them, or "All" for the whole folder. At the bottom you move or delete all marked entries at once. The X at the top left ends the selection. This is for [[Administrator|administrators]] and [[Person in charge|people in charge]].

@@ -2,7 +2,8 @@ import { currentIntlLocale } from '../../i18n/languages';
 import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonPopover, ModalController, NavController } from '@ionic/angular/lazy';
+import { AlertController, IonPopover, IonRouterOutlet, ModalController, NavController, Platform } from '@ionic/angular/lazy';
+import { Subscription } from 'rxjs';
 import { DbService } from 'src/app/services/db.service';
 import { AudioPlayerService, AudioQueueItem } from 'src/app/services/audio-player/audio-player.service';
 import { FilesService, StorageEntry } from '../../services/files/files.service';
@@ -21,6 +22,10 @@ export class FilesPage implements OnInit {
   private audioPlayer = inject(AudioPlayerService);
   private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
+  private platform = inject(Platform);
+  private routerOutlet = inject(IonRouterOutlet, { optional: true });
+  private backButtonSub?: Subscription;
+  private outletSwipeGesture?: boolean;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   public entries: StorageEntry[] = [];
@@ -62,6 +67,56 @@ export class FilesPage implements OnInit {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => this.applyLinkParams(params.get('path'), params.get('open')));
+  }
+
+  ionViewDidEnter(): void {
+    // Android-Zurück (Taste/Geste) geht erst innerhalb der Ordner eine Ebene
+    // hoch. Priorität 10: über dem Router (0), unter offenen Overlays (100).
+    this.backButtonSub?.unsubscribe();
+    this.backButtonSub = this.platform.backButton.subscribeWithPriority(10, (processNextHandler) => {
+      if (!this.handleInPageBack()) {
+        processNextHandler();
+      }
+    });
+    this.updateSwipeGesture();
+  }
+
+  ionViewWillLeave(): void {
+    this.backButtonSub?.unsubscribe();
+    this.backButtonSub = undefined;
+    if (this.routerOutlet && this.outletSwipeGesture !== undefined) {
+      this.routerOutlet.swipeGesture = this.outletSwipeGesture;
+      this.outletSwipeGesture = undefined;
+    }
+  }
+
+  /** iOS-Wischgeste zurück nur im Hauptordner, sonst würde sie direkt zu „Mehr“ springen. */
+  private updateSwipeGesture(): void {
+    if (!this.routerOutlet) {
+      return;
+    }
+    if (this.outletSwipeGesture === undefined) {
+      this.outletSwipeGesture = this.routerOutlet.swipeGesture;
+    }
+    this.routerOutlet.swipeGesture = this.outletSwipeGesture && !this.currentPath;
+  }
+
+  /** Zurück innerhalb der Seite: Auswahl beenden oder einen Ordner hoch. false = nichts zu tun. */
+  private handleInPageBack(): boolean {
+    if (this.selectionMode) {
+      this.exitSelection();
+      return true;
+    }
+    if (this.currentPath) {
+      void this.openParent();
+      return true;
+    }
+    return false;
+  }
+
+  async openParent(): Promise<void> {
+    this.currentPath = this.pathSegments.slice(0, -1).join('/');
+    await this.loadEntries();
   }
 
   private async applyLinkParams(path: string | null, openName: string | null): Promise<void> {
@@ -122,6 +177,7 @@ export class FilesPage implements OnInit {
 
   async loadEntries(): Promise<void> {
     this.isLoading = true;
+    this.updateSwipeGesture();
 
     try {
       const loadedEntries = await this.filesSvc.listEntries(this.db.tenant().id, this.currentPath);
@@ -1167,6 +1223,9 @@ export class FilesPage implements OnInit {
   }
 
   goBack(): void {
+    if (this.handleInPageBack()) {
+      return;
+    }
     this.navCtrl.navigateBack('/tabs/settings');
   }
 }

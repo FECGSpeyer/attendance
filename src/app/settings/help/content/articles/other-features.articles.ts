@@ -211,13 +211,14 @@ Instanzspezifische [[Zusatzfeld|Zusatzfelder]] bleiben daneben bestehen und gelt
     id: 'other-files',
     title: 'Dateiablage',
     categoryId: 'other',
-    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freigeben', 'alle mitglieder', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb', 'mehr speicher', 'anfragen', 'verschieben', 'mehrere', 'auswählen', 'markieren', 'mehrfachauswahl', 'ordnerstruktur', 'zielordner'],
+    keywords: ['dateien', 'ordner', 'upload', 'hochladen', 'aufnahmen', 'dokumente', 'direktlink', 'link teilen', 'files', 'freigeben', 'alle mitglieder', 'speicher', 'speicherplatz', 'limit', 'voll', 'gb', 'mehr speicher', 'anfragen', 'verschieben', 'mehrere', 'auswählen', 'markieren', 'mehrfachauswahl', 'ordnerstruktur', 'zielordner', 'zurück', 'übergeordneter ordner', 'ebene höher'],
     body: `In der Dateiablage legt deine Instanz gemeinsame Dateien in Ordnern ab, z. B. Aufnahmen, Dokumente oder Bilder. Du findest sie unter Einstellungen → Dateiablage.
 
 **Wer sieht sie?** Die Dateiablage gibt es in jeder Instanz. [[Administrator|Administratoren]], [[Verantwortlicher|Verantwortliche]] und Helfer sehen sie immer. Ein [[Administrator]] kann sie unter Einstellungen → Rollen & Berechtigungen mit „Dateiablage für alle Mitglieder“ zusätzlich für alle Mitglieder freigeben. [[Bewerber]] haben nie Zugriff.
 
 **Speicherplatz:** Jede Instanz hat ein Speicherlimit, standardmäßig 5 GB. Administratoren und Verantwortliche sehen oben in der Dateiablage, wie viel davon belegt ist. Ab 80 % Belegung erscheint dort "Mehr Speicher anfragen". Damit schickst du dem Attendix-Admin eine Anfrage, optional mit einer Nachricht, wie viel ihr braucht. Reicht der freie Platz für einen Upload nicht, wird er nicht gestartet, und du kannst direkt aus dem Hinweis mehr Speicher anfragen oder nicht mehr benötigte Dateien löschen.
 
+- **Zurück:** Der Pfeil oben links (und auf Android die Zurück-Taste bzw. -Geste) bringt dich in einem Unterordner eine Ebene nach oben. Erst im obersten Ordner geht es zurück zu „Mehr“. Über die Pfadleiste springst du direkt in einen übergeordneten Ordner.
 - **Hochladen und Ordner anlegen** dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]]. Beides findest du im Menü (drei Punkte oben rechts).
 - **Sortieren** nach Name, Änderungsdatum oder Dateigröße, auf- oder absteigend, ebenfalls über das Menü.
 - **Mehrere auswählen:** Tippe oben auf das Häkchen-Symbol oder im Menü auf „Mehrere auswählen“. Dann markierst du Dateien und Ordner per Tippen, mit „Alle“ den ganzen Ordner. Unten verschiebst oder löschst du alle markierten Einträge auf einmal. Mit dem X oben links beendest du die Auswahl. Das dürfen [[Administrator|Administratoren]] und [[Verantwortlicher|Verantwortliche]].

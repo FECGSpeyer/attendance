@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.16",
+      "date": "19.11.2026",
+      "changes": [
+        "📁 Zurück in der Dateiablage führt jetzt einen Ordner nach oben (Pfeil oben links und Android-Zurück). Erst im obersten Ordner geht es zurück zu „Mehr“."
+      ]
+    },
+    {
       "version": "4.19.15",
       "date": "17.11.2026",
       "changes": [
