@@ -3471,5 +3471,10 @@
     "groupTeam": "Team",
     "groupAdmin": "Verwaltung",
     "groupAccount": "Konto"
+  },
+  "icalMigration": {
+    "header": "Kalender-Abo neu einrichten",
+    "message": "Attendix ist auf einen eigenen Server umgezogen. Dein Kalender-Abo nutzt noch die alte Adresse und bekommt bald keine Termine mehr.\n\nBitte lösche das alte Abo in deiner Kalender-App und abonniere diesen Link neu:\n\n{link}",
+    "done": "Erledigt"
   }
 }

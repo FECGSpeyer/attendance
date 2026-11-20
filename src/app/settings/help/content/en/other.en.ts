@@ -227,11 +227,13 @@ If several files are printed, Attendix combines them into one PDF.`,
   },
   'calendar-subscription': {
     title: 'Subscribing to events in your calendar',
-    keywords: ['calendar', 'subscription', 'subscribe', 'ical', 'ics', 'google calendar', 'apple calendar', 'outlook', 'sync', 'hide cancelled', 'duties in calendar'],
+    keywords: ['calendar', 'subscription', 'subscribe', 'ical', 'ics', 'google calendar', 'apple calendar', 'outlook', 'sync', 'hide cancelled', 'duties in calendar', 'old address', 'supabase', 'server move', 'subscribe again'],
     body: `Under **More → Analytics & data → Subscribe to calendar** you get a link that you add to your calendar app (Apple, Google, Outlook). New and changed events then appear automatically.
 
 As a member you get your personal calendar, administrators get all events of the instance. In the personal calendar your status appears after each event, e.g. "Accepted" or "Excused". If you tick **"Hide cancelled events"** when copying, events you have declined are left out completely.
 
-**Duties:** Of events in [[Duty mode|duty mode]], only those you are assigned to or have signed up for yourself are included. Duties not yet confirmed carry the note "please confirm". If you decline a duty, it disappears from the calendar.`,
+**Duties:** Of events in [[Duty mode|duty mode]], only those you are assigned to or have signed up for yourself are included. Duties not yet confirmed carry the note "please confirm". If you decline a duty, it disappears from the calendar.
+
+**Subscription with the old address:** Since the server move in November 2026, calendar links have a new address. If your subscription still uses the old one (with "supabase.co"), Attendix shows you a notice with your new link when you open the app. Remove the old subscription in your calendar app and subscribe to the new link.`,
   },
 };

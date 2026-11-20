@@ -91,11 +91,13 @@ Wer bisher am wenigsten Dienste hat, kommt zuerst dran; bei Gleichstand entschei
     id: 'calendar-subscription',
     title: 'Termine im Kalender abonnieren',
     categoryId: 'settings',
-    keywords: ['kalender', 'abo', 'abonnieren', 'ical', 'ics', 'google kalender', 'apple kalender', 'outlook', 'synchronisieren', 'abgesagte ausblenden', 'dienste im kalender'],
+    keywords: ['kalender', 'abo', 'abonnieren', 'ical', 'ics', 'google kalender', 'apple kalender', 'outlook', 'synchronisieren', 'abgesagte ausblenden', 'dienste im kalender', 'alte adresse', 'supabase', 'umzug', 'neu abonnieren'],
     body: `Unter **Mehr → Auswertung & Daten → Kalender abonnieren** bekommst du einen Link, den du in deine Kalender-App (Apple, Google, Outlook) einträgst. Neue und geänderte Termine erscheinen dann automatisch.
 
 Als Mitglied bekommst du deinen persönlichen Kalender, Administratoren alle Termine der Instanz. Im persönlichen Kalender steht hinter jedem Termin dein Status, z. B. „Zugesagt“ oder „Entschuldigt“. Setzt du beim Kopieren den Haken **„Abgesagte Termine ausblenden“**, fehlen Termine, bei denen du abgesagt hast, ganz.
 
-**Dienste:** Von Terminen im [[Dienst-Modus]] stehen nur die drin, für die du eingeteilt bist oder dich selbst eingetragen hast. Noch nicht bestätigte Dienste tragen den Zusatz „bitte bestätigen“. Sagst du einen Dienst ab, verschwindet er aus dem Kalender.`,
+**Dienste:** Von Terminen im [[Dienst-Modus]] stehen nur die drin, für die du eingeteilt bist oder dich selbst eingetragen hast. Noch nicht bestätigte Dienste tragen den Zusatz „bitte bestätigen“. Sagst du einen Dienst ab, verschwindet er aus dem Kalender.
+
+**Abo mit alter Adresse:** Seit dem Serverumzug im November 2026 haben Kalender-Links eine neue Adresse. Nutzt dein Abo noch die alte (mit „supabase.co“), zeigt dir Attendix beim Öffnen einen Hinweis mit deinem neuen Link. Lösche dann das alte Abo in deiner Kalender-App und abonniere den neuen Link.`,
   },
 ];
