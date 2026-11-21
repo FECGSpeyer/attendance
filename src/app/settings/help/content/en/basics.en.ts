@@ -144,13 +144,11 @@ Assign a [[Role|role]] right away (e.g. [[Member]] or [[Helper]]) so the person 
   },
   'people-info-mail': {
     title: 'Which email does a newly added person get?',
-    keywords: ['info mail', 'welcome mail', 'invitation', 'access', 'set password', 'create account', 'added notification', 'without account', 'link account'],
+    keywords: ['info mail', 'welcome mail', 'invitation', 'access', 'set password', 'create account', 'added notification'],
     body: `If you add a person with an email address and give them access to the app, they automatically get an email:
 
 - **No Attendix account yet:** An account is created. The welcome email names the [[Instance|instance]] and the assigned [[Role|role]] and contains a button with which the person sets their password and logs in.
 - **Already has an Attendix account:** The person gets an info email that they were added to your instance and logs in with their existing credentials. The new instance then appears in their instance selection.
-
-If the email address has no Attendix account yet, Attendix asks when saving: **Create account** or **Without account**. Without an account the person is only saved and no email is sent, which is handy for example if they only sign in and out via the Gemeinde App. If the address already has an account, Attendix links the person to it right away without asking.
 
 If no email arrives, check the spam folder and the stored email address.`,
   },

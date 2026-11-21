@@ -14,13 +14,11 @@ Vergib direkt eine [[Rolle]] (z. B. [[Mitglied]] oder [[Helfer]]), damit die Per
     id: 'people-info-mail',
     title: 'Welche E-Mail bekommt eine neu hinzugefügte Person?',
     categoryId: 'people',
-    keywords: ['info mail', 'willkommensmail', 'einladung', 'zugang', 'passwort festlegen', 'account anlegen', 'benachrichtigung hinzugefügt', 'ohne konto', 'konto verknüpfen'],
+    keywords: ['info mail', 'willkommensmail', 'einladung', 'zugang', 'passwort festlegen', 'account anlegen', 'benachrichtigung hinzugefügt'],
     body: `Legst du eine Person mit E-Mail-Adresse an und gibst ihr Zugang zur App, bekommt sie automatisch eine E-Mail:
 
 - **Noch kein Attendix-Konto:** Es wird ein Konto angelegt. Die Willkommensmail nennt die [[Instanz]] und die vergebene [[Rolle]] und enthält einen Button, mit dem die Person ihr Passwort festlegt und sich anmeldet.
 - **Bereits ein Attendix-Konto vorhanden:** Die Person bekommt eine Info-Mail, dass sie zu deiner Instanz hinzugefügt wurde, und meldet sich mit ihren bekannten Zugangsdaten an. Die neue Instanz erscheint dann in ihrer Instanzauswahl.
-
-Hat die E-Mail-Adresse noch kein Attendix-Konto, fragt Attendix beim Speichern nach: **Konto anlegen** oder **Ohne Konto**. Ohne Konto wird die Person nur gespeichert, es geht keine Mail raus – praktisch zum Beispiel, wenn sie sich nur über die Gemeinde App an- und abmeldet. Gibt es zur Adresse schon ein Konto, verknüpft Attendix die Person ohne Rückfrage gleich damit.
 
 Kommt keine Mail an, lohnt sich ein Blick in den Spam-Ordner und eine Prüfung der hinterlegten E-Mail-Adresse.`,
   },

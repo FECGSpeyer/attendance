@@ -1,10 +1,11 @@
 {
   "versions": [
     {
-      "version": "4.19.20",
+      "version": "4.19.21",
       "date": "22.11.2026",
       "changes": [
-        "👤 Neue Person mit E-Mail: Attendix fragt jetzt, ob ein Konto angelegt werden soll, statt es automatisch anzulegen. Mit \"Ohne Konto\" wird die Person nur gespeichert. Gibt es zur Adresse schon ein Attendix-Konto, wird sie gleich damit verknüpft."
+        "↩️ Personen anlegen in Attendix wieder wie bisher (die Konto-Rückfrage aus 4.19.20 ist zurückgenommen).",
+        "🔗 Gemeinde App: Die Leitung kann fehlende Personen jetzt direkt aus der Gemeinde App in Attendix anlegen, mit E-Mail, aber ohne Konto und ohne Einladung. Hat die Adresse schon ein Attendix-Konto, wird die Person gleich damit verknüpft."
       ]
     },
     {

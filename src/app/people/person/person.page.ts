@@ -529,37 +529,13 @@ export class PersonPage implements OnInit, AfterViewInit {
       return;
     }
 
-    // Mit E-Mail: bestehendes Konto gleich verknüpfen, sonst fragen, ob eines angelegt werden soll
-    if (this.player.email && Utils.validateEmail(this.player.email)) {
-      const vorhanden = await this.db.accountExistsForEmail(this.player.email);
-      if (vorhanden) {
-        await this.savePerson(true, true);
-        return;
-      }
-      const alert = await this.alertController.create({
-        header: translate('person.noAccountYet'),
-        message: translate('person.createAccountNow'),
-        buttons: [
-          { text: translate('common.cancel'), role: 'cancel' },
-          { text: translate('person.withoutAccount'), handler: () => { void this.savePerson(false); } },
-          { text: translate('person.createAccount'), handler: () => { void this.savePerson(true); } },
-        ],
-      });
-      await alert.present();
-      return;
-    }
-
-    await this.savePerson(false);
-  }
-
-  private async savePerson(register: boolean, linkedExisting = false): Promise<void> {
     const loading: HTMLIonLoadingElement = await Utils.getLoadingElement();
     loading.present();
 
     try {
-      await this.db.addPlayer(this.player, register, this.role);
+      await this.db.addPlayer(this.player, Boolean(this.player.email), this.role);
       this.modalController.dismiss();
-      Utils.showToast(translate(linkedExisting ? 'person.addedLinked' : 'person.added'), 'success');
+      Utils.showToast(translate('person.added'), 'success');
     } catch (error) {
       Utils.showToast(translate('person.addFailed', { error: error.message ?? translate('common.unknownError') }), 'danger');
     }
@@ -576,14 +552,7 @@ export class PersonPage implements OnInit, AfterViewInit {
 
     const loading: HTMLIonLoadingElement = await this.loadingController.create();
 
-    if (!this.player.appId && this.existingPlayer.email !== this.player.email && Utils.validateEmail(this.player.email)) {
-      // Bestehendes Attendix-Konto: gleich verknüpfen, ohne Rückfrage
-      if (await this.db.accountExistsForEmail(this.player.email)) {
-        loading.present();
-        await this.continueUpdatingPlayer(true, loading, false);
-        Utils.showToast(translate('person.linkedExisting'), 'success');
-        return;
-      }
+    if (this.existingPlayer.email !== this.player.email && Utils.validateEmail(this.player.email)) {
       const alert = await this.alertController.create({
         header: translate('person.emailAdded'),
         message: translate('person.createAccountNow'),
@@ -593,17 +562,10 @@ export class PersonPage implements OnInit, AfterViewInit {
             handler: () => {
               loading.dismiss();
             },
-            role: 'cancel',
+            role: 'destructive',
           },
           {
-            text: translate('person.withoutAccount'),
-            handler: async () => {
-              loading.present();
-              await this.continueUpdatingPlayer(false, loading, false);
-            },
-          },
-          {
-            text: translate('person.createAccount'),
+            text: translate('common.yes'),
             handler: async () => {
               loading.present();
               await this.continueUpdatingPlayer(true, loading, false);

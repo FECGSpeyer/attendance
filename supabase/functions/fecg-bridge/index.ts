@@ -27,6 +27,15 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 //                                                 the same as a self sign-in / sign-out in Attendix
 //                                                 (same rules, same notification via quick-processor).
 //                                                 A person needs no Attendix account for this.
+// POST { action: 'groups', ensembleId }          groups (voices/instruments) of one tenant, for
+//                                                 creating a person from the Gemeinde App.
+// POST { action: 'create_person', ensembleId, groupId, firstName, lastName, email? }
+//                                                 adds a person without creating an account and without
+//                                                 any email. If an Attendix account with that email exists,
+//                                                 the person is linked to it right away. An active person
+//                                                 with the same email or account is returned instead
+//                                                 (existing: true). The person is added to all upcoming
+//                                                 Termine like in Attendix.
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -163,6 +172,8 @@ async function handleWrite(req: Request, org: Org): Promise<Response> {
   if (body.action === 'persons') { return handlePersons(org); }
   if (body.action === 'attendance') { return handleAttendance(org, body); }
   if (body.action === 'status') { return handleStatus(org, body); }
+  if (body.action === 'groups') { return handleGroups(org, body); }
+  if (body.action === 'create_person') { return handleCreatePerson(org, body); }
   const file = parseFile(body.file);
   if (file === undefined) {
     return json({ error: 'invalid_file' }, 400);
@@ -343,6 +354,160 @@ async function handlePersons(org: Org): Promise<Response> {
       group: p.instrument != null ? groupNames.get(p.instrument) ?? null : null,
     })),
   });
+}
+
+async function handleGroups(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const tenantId = Number(body.ensembleId);
+  const tenantIds = await orgTenantIds(org.id);
+  if (!Number.isInteger(tenantId) || !tenantIds.includes(tenantId)) { return json({ error: 'not_found' }, 404); }
+  const { data, error } = await supabase
+    .from('instruments')
+    .select('id, name, maingroup, sort_order')
+    .eq('tenantId', tenantId)
+    .order('sort_order', { ascending: true, nullsFirst: false })
+    .order('name', { ascending: true });
+  if (error) {
+    console.error('fecg-bridge groups failed', error);
+    return json({ error: 'load_failed' }, 500);
+  }
+  return json({
+    groups: ((data ?? []) as any[]).map(g => ({ id: g.id, name: g.name ?? '', main: !!g.maingroup })),
+  });
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ROLE_PLAYER = 2;
+const ROLE_RESPONSIBLE = 5;
+
+function personOut(p: any, group: string | null, existing: boolean) {
+  return {
+    existing,
+    person: {
+      id: p.id,
+      ensembleId: p.tenantId,
+      firstName: p.firstName ?? '',
+      lastName: p.lastName ?? '',
+      email: p.email || null,
+      group,
+    },
+  };
+}
+
+async function handleCreatePerson(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const tenantId = Number(body.ensembleId);
+  const groupId = Number(body.groupId);
+  const firstName = String(body.firstName ?? '').trim().slice(0, 100);
+  const lastName = String(body.lastName ?? '').trim().slice(0, 100);
+  const emailRaw = String(body.email ?? '').trim().toLowerCase();
+  const email = EMAIL_RE.test(emailRaw) && emailRaw.length <= 200 ? emailRaw : null;
+  if (!firstName || !lastName) { return json({ error: 'name_required' }, 400); }
+
+  const tenantIds = await orgTenantIds(org.id);
+  if (!Number.isInteger(tenantId) || !tenantIds.includes(tenantId)) { return json({ error: 'not_found' }, 404); }
+  const { data: group } = await supabase
+    .from('instruments')
+    .select('id, name, maingroup')
+    .eq('id', groupId)
+    .eq('tenantId', tenantId)
+    .maybeSingle();
+  if (!group) { return json({ error: 'invalid_group' }, 400); }
+  const groupName = (group as any).name ?? null;
+
+  // Existing account with this email: link instead of creating one (no email is sent).
+  let appId: string | null = null;
+  if (email) {
+    const { data: users } = await supabase.rpc('get_user_id_by_email', { email });
+    appId = (users as any[] | null)?.[0]?.id ?? null;
+  }
+
+  // Already there (active): same account or same email in this tenant.
+  const { data: active } = await supabase
+    .from('player')
+    .select('id, tenantId, firstName, lastName, email, appId, instrument, left')
+    .eq('tenantId', tenantId)
+    .is('left', null)
+    .limit(5000);
+  const twin = ((active ?? []) as any[]).find(p =>
+    (appId && p.appId === appId) || (email && String(p.email ?? '').trim().toLowerCase() === email));
+  if (twin) {
+    let twinGroup: string | null = null;
+    if (twin.instrument != null) {
+      const { data: g } = await supabase.from('instruments').select('name').eq('id', twin.instrument).maybeSingle();
+      twinGroup = (g as any)?.name ?? null;
+    }
+    return json(personOut(twin, twinGroup, true));
+  }
+
+  if (appId) {
+    const { data: tu } = await supabase
+      .from('tenantUsers')
+      .select('userId')
+      .eq('tenantId', tenantId)
+      .eq('userId', appId)
+      .maybeSingle();
+    if (!tu) {
+      const { error: tuError } = await supabase.from('tenantUsers').insert({
+        userId: appId,
+        tenantId,
+        email,
+        role: (group as any).maingroup ? ROLE_RESPONSIBLE : ROLE_PLAYER,
+      });
+      if (tuError) {
+        console.error('fecg-bridge create_person tenantUsers failed', tuError);
+        return json({ error: 'save_failed' }, 500);
+      }
+    }
+  }
+
+  const joined = new Date().toISOString();
+  const { data: created, error } = await supabase
+    .from('player')
+    .insert({
+      id: Math.floor(Math.random() * (999999999999 - 1000000000 + 1)) + 1000000000,
+      tenantId,
+      firstName,
+      lastName,
+      email,
+      appId,
+      instrument: groupId,
+      joined,
+      history: [],
+      additional_fields: {},
+    })
+    .select('id, tenantId, firstName, lastName, email')
+    .single();
+  if (error || !created) {
+    console.error('fecg-bridge create_person failed', error);
+    return json({ error: 'save_failed' }, 500);
+  }
+
+  // Upcoming Termine, like addPlayerToAttendancesByDate in the app.
+  const today = berlinNow().slice(0, 10);
+  const [{ data: atts }, { data: types }, { data: tenant }] = await Promise.all([
+    supabase.from('attendance').select('id, type_id, date').eq('tenantId', tenantId).gte('date', today),
+    supabase.from('attendance_types').select('id, relevant_groups, default_status, additional_fields_filter').eq('tenant_id', tenantId),
+    supabase.from('tenants').select('additional_fields').eq('id', tenantId).maybeSingle(),
+  ]);
+  const fields = ((tenant as any)?.additional_fields ?? []) as any[];
+  const typeById = new Map(((types ?? []) as any[]).map(t => [t.id, t]));
+  const rows = ((atts ?? []) as any[]).flatMap(att => {
+    const type = typeById.get(att.type_id);
+    if (!type) { return []; }
+    const relevant: number[] = type.relevant_groups ?? [];
+    if (relevant.length && !relevant.includes(groupId)) { return []; }
+    const filter = type.additional_fields_filter;
+    if (filter?.key && filter?.option != null) {
+      const field = fields.find(f => f.id === filter.key);
+      if (field && field.defaultValue !== filter.option) { return []; }
+    }
+    return [{ attendance_id: att.id, person_id: (created as any).id, notes: '', status: type.default_status ?? STATUS_NEUTRAL }];
+  });
+  if (rows.length) {
+    const { error: paError } = await supabase.from('person_attendances').insert(rows);
+    if (paError) { console.error('fecg-bridge create_person attendances failed', paError); }
+  }
+
+  return json(personOut(created, groupName, false));
 }
 
 async function loadAttendance(org: Org, attendanceId: number) {

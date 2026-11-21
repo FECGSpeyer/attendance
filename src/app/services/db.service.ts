@@ -950,14 +950,6 @@ export class DbService {
     }, appId);
   }
 
-  /** Gibt es zu dieser E-Mail schon ein Attendix-Konto? Dann wird die Person gleich damit verknüpft. */
-  async accountExistsForEmail(email: string): Promise<boolean> {
-    if (!email) return false;
-    const { data, error } = await supabase.rpc('get_user_id_by_email', { email: email.toLowerCase() });
-    if (error) return false;
-    return Boolean(data?.length && data[0].id);
-  }
-
   async registerUser(
     email: string,
     name: string,
