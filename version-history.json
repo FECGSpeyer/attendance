@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.23",
+      "date": "22.11.2026",
+      "changes": [
+        "⚡ Gemeinde App: Die Personenliste für \"Personen zuordnen\" lädt deutlich schneller und bricht bei vielen Konten nicht mehr ab."
+      ]
+    },
+    {
       "version": "4.19.22",
       "date": "22.11.2026",
       "changes": [

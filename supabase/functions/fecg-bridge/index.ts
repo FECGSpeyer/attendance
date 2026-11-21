@@ -328,18 +328,26 @@ async function handlePersons(org: Org): Promise<Response> {
   }
 
   // Account email and Microsoft oid (Teams sign-in) for the automatic link.
+  // One page of 1000 accounts per call instead of one call per account (the per-account
+  // lookups took longer than the Gemeinde App waits).
   const accounts = new Map<string, { email: string | null; msOid: string | null }>();
-  const appIds = [...new Set(rows.map(p => p.appId).filter(Boolean))] as string[];
-  for (let i = 0; i < appIds.length; i += 20) {
-    await Promise.all(appIds.slice(i, i + 20).map(async id => {
-      const { data: u } = await supabase.auth.admin.getUserById(id);
-      if (u?.user) {
-        accounts.set(id, {
-          email: u.user.email ?? null,
-          msOid: typeof u.user.app_metadata?.msoid === 'string' ? u.user.app_metadata.msoid : null,
+  const appIds = new Set(rows.map(p => p.appId).filter(Boolean) as string[]);
+  for (let page = 1; appIds.size && page <= 50; page++) {
+    const { data: list, error: listError } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (listError) {
+      console.error('fecg-bridge persons listUsers failed', listError);
+      break;
+    }
+    const users = list?.users ?? [];
+    for (const u of users) {
+      if (appIds.has(u.id)) {
+        accounts.set(u.id, {
+          email: u.email ?? null,
+          msOid: typeof u.app_metadata?.msoid === 'string' ? u.app_metadata.msoid : null,
         });
       }
-    }));
+    }
+    if (users.length < 1000 || accounts.size >= appIds.size) { break; }
   }
 
   return json({
