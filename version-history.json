@@ -1,10 +1,17 @@
 {
   "versions": [
     {
-      "version": "4.19.17",
+      "version": "4.19.18",
       "date": "21.11.2026",
       "changes": [
         "📅 Wer Termine noch mit der alten Kalender-Adresse abonniert hat, bekommt beim Öffnen einen Hinweis mit dem neuen Link zum Neu-Abonnieren."
+      ]
+    },
+    {
+      "version": "4.19.17",
+      "date": "21.11.2026",
+      "changes": [
+        "💬 Vorbereitung für die Gemeinde App: Mitglieder können sich dort bald direkt im Gruppenchat für Termine an- und abmelden oder Verspätung melden – mit denselben Regeln und Benachrichtigungen wie in Attendix, auch ohne eigenes Attendix-Konto."
       ]
     },
     {
