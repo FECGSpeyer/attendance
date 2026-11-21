@@ -1,0 +1,85 @@
+#!/bin/bash
+# Deploys Edge Functions to the self-hosted Supabase stack on the VPS.
+#
+# Called by the GitHub workflow .github/workflows/deploy-functions.yml over SSH
+# (forced command of the functions deploy key, see README.md next to this file):
+#   tar -czf - -C supabase/functions . | ssh deploy@vps attendance
+#
+# Reads a tar.gz of supabase/functions from stdin, copies every function folder
+# into volumes/functions/<name>/ and restarts the functions container if
+# anything changed. Never touches main/ (router with the PUBLIC_FUNCTIONS JWT
+# exception) and never deletes function folders that are not in the upload
+# (the Flutter repo deploys its own functions into the same folder).
+set -euo pipefail
+umask 022
+
+STACK_DIR=${ATTENDIX_STACK_DIR:-/opt/stack/attendix/supabase}
+FUNCS_DIR="$STACK_DIR/volumes/functions"
+MAX_UPLOAD=${ATTENDIX_MAX_UPLOAD:-52428800}   # 50 MB
+
+source_repo="${1:-}"
+case "$source_repo" in
+  # synonyms-gpt: the Flutter repo's version is the live one.
+  attendance) skip=" main synonyms-gpt " ;;
+  attendix)   skip=" main " ;;
+  *) echo "Unbekannte Quelle '$source_repo' (erlaubt: attendance, attendix)" >&2; exit 2 ;;
+esac
+
+[ -d "$FUNCS_DIR" ] || { echo "$FUNCS_DIR fehlt" >&2; exit 1; }
+
+# One deploy at a time (both repos write into the same folder).
+exec 9>/run/lock/attendix-deploy-functions.lock
+flock -w 300 9
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+mkdir "$tmp/in"
+
+head -c "$((MAX_UPLOAD + 1))" > "$tmp/upload.tgz"
+if [ "$(stat -c %s "$tmp/upload.tgz")" -gt "$MAX_UPLOAD" ]; then
+  echo "Upload größer als $MAX_UPLOAD Bytes, abgebrochen" >&2; exit 1
+fi
+tar -xzf "$tmp/upload.tgz" -C "$tmp/in" --no-same-owner --no-same-permissions
+
+# Only plain files and folders, no links or devices.
+if [ -n "$(find "$tmp/in" ! -type f ! -type d -print -quit)" ]; then
+  echo "Upload enthält Links oder Sonderdateien, abgebrochen" >&2; exit 1
+fi
+
+changed=0
+deployed=()
+for dir in "$tmp/in"/*/; do
+  [ -d "$dir" ] || continue
+  name=$(basename "$dir")
+  if ! [[ "$name" =~ ^[a-z0-9_][a-z0-9_-]*$ ]]; then
+    echo "Ungültiger Ordnername '$name', übersprungen" >&2; continue
+  fi
+  case "$skip" in *" $name "*) echo "• $name übersprungen"; continue ;; esac
+  mkdir -p "$FUNCS_DIR/$name"
+  out=$(rsync -rc --delete --chmod=D755,F644 --itemize-changes "$dir" "$FUNCS_DIR/$name/")
+  if [ -n "$out" ]; then
+    changed=1
+    deployed+=("$name")
+    printf '%s\n' "$out" | sed "s|^|  $name: |"
+  fi
+done
+
+if [ "$changed" = 0 ]; then
+  echo "Keine Änderungen, Functions-Container läuft unverändert weiter."
+  exit 0
+fi
+
+echo "Geändert: ${deployed[*]}"
+cd "$STACK_DIR"
+docker compose restart functions
+
+for _ in $(seq 1 15); do
+  sleep 2
+  if [ "$(docker compose ps --format '{{.State}}' functions 2>/dev/null)" = "running" ]; then
+    echo "Functions-Container läuft wieder."
+    exit 0
+  fi
+done
+echo "Functions-Container läuft nach dem Neustart nicht, letzte Logs:" >&2
+docker compose logs --tail 50 functions >&2 || true
+exit 1

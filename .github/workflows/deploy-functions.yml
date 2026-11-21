@@ -1,0 +1,60 @@
+# Deploys supabase/functions to the own VPS after every change on main.
+# The VPS side is deploy/vps/functions/attendix-deploy-functions (setup:
+# deploy/vps/functions/README.md). It copies each function folder into
+# volumes/functions/<name>/ (never main/, never synonyms-gpt from this repo)
+# and restarts the functions container only if something changed.
+#
+# Secrets:
+#   VPS_HOST, VPS_USER            SSH target (VPS_USER = deploy)
+#   VPS_FUNCTIONS_SSH_KEY         private key whose public part has the forced
+#                                 command in authorized_keys (see README)
+#   VPS_KNOWN_HOSTS               optional, output of `ssh-keyscan <host>`
+name: Deploy Edge Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - '.github/workflows/deploy-functions.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-functions
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload functions to VPS and restart
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_FUNCTIONS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ]; then
+            echo "::warning::VPS_HOST, VPS_USER oder VPS_FUNCTIONS_SSH_KEY fehlt, Functions wurden nicht deployt"
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null ~/.ssh/id_functions
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_functions
+          if [ -n "$VPS_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            hostcheck=yes
+          else
+            hostcheck=accept-new
+          fi
+          # The key's forced command reads the archive from stdin; the
+          # argument only names the source repo.
+          tar -czf - -C supabase/functions --exclude=./main . \
+            | ssh -i ~/.ssh/id_functions -o BatchMode=yes \
+                -o StrictHostKeyChecking=$hostcheck \
+                "$VPS_USER@$VPS_HOST" attendance
