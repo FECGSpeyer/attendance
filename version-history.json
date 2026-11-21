@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.19",
+      "date": "21.11.2026",
+      "changes": [
+        "🔄 App-Updates kommen wieder automatisch an: Seit dem Serverumzug wurden neue Versionen noch an die alte Adresse hochgeladen."
+      ]
+    },
+    {
       "version": "4.19.18",
       "date": "21.11.2026",
       "changes": [

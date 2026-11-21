@@ -56,7 +56,9 @@ const BUCKET = 'ota-bundles';
 const MANIFEST_PATH = 'manifest.json';
 
 // Override for the self-hosted instance (e.g. https://api.attendix.de).
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ultyjzgwejpehfjuyenr.supabase.co';
+// Since the move to our own server (20.11.2026) the apps read the manifest from
+// api.attendix.de, so bundles must be uploaded there, not to the old Cloud project.
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://api.attendix.de';
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function fail(msg) {
