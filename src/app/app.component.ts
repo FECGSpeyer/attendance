@@ -16,6 +16,7 @@ import { TeamsService } from './services/teams/teams.service';
 import { OfflineQueueService } from './services/offline-queue/offline-queue.service';
 import { LiveActivityService } from './services/live-activity/live-activity.service';
 import { AudioPlayerService } from './services/audio-player/audio-player.service';
+import { IcalMigrationService } from './services/ical-migration/ical-migration.service';
 import { translate } from '@jsverse/transloco';
 
 const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -49,6 +50,7 @@ export class AppComponent {
     private offlineQueue: OfflineQueueService,
     // Created here so it starts with the app; it watches the tenant itself.
     private liveActivity: LiveActivityService,
+    private icalMigration: IcalMigrationService,
     audioPlayer: AudioPlayerService,
   ) {
     audioPlayer.coverUrl = () => this.db.getBrandingSource().logo_url || undefined;
@@ -153,7 +155,11 @@ export class AppComponent {
   }
 
   async listenToAuthChanges() {
-    this.db.getSupabase().auth.onAuthStateChange(async (event) => {
+    this.db.getSupabase().auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+        // Old calendar subscriptions (supabase.co address): ask to subscribe again.
+        setTimeout(() => this.icalMigration.checkOnce(), 5000);
+      }
       if (event === 'PASSWORD_RECOVERY') {
         this.presentPasswordRecoveryAlert();
       }

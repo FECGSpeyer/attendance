@@ -3471,5 +3471,10 @@
     "groupTeam": "Team",
     "groupAdmin": "Administration",
     "groupAccount": "Account"
+  },
+  "icalMigration": {
+    "header": "Set up your calendar subscription again",
+    "message": "Attendix has moved to its own server. Your calendar subscription still uses the old address and will soon stop receiving events.\n\nPlease remove the old subscription in your calendar app and subscribe to this link instead:\n\n{link}",
+    "done": "Done"
   }
 }
