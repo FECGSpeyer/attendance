@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.17",
+      "date": "21.11.2026",
+      "changes": [
+        "💬 Vorbereitung für die Gemeinde App: Mitglieder können sich dort bald direkt im Gruppenchat für Termine an- und abmelden oder Verspätung melden – mit denselben Regeln und Benachrichtigungen wie in Attendix, auch ohne eigenes Attendix-Konto."
+      ]
+    },
+    {
       "version": "4.19.16",
       "date": "19.11.2026",
       "changes": [
