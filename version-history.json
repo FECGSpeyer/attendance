@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.22",
+      "date": "22.11.2026",
+      "changes": [
+        "📅 Der Hinweis zu alten Kalender-Abos kommt nur noch einmal, auch wenn du mehrere Abos hast. Doppelte Abos desselben Kalenders werden zusammengefasst."
+      ]
+    },
+    {
       "version": "4.19.21",
       "date": "22.11.2026",
       "changes": [

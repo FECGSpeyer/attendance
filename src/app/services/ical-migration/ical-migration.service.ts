@@ -38,32 +38,59 @@ export class IcalMigrationService {
       const { data, error } = await this.db.getSupabase().rpc('my_ical_legacy_hits');
       if (error || !Array.isArray(data)) return;
       const dismissed = this.readDismissed();
-      for (const hit of data as LegacyIcalHit[]) {
-        const id = `${hit.fn}?${hit.query}`;
-        const dismissedAt = dismissed[id];
-        if (dismissedAt && new Date(hit.last_seen).getTime() < dismissedAt + RESHOW_AFTER_MS) continue;
-        await this.showNotice(hit, id);
-      }
+      const open = this.uniqueFeeds(data as LegacyIcalHit[]).filter((hit) => {
+        const dismissedAt = dismissed[this.hitId(hit)];
+        return !dismissedAt || new Date(hit.last_seen).getTime() >= dismissedAt + RESHOW_AFTER_MS;
+      });
+      // One notice for all affected subscriptions, never one per subscription.
+      if (open.length) await this.showNotice(open);
     } catch (e) {
       console.warn('[IcalMigration] check failed', e);
     }
   }
 
-  private async showNotice(hit: LegacyIcalHit, id: string): Promise<void> {
-    const link = `${environment.apiUrl}/functions/v1/${hit.fn}?${hit.query}`;
+  /**
+   * The same calendar is often subscribed several times (other devices,
+   * language, "hide cancelled"). Keep only the newest link per calendar.
+   */
+  private uniqueFeeds(hits: LegacyIcalHit[]): LegacyIcalHit[] {
+    const byFeed = new Map<string, LegacyIcalHit>();
+    for (const hit of hits) {
+      const feed = this.hitId(hit);
+      const known = byFeed.get(feed);
+      if (!known || new Date(hit.last_seen) > new Date(known.last_seen)) byFeed.set(feed, hit);
+    }
+    return [...byFeed.values()].slice(0, 3);
+  }
+
+  /** One id per calendar, so duplicates of the same subscription count as one. */
+  private hitId(hit: LegacyIcalHit): string {
+    const params = new URLSearchParams(hit.query);
+    return [hit.fn, params.get('tenantId'), params.get('personId'), params.get('key'), params.get('detailed')].join('|');
+  }
+
+  private linkFor(hit: LegacyIcalHit): string {
+    return `${environment.apiUrl}/functions/v1/${hit.fn}?${hit.query}`;
+  }
+
+  private async showNotice(hits: LegacyIcalHit[]): Promise<void> {
+    const links = hits.map((h) => this.linkFor(h));
+    const copy = (link: string) => {
+      navigator?.clipboard?.writeText(link);
+      Utils.showToast(translate('settings.linkCopied'), 'success');
+      return false;
+    };
+    const copyButtons = links.length === 1
+      ? [{ text: translate('settings.copyLink'), handler: () => copy(links[0]) }]
+      : links.map((link, i) => ({ text: translate('icalMigration.copyLinkN', { n: i + 1 }), handler: () => copy(link) }));
     const alert = await this.alertController.create({
       header: translate('icalMigration.header'),
-      message: translate('icalMigration.message', { link }),
+      message: links.length === 1
+        ? translate('icalMigration.message', { link: links[0] })
+        : translate('icalMigration.messageMultiple', { links: links.map((l, i) => `${i + 1}. ${l}`).join('\n\n') }),
       backdropDismiss: false,
       buttons: [
-        {
-          text: translate('settings.copyLink'),
-          handler: () => {
-            navigator?.clipboard?.writeText(link);
-            Utils.showToast(translate('settings.linkCopied'), 'success');
-            return false;
-          },
-        },
+        ...copyButtons,
         {
           text: translate('settings.openGuide'),
           handler: () => {
@@ -73,7 +100,7 @@ export class IcalMigrationService {
         },
         {
           text: translate('icalMigration.done'),
-          handler: () => this.saveDismissed(id),
+          handler: () => this.saveDismissed(hits.map((h) => this.hitId(h))),
         },
         { text: translate('svc.later'), role: 'cancel' },
       ],
@@ -90,10 +117,10 @@ export class IcalMigrationService {
     }
   }
 
-  private saveDismissed(id: string): void {
+  private saveDismissed(ids: string[]): void {
     try {
       const all = this.readDismissed();
-      all[id] = Date.now();
+      for (const id of ids) all[id] = Date.now();
       localStorage.setItem(DISMISSED_KEY, JSON.stringify(all));
     } catch {
       // Storage blocked: the notice simply shows again next time.

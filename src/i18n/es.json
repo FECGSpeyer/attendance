@@ -3475,6 +3475,8 @@
   "icalMigration": {
     "header": "Vuelve a suscribirte al calendario",
     "message": "Attendix se ha trasladado a su propio servidor. Tu suscripción al calendario todavía usa la dirección antigua y pronto dejará de recibir eventos.\n\nElimina la suscripción antigua en tu app de calendario y suscríbete de nuevo con este enlace:\n\n{link}",
-    "done": "Hecho"
+    "done": "Hecho",
+    "messageMultiple": "Attendix se ha trasladado a su propio servidor. Tus suscripciones al calendario todavía usan la dirección antigua y pronto dejarán de recibir eventos.\n\nElimina las suscripciones antiguas en tu app de calendario y suscríbete de nuevo con estos enlaces:\n\n{links}",
+    "copyLinkN": "Copiar enlace {n}"
   }
 }
