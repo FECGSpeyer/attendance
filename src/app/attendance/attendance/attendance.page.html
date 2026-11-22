@@ -168,6 +168,10 @@
               <ion-label>{{ 'attendance.sendReminder' | transloco }}</ion-label>
             </ion-item>
             }
+            <ion-item button detail="false" (click)="sendTelegramCard(); optionsPopover.dismiss()">
+              <ion-icon slot="start" name="paper-plane-outline"></ion-icon>
+              <ion-label>{{ 'attendance.telegramCard' | transloco }}</ion-label>
+            </ion-item>
             @if (autoPanel?.isManager && autoPanel?.started && autoPanel!.unexcused.length > 0) {
             <ion-item button detail="false" (click)="autoPanel?.writeUnexcused(); optionsPopover.dismiss()">
               <ion-icon slot="start" name="chatbubble-ellipses-outline"></ion-icon>

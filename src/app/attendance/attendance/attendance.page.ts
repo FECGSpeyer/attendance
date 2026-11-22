@@ -2371,6 +2371,40 @@ export class AttendancePage implements OnInit, OnDestroy {
   }
 
   /**
+   * Posts this Termin as a card into a Telegram group via @attendix_bot: the server signs a
+   * startgroup link, Telegram lets the user pick the group and the bot posts the card there.
+   */
+  async sendTelegramCard(): Promise<void> {
+    const loading = await this.loadingController.create();
+    await loading.present();
+    let url: string | undefined;
+    try {
+      const { data, error } = await this.db.getSupabase().functions.invoke('attendix-bot', {
+        body: { action: 'card_link', attendanceId: this.attendance.id },
+      });
+      url = error ? undefined : data?.url;
+    } catch {
+      url = undefined;
+    } finally {
+      await loading.dismiss();
+    }
+    if (!url) {
+      Utils.showToast(translate('attendance.telegramCardFailed'), 'danger');
+      return;
+    }
+    // Opened from the alert button, so browsers treat it as a user action and don't block it.
+    const alert = await this.alertController.create({
+      header: translate('attendance.telegramCard'),
+      message: translate('attendance.telegramCardHint'),
+      buttons: [
+        { text: translate('common.cancel'), role: 'cancel' },
+        { text: translate('attendance.telegramCardOpen'), handler: () => { Browser.open({ url: url! }); } },
+      ],
+    });
+    await alert.present();
+  }
+
+  /**
    * Open modal to add persons manually to attendance
    */
   async openAddPersonModal(): Promise<void> {

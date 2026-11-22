@@ -1,5 +1,12 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import {
+  applySelfStatus,
+  berlinNow,
+  loadAttendanceRules,
+  reasonsOf,
+  STATUS_NEUTRAL,
+} from '../_shared/self-status.ts';
 
 // Bridge for the Gemeinde App (FECG Speyer, FECG Schwegenheim). Auth: header x-gemeinde-app-key,
 // of which tenant_groups stores only the SHA-256.
@@ -240,69 +247,8 @@ async function handleWrite(req: Request, org: Org): Promise<Response> {
 // ---------------------------------------------------------------------------
 // Attendance card (Gemeinde App group chats)
 
-// Same values as AttendanceStatus in src/app/utilities/constants.ts.
-const STATUS_NEUTRAL = 0;
-const STATUS_PRESENT = 1;
-const STATUS_EXCUSED = 2;
-const STATUS_LATE = 3;
-const STATUS_ABSENT = 4;
-const STATUS_LATE_EXCUSED = 5;
-const MAX_REASON = 300;
-
-// Same defaults as DEFAULT_ABSENCE_REASONS / DEFAULT_LATE_REASONS in constants.ts.
-const DEFAULT_ABSENCE_REASONS = ['Krankheitsbedingt', 'Urlaubsbedingt', 'Arbeitsbedingt', 'Familienbedingt'];
-const DEFAULT_LATE_REASONS = ['Krankheitsbedingt', 'Urlaubsbedingt', 'Arbeitsbedingt', 'Familienbedingt'];
-
-/** Wall clock in Europe/Berlin as "YYYY-MM-DDTHH:MM". */
-export function berlinNow(now = new Date()): string {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).formatToParts(now);
-  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '00';
-  return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}`;
-}
-
-/** Attendix stores the deadline as wall clock with a UTC marker (see isSigninOpen in overview.page.ts). */
-export function deadlineWallClock(deadline: string | null | undefined): string | null {
-  const m = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})/.exec(deadline ?? '');
-  return m ? `${m[1]}T${m[2]}` : null;
-}
-
-function addDays(date: string, days: number): string {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-/** Wall clock when the Termin is over: its end (or start), else the end of its last day. */
-export function endWallClock(date: string, start: string | null, end: string | null, days: number | null): string {
-  const lastDay = addDays(date, Math.max(1, days ?? 1) - 1);
-  const time = /^\d{2}:\d{2}/.exec(end || '')?.[0] ?? /^\d{2}:\d{2}/.exec(start || '')?.[0];
-  return time && (days ?? 1) <= 1 ? `${date}T${time}` : `${lastDay}T23:59`;
-}
-
-export interface CardRules {
-  past: boolean;
-  deadlinePassed: boolean;
-  allowLate: boolean;
-  allowExcuse: boolean;
-}
-
-/**
- * What a person may do on the card; mirrors presentActionSheetForChoice in
- * selfService/overview: signing in closes at the deadline, signing out and
- * reporting late stay open, but not once the person is excused or absent.
- */
-export function allowedActions(rules: CardRules, current: number): { present: boolean; late: boolean; excused: boolean } {
-  if (rules.past) { return { present: false, late: false, excused: false }; }
-  const blocked = current === STATUS_EXCUSED || current === STATUS_ABSENT;
-  return {
-    present: !rules.deadlinePassed && current !== STATUS_PRESENT,
-    late: rules.allowLate && !blocked,
-    excused: rules.allowExcuse && !blocked,
-  };
-}
+// Status values, rules and the self sign-in / sign-out live in ../_shared/self-status.ts
+// (shared with the Telegram card in attendix-bot).
 
 async function handlePersons(org: Org): Promise<Response> {
   const tenantIds = await orgTenantIds(org.id);
@@ -519,27 +465,7 @@ async function handleCreatePerson(org: Org, body: Record<string, unknown>): Prom
 }
 
 async function loadAttendance(org: Org, attendanceId: number) {
-  const tenantIds = await orgTenantIds(org.id);
-  if (!Number.isInteger(attendanceId) || !tenantIds.length) { return null; }
-  const { data: att } = await supabase
-    .from('attendance')
-    .select('id, tenantId, date, start_time, end_time, deadline, place, typeInfo, duration_days, archived, type:type_id(name, available_statuses, duration_days), tenant:tenantId(absence_reasons, late_reasons)')
-    .eq('id', attendanceId)
-    .in('tenantId', tenantIds)
-    .maybeSingle();
-  if (!att || (att as any).archived) { return null; }
-  const a = att as any;
-  const date = String(a.date ?? '').slice(0, 10);
-  const now = berlinNow();
-  const deadline = deadlineWallClock(a.deadline);
-  const statuses: number[] = a.type?.available_statuses ?? [];
-  const rules: CardRules = {
-    past: endWallClock(date, a.start_time, a.end_time, a.duration_days ?? a.type?.duration_days ?? 1) < now,
-    deadlinePassed: !!deadline && deadline < now,
-    allowLate: !a.type || statuses.includes(STATUS_LATE),
-    allowExcuse: !a.type || statuses.includes(STATUS_EXCUSED),
-  };
-  return { a, date, deadline, rules };
+  return loadAttendanceRules(supabase, attendanceId, await orgTenantIds(org.id));
 }
 
 async function handleAttendance(org: Org, body: Record<string, unknown>): Promise<Response> {
@@ -569,10 +495,7 @@ async function handleAttendance(org: Org, body: Record<string, unknown>): Promis
       url: `https://attendix.de/open-attendance?id=${a.id}&tenantId=${a.tenantId}`,
       ...rules,
     },
-    reasons: {
-      absence: a.tenant?.absence_reasons?.length ? a.tenant.absence_reasons : DEFAULT_ABSENCE_REASONS,
-      late: a.tenant?.late_reasons?.length ? a.tenant.late_reasons : DEFAULT_LATE_REASONS,
-    },
+    reasons: reasonsOf(a),
     persons: ((rows ?? []) as any[]).map(r => ({ personId: r.person_id, status: r.status ?? STATUS_NEUTRAL, notes: r.notes || '' })),
   });
 }
@@ -583,57 +506,18 @@ async function handleStatus(org: Org, body: Record<string, unknown>): Promise<Re
     return json({ error: 'invalid_status' }, 400);
   }
   const personId = Number(body.personId);
-  const reason = String(body.reason ?? '').trim().slice(0, MAX_REASON);
-  if (wanted !== 'present' && !reason) { return json({ error: 'reason_required' }, 400); }
+  if (wanted !== 'present' && !String(body.reason ?? '').trim()) { return json({ error: 'reason_required' }, 400); }
 
   const loaded = await loadAttendance(org, Number(body.attendanceId));
   if (!loaded || !Number.isInteger(personId)) { return json({ error: 'not_found' }, 404); }
-  const { a, rules } = loaded;
 
-  const { data: pa } = await supabase
-    .from('person_attendances')
-    .select('id, status')
-    .eq('attendance_id', a.id)
-    .eq('person_id', personId)
-    .maybeSingle();
-  if (!pa) { return json({ error: 'not_invited' }, 404); }
-
-  const current = (pa as any).status ?? STATUS_NEUTRAL;
-  const allowed = allowedActions(rules, current);
-  if (!allowed[wanted]) {
-    const why = rules.past ? 'past' : wanted === 'present' && rules.deadlinePassed ? 'deadline' : 'not_allowed';
-    return json({ error: why }, 409);
+  const result = await applySelfStatus(supabase, loaded, personId, wanted, body.reason, 'fecg-bridge');
+  if (!result.ok) {
+    const code = result.error === 'not_invited' ? 404 : result.error === 'write_failed' ? 500
+      : result.error === 'reason_required' ? 400 : 409;
+    return json({ error: result.error }, code);
   }
-
-  const status = wanted === 'present' ? STATUS_PRESENT : wanted === 'late' ? STATUS_LATE_EXCUSED : STATUS_EXCUSED;
-  const { error } = await supabase
-    .from('person_attendances')
-    .update({ status, notes: wanted === 'present' ? '' : reason, changed_by: null, changed_at: new Date().toISOString() })
-    .eq('id', (pa as any).id);
-  if (error) {
-    console.error('fecg-bridge status write failed', error);
-    return json({ error: 'write_failed' }, 500);
-  }
-
-  // Same notification as a self sign-in / sign-out in Attendix (push or Telegram to the leaders).
-  const type = wanted === 'present'
-    ? (current === STATUS_LATE_EXCUSED ? 'lateSignin' : 'signin')
-    : wanted === 'late' ? 'lateSignout' : 'signout';
-  try {
-    const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/quick-processor`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-      },
-      body: JSON.stringify({ attId: (pa as any).id, type, reason, notes: '', isParents: false, isSelf: true }),
-    });
-    if (!res.ok) { console.error('fecg-bridge notify failed', res.status, await res.text().catch(() => '')); }
-  } catch (e) {
-    console.error('fecg-bridge notify failed', e);
-  }
-
-  return json({ ok: true, personId, status, notes: wanted === 'present' ? '' : reason });
+  return json({ ok: true, personId, status: result.status, notes: result.notes });
 }
 
 Deno.serve(async (req: Request) => {

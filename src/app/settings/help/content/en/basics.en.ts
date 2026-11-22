@@ -89,6 +89,24 @@ Moving an event also does the following:
     keywords: ['choose pieces', 'programme', 'conductor', 'songs'],
     body: `In the event details you can add [[Piece|pieces]] that were played or are planned in the "Pieces" area and assign who leads them (conductor/choir leader). These entries automatically end up in the [[History|history]] and can be selected in the [[Run sheet|run sheet]].`,
   },
+  'att-telegram-card': {
+    title: 'Send an event as a card to a Telegram group',
+    keywords: ['telegram', 'telegram group', 'group chat', 'card', 'telegram card', 'bot', 'attendix_bot', 'attend', 'decline', 'later', 'sign in', 'sign out', 'mini app'],
+    body: `You can send an event as a card to a Telegram group. Everyone in the group sees the date, time, place and how many have accepted, declined or not answered yet, and can sign in or out right in Telegram.
+
+**Send the card**
+Open the event, tap the menu (⋮) and then "Send as Telegram card". Tap "Open Telegram" and pick the group. @attendix_bot is added to the group if it isn't there yet and posts the card. Everyone who manages the event in Attendix can do this.
+
+**What members can do on the card**
+- **✅ Attend**: signs you in right away.
+- **⏰ Later** and **❌ Decline**: opens a small window in Telegram where you pick or type a reason.
+- **🔄 Refresh**: shows the current numbers, also when someone signed in or out in the app.
+
+The same rules as in the app apply: after the sign-up deadline you can no longer accept, but you can still decline or come later. The leaders get the usual notification.
+
+**Link Telegram**
+So Attendix knows who tapped, each person links their Telegram once: in the app under Settings → Notifications → Telegram. Anyone not linked yet gets a short note when tapping that only they can see. People without an app account cannot use the card.`,
+  },
   'att-reminder': {
     title: 'Sending a reminder to members (ad-hoc reminder)',
     keywords: ['reminder', 'ad-hoc', 'adhoc', 'send notification', 'email', 'push', 'neutral', 'without status', 'no response', 'remind one person'],

@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.24",
+      "date": "22.11.2026",
+      "changes": [
+        "✈️ Termine lassen sich als Karte in eine Telegram-Gruppe senden (Termin → Menü → \"Als Telegram-Karte senden\"). Mitglieder mit verknüpftem Telegram sagen dort direkt zu, sagen mit Grund ab oder melden sich für später, die Karte zeigt die aktuellen Zahlen."
+      ]
+    },
+    {
       "version": "4.19.23",
       "date": "22.11.2026",
       "changes": [

@@ -84,6 +84,26 @@ Wische im Termin eine Person nach links, tippe auf die drei Punkte und wähle "E
 Für allgemeine Nachrichten ohne Terminbezug nutze stattdessen die Mitteilungen (Einstellungen → Kommunikation → Mitteilungen).`,
   },
   {
+    id: 'att-telegram-card',
+    title: 'Termin als Karte in eine Telegram-Gruppe senden',
+    categoryId: 'attendance',
+    keywords: ['telegram', 'telegram gruppe', 'gruppenchat', 'karte', 'telegram karte', 'bot', 'attendix_bot', 'zusagen', 'absagen', 'später', 'anmelden', 'abmelden', 'mini app'],
+    body: `Du kannst einen Termin als Karte in eine Telegram-Gruppe schicken. Alle in der Gruppe sehen dort Datum, Uhrzeit, Ort und wie viele zugesagt, abgesagt oder noch nicht geantwortet haben, und können sich direkt in Telegram an- oder abmelden.
+
+**Karte senden**
+Öffne den Termin, tippe auf das Menü (⋮) und dann auf "Als Telegram-Karte senden". Tippe auf "Telegram öffnen" und wähle die Gruppe aus. Der @attendix_bot wird dabei zur Gruppe hinzugefügt, falls er noch nicht drin ist, und postet die Karte. Das können alle, die den Termin in Attendix verwalten.
+
+**Was die Mitglieder auf der Karte tun können**
+- **✅ Zusagen**: meldet dich sofort an.
+- **⏰ Später** und **❌ Absagen**: öffnet ein kleines Fenster in Telegram, in dem du einen Grund auswählst oder eintippst.
+- **🔄 Aktualisieren**: zeigt die aktuellen Zahlen, auch wenn sich jemand in der App an- oder abgemeldet hat.
+
+Es gelten dieselben Regeln wie in der App: Nach dem Anmeldeschluss ist kein Zusagen mehr möglich, Absagen und Später schon. Die Leitung bekommt die gewohnte Benachrichtigung.
+
+**Telegram verknüpfen**
+Damit Attendix weiß, wer getippt hat, muss jede Person ihr Telegram einmal verknüpfen: in der App unter Einstellungen → Benachrichtigungen → Telegram. Wer noch nicht verknüpft ist, bekommt beim Tippen einen kurzen Hinweis, der nur für sie selbst sichtbar ist. Personen ohne App-Konto können die Karte nicht nutzen.`,
+  },
+  {
     id: 'att-archive',
     title: 'Termine archivieren',
     categoryId: 'attendance',
