@@ -92,7 +92,7 @@ Moving an event also does the following:
   'att-telegram-card': {
     title: 'Send an event as a card to a Telegram group',
     keywords: ['telegram', 'telegram group', 'group chat', 'card', 'telegram card', 'bot', 'attendix_bot', 'attend', 'decline', 'later', 'sign in', 'sign out', 'mini app'],
-    body: `You can send an event as a card to a Telegram group. Everyone in the group sees the date, time, place and how many have accepted, declined or not answered yet, and can sign in or out right in Telegram.
+    body: `You can send an event as a card to a Telegram group. Everyone in the group sees the date, time and place and can sign in or out right in Telegram. The card does not show how many have accepted or declined.
 
 **Send the card**
 Open the event, tap the menu (⋮) and then "Send as Telegram card". Tap "Open Telegram" and pick the group. @attendix_bot is added to the group if it isn't there yet and posts the card. Everyone who manages the event in Attendix can do this.
@@ -100,7 +100,7 @@ Open the event, tap the menu (⋮) and then "Send as Telegram card". Tap "Open T
 **What members can do on the card**
 - **✅ Attend**: signs you in right away.
 - **⏰ Later** and **❌ Decline**: opens a small window in Telegram where you pick or type a reason.
-- **🔄 Refresh**: shows the current numbers, also when someone signed in or out in the app.
+- **👤 My status**: shows only you your current status. Leaders and people in charge also see how many are attending, coming later, declined or have not answered yet, as well as in the window for Later and Decline.
 
 The same rules as in the app apply: after the sign-up deadline you can no longer accept, but you can still decline or come later. The leaders get the usual notification.
 

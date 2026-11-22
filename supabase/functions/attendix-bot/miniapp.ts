@@ -14,8 +14,9 @@ export const MINIAPP_HTML = `<!doctype html>
     --bg: var(--tg-theme-bg-color, #ffffff);
     --text: var(--tg-theme-text-color, #1c1c1e);
     --hint: var(--tg-theme-hint-color, #8e8e93);
-    --accent: var(--tg-theme-button-color, #2481cc);
-    --accent-text: var(--tg-theme-button-text-color, #ffffff);
+    /* Attendix primary (src/theme/variables.scss), not Telegram's button blue. */
+    --accent: #438e96;
+    --accent-text: #ffffff;
     --card: var(--tg-theme-secondary-bg-color, #f2f2f7);
     --danger: var(--tg-theme-destructive-text-color, #d93025);
   }
@@ -35,6 +36,7 @@ export const MINIAPP_HTML = `<!doctype html>
   .send { width: 100%; margin-top: 16px; padding: 14px; border: none; border-radius: 12px; background: var(--accent); color: var(--accent-text); font-size: 16px; font-weight: 600; }
   .send:disabled { opacity: .5; }
   .error { color: var(--danger); margin-top: 10px; }
+  .counts { white-space: pre-line; font-size: 14px; }
   .done { text-align: center; font-size: 18px; margin-top: 40px; }
 </style>
 </head>
@@ -43,7 +45,10 @@ export const MINIAPP_HTML = `<!doctype html>
 <script>
 (function () {
   var tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { tg.ready(); tg.expand(); }
+  if (tg) {
+    tg.ready(); tg.expand();
+    try { tg.setHeaderColor('#438e96'); } catch (e) {}
+  }
   var initData = (tg && tg.initData) || '';
   var api = location.origin + location.pathname;
   var app = document.getElementById('app');
@@ -75,6 +80,9 @@ export const MINIAPP_HTML = `<!doctype html>
     box.appendChild(el('div', {}, state.forText));
     box.appendChild(el('div', { class: 'hint' }, state.currentText));
     app.appendChild(box);
+    if (state.countsText) {
+      app.appendChild(el('div', { class: 'box counts' }, state.countsText));
+    }
 
     var seg = el('div', { class: 'seg' });
     [['excused', T.modeExcused], ['late', T.modeLate]].forEach(function (m) {

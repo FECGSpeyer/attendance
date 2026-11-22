@@ -17,6 +17,9 @@ import { escapeHtml } from './telegram.ts';
 export const BOT_USERNAME = Deno.env.get('TELEGRAM_BOT_USERNAME') || 'attendix_bot';
 export const MINIAPP_NAME = Deno.env.get('TELEGRAM_MINIAPP_NAME') || 'termin';
 
+// Roles that manage a Termin in the app (Role in src/app/utilities/constants.ts).
+export const MANAGER_ROLES = [1, 4, 5, 8, 9];
+
 export interface CardRow {
   id: number;
   key: string;
@@ -71,7 +74,7 @@ export function cardWhen(lang: Lang, loaded: LoadedAttendance): string {
   return time ? `${formatDay(lang, date)}, ${time}` : formatDay(lang, date);
 }
 
-async function counts(supabase: any, attendanceId: number) {
+export async function counts(supabase: any, attendanceId: number) {
   const { data } = await supabase
     .from('person_attendances')
     .select('status')
@@ -100,8 +103,8 @@ export async function renderCard(supabase: any, loaded: LoadedAttendance, key: s
   if (deadline && !rules.past) {
     lines.push(t(lang, rules.deadlinePassed ? 'tgcard.deadlinePassed' : 'tgcard.deadline', { when: formatWallClock(lang, deadline) }));
   }
-  const c = await counts(supabase, a.id);
-  lines.push('', t(lang, 'tgcard.counts', c), `<i>${escapeHtml(t(lang, 'tgcard.legend'))}</i>`);
+  // No counts here: everyone in the group sees the same card. Own status and, for leaders,
+  // the counts come privately via "Mein Status".
   if (rules.past) { lines.push('', escapeHtml(t(lang, 'tgcard.past'))); }
 
   const appLink = (mode: 'x' | 'l') => `https://t.me/${BOT_USERNAME}/${MINIAPP_NAME}?startapp=${key}-${mode}`;
@@ -114,7 +117,7 @@ export async function renderCard(supabase: any, loaded: LoadedAttendance, key: s
   const keyboard = [
     ...(actions.length ? [actions] : []),
     [
-      ...(rules.past ? [] : [{ text: t(lang, 'tgcard.refresh'), callback_data: `r:${key}` }]),
+      { text: t(lang, 'tgcard.myStatus'), callback_data: `s:${key}` },
       { text: t(lang, 'tgcard.open'), url: attendanceLink(a) },
     ],
   ];
@@ -143,15 +146,23 @@ export async function personsForTelegramUser(
   supabase: any,
   telegramUserId: number,
   loaded: LoadedAttendance,
-): Promise<{ linked: boolean; persons: LinkedPerson[]; lang: Lang | null }> {
+): Promise<{ linked: boolean; persons: LinkedPerson[]; lang: Lang | null; manager: boolean }> {
   const { data: accounts } = await supabase
     .from('notifications')
     .select('id, language')
     .eq('telegram_chat_id', String(telegramUserId))
     .limit(20);
   const rows = (accounts ?? []) as any[];
-  if (!rows.length) { return { linked: false, persons: [], lang: null }; }
+  if (!rows.length) { return { linked: false, persons: [], lang: null, manager: false }; }
   const lang = rows[0].language ? normalizeLang(rows[0].language) : null;
+
+  // Leaders of the Termin's tenant see the counts privately.
+  const { data: roles } = await supabase
+    .from('tenantUsers')
+    .select('role')
+    .eq('tenantId', loaded.a.tenantId)
+    .in('userId', rows.map(r => r.id));
+  const manager = ((roles ?? []) as any[]).some(r => MANAGER_ROLES.includes(Number(r.role)));
 
   const { data: players } = await supabase
     .from('player')
@@ -160,7 +171,7 @@ export async function personsForTelegramUser(
     .in('appId', rows.map(r => r.id))
     .is('left', null);
   const people = ((players ?? []) as any[]).filter(p => !p.pending);
-  if (!people.length) { return { linked: true, persons: [], lang }; }
+  if (!people.length) { return { linked: true, persons: [], lang, manager }; }
 
   const { data: pas } = await supabase
     .from('person_attendances')
@@ -180,5 +191,5 @@ export async function personsForTelegramUser(
         lang,
       };
     });
-  return { linked: true, persons, lang };
+  return { linked: true, persons, lang, manager };
 }

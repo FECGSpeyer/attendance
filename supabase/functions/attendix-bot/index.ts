@@ -31,7 +31,10 @@ import {
   CardRow,
   cardTitle,
   cardWhen,
+  counts,
+  LinkedPerson,
   loadCardAttendance,
+  MANAGER_ROLES,
   personsForTelegramUser,
   renderCard,
 } from './card.ts';
@@ -40,8 +43,6 @@ import { cardSignature, randomKey, tg, verifyCardSignature, verifyInitData } fro
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CARD_START_RE = /^\/start(?:@\w+)?\s+c(\d{1,15})_([A-Za-z0-9_-]{16})$/;
-// Roles that manage a Termin in the app (Role in src/app/utilities/constants.ts).
-const MANAGER_ROLES = [1, 4, 5, 8, 9];
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -139,6 +140,17 @@ async function refreshCard(token: string, card: CardRow, loaded?: LoadedAttendan
   await supabase.from('telegram_cards').update({ updated_at: new Date().toISOString() }).eq('id', card.id);
 }
 
+/** Private popup: own status (with reason) and, for leaders, the counts. Max. 200 characters. */
+async function statusText(lang: Lang, loaded: LoadedAttendance, persons: LinkedPerson[], manager: boolean): Promise<string> {
+  const lines = persons.map(p =>
+    (persons.length > 1 ? `${p.name}: ` : '') + t(lang, `tgapp.status${p.status}`) + (p.notes ? ` (${p.notes})` : ''));
+  if (manager) {
+    lines.push(t(lang, 'tgcard.counts', await counts(supabase, loaded.a.id)));
+  }
+  const text = t(lang, 'tgcard.statusTitle') + '\n' + lines.join('\n');
+  return text.length > 200 ? text.slice(0, 199) + '…' : text;
+}
+
 function errorText(lang: Lang, error: string): string {
   switch (error) {
     case 'deadline': return t(lang, 'tgcard.deadlineError');
@@ -167,7 +179,7 @@ async function handleCallback(token: string, query: any): Promise<void> {
     await answer(t(lang, 'tgcard.refreshed'));
     return;
   }
-  if (kind !== 'p') {
+  if (kind !== 'p' && kind !== 's') {
     await answer('');
     return;
   }
@@ -178,8 +190,13 @@ async function handleCallback(token: string, query: any): Promise<void> {
     await answer(t(lang, 'tgcard.notLinked'), true);
     return;
   }
-  if (!who.persons.length) {
+  if (!who.persons.length && !(kind === 's' && who.manager)) {
     await answer(t(lang, 'tgcard.notInvited'), true);
+    return;
+  }
+
+  if (kind === 's') {
+    await answer(await statusText(lang, loaded, who.persons, who.manager), true);
     return;
   }
 
@@ -196,7 +213,7 @@ async function handleCallback(token: string, query: any): Promise<void> {
   }
   if (done.length) {
     await refreshCard(token, card);
-    await answer(who.persons.length > 1 ? t(lang, 'tgcard.signedInFor', { names: done.join(', ') }) : t(lang, 'tgcard.signedIn'));
+    await answer(who.persons.length > 1 ? t(lang, 'tgcard.signedInFor', { names: done.join(', ') }) : t(lang, 'tgcard.signedIn'), true);
   } else {
     await answer(errorText(lang, lastError), true);
   }
@@ -249,13 +266,13 @@ async function webAppContext(token: string, body: Record<string, unknown>, fallb
   if (who.lang) { lang = who.lang; }
   if (!who.linked) { return { error: json({ error: 'not_linked', message: t(lang, 'tgcard.notLinked') }) }; }
   if (!who.persons.length) { return { error: json({ error: 'not_invited', message: t(lang, 'tgcard.notInvited') }) }; }
-  return { lang, card, loaded, persons: who.persons, mode: (m![2] === 'l' ? 'late' : 'excused') as SelfStatus };
+  return { lang, card, loaded, persons: who.persons, manager: who.manager, mode: (m![2] === 'l' ? 'late' : 'excused') as SelfStatus };
 }
 
 async function handleWebAppLoad(token: string, body: Record<string, unknown>, fallbackLang: Lang): Promise<Response> {
   const ctx = await webAppContext(token, body, fallbackLang);
   if ('error' in ctx) { return ctx.error!; }
-  const { lang, loaded, persons, mode } = ctx;
+  const { lang, loaded, persons, mode, manager } = ctx;
   const { rules } = loaded;
   // Signing out / coming later is blocked once a person is excused or absent (allowedActions);
   // offer what at least one of the persons may still do.
@@ -278,6 +295,7 @@ async function handleWebAppLoad(token: string, body: Record<string, unknown>, fa
     place: loaded.a.place || null,
     forText: t(lang, 'tgapp.for', { names: persons.map(p => p.name).join(', ') }),
     currentText: t(lang, 'tgapp.current', { status: statusText }),
+    countsText: manager ? `${t(lang, 'tgcard.counts', await counts(supabase, loaded.a.id))}\n${t(lang, 'tgcard.legend')}` : null,
     mode,
     allowed,
     reasons: reasonsOf(loaded.a),

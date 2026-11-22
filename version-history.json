@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.19.25",
+      "date": "22.11.2026",
+      "changes": [
+        "🔒 Telegram-Karte: Die Gruppe sieht keine Zahlen mehr. Über \"Mein Status\" sieht jede Person ihren eigenen Status, Leitung und Verantwortliche zusätzlich die Zahlen (auch im Absage-Fenster).",
+        "🎨 Das Absage-Fenster in Telegram nutzt jetzt die Attendix-Farben."
+      ]
+    },
+    {
       "version": "4.19.24",
       "date": "22.11.2026",
       "changes": [
