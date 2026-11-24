@@ -117,12 +117,15 @@ export class AuthService {
       }
     });
 
-    if (error) {
+    // Our own server answers an existing address with 422 user_already_exists,
+    // the Cloud returned a user without identities. Treat both the same way.
+    const exists = error?.code === 'user_already_exists';
+    if (error && !exists) {
       Utils.showToast(translate('db.registerFailed'), 'danger');
       return null;
     }
 
-    if (!data.user?.identities?.length) {
+    if (exists || !data.user?.identities?.length) {
       const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
         email, password,
       });

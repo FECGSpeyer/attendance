@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.26",
+      "date": "24.11.2026",
+      "changes": [
+        "🐛 Registrieren mit einer Adresse, die schon ein Konto hat, meldet dich wieder direkt an (bzw. zeigt „E-Mail existiert bereits“) statt „Fehler beim Registrieren“."
+      ]
+    },
+    {
       "version": "4.19.25",
       "date": "22.11.2026",
       "changes": [
