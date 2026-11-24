@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.27",
+      "date": "24.11.2026",
+      "changes": [
+        "⚡ Android-Release wird jetzt mit R8 gebaut (Code-Verschleierung und -Verkleinerung aktiv). Das verbessert Speichernutzung und Leistung und erfüllt Googles Vorgabe zur DEX-Code-Optimierung."
+      ]
+    },
+    {
       "version": "4.19.26",
       "date": "24.11.2026",
       "changes": [

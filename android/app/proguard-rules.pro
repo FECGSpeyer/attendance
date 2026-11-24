@@ -19,3 +19,23 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# --- Attendix: Keep-Regeln für R8 (minifyEnabled true) ---
+
+# Eigene native Klassen im liveplan-Package.
+# LivePlanMessagingService wird im AndroidManifest als <service> referenziert,
+# LiveActivityPlugin als Capacitor-Plugin per Reflection instanziiert.
+-keep class io.stephanus.attendix.liveplan.** { *; }
+-keep class io.stephanus.attendix.MainActivity { *; }
+
+# Capacitor-Plugins werden über Reflection geladen.
+-keep public class * extends com.getcapacitor.Plugin
+-keepclassmembers class * extends com.getcapacitor.Plugin {
+    @com.getcapacitor.annotation.PermissionCallback <methods>;
+    @com.getcapacitor.PluginMethod public <methods>;
+}
+
+# Capacitor nutzt @JavascriptInterface für die WebView-Bridge.
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
