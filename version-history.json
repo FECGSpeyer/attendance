@@ -1,6 +1,13 @@
 {
   "versions": [
     {
+      "version": "4.19.28",
+      "date": "25.11.2026",
+      "changes": [
+        "📱 Auf älteren Android-Handys (z. B. Huawei mit 3-Tasten-Navigation) liegen Zurück, Home und Übersicht nicht mehr über der Tableiste. Braucht das neue App-Update aus dem Store."
+      ]
+    },
+    {
       "version": "4.19.27",
       "date": "24.11.2026",
       "changes": [

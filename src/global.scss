@@ -433,8 +433,15 @@ ion-select-popover ion-list {
 // bar and sets --attendix-nav-inset-bottom. Some devices (e.g. Huawei with
 // 3-button navigation) report no safe area otherwise, and the tab bar ends up
 // under the system buttons.
+// Old WebViews without CSS max() would drop the whole value, so they get the
+// measured value alone.
 html.plt-android {
-  --ion-safe-area-bottom: max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), var(--attendix-nav-inset-bottom, 0px));
+  --ion-safe-area-bottom: var(--attendix-nav-inset-bottom, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+}
+@supports (padding-bottom: #{"max(0px, 1px)"}) {
+  html.plt-android {
+    --ion-safe-area-bottom: max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), var(--attendix-nav-inset-bottom, 0px));
+  }
 }
 
 // ── Floating iOS tab bar ──────────────────────────────────────────────────────

@@ -1,7 +1,10 @@
 package io.stephanus.attendix;
 
+import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowInsets;
 import android.webkit.WebView;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -65,7 +68,10 @@ public class MainActivity extends BridgeActivity {
             return;
         }
 
-        int navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+        int navBottom = Math.max(
+            insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
+            legacyNavigationBarHeight(decorView)
+        );
         int[] location = new int[2];
         webView.getLocationInWindow(location);
         int webViewBottom = location[1] + webView.getHeight();
@@ -84,5 +90,48 @@ public class MainActivity extends BridgeActivity {
             overlapDp
         );
         webView.evaluateJavascript(script, null);
+    }
+
+    /**
+     * Before Android 11, androidx derives the navigation bar inset from the stable
+     * insets. Huawei/EMUI with a hideable 3-button bar reports a stable bottom inset
+     * of 0, so navigationBars() is 0 although the bar covers the page (and Capacitor's
+     * SystemBars sees 0 as well). Here we read the raw system window inset and the
+     * visible display frame instead, both computed by the window manager, and cap
+     * them at the navigation bar height so an open keyboard is not counted.
+     */
+    @SuppressWarnings("deprecation")
+    private int legacyNavigationBarHeight(View decorView) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return 0;
+        }
+        int result = 0;
+
+        WindowInsets raw = decorView.getRootWindowInsets();
+        if (raw != null) {
+            result = Math.max(result, raw.getSystemWindowInsetBottom());
+        }
+
+        Rect visible = new Rect();
+        decorView.getWindowVisibleDisplayFrame(visible);
+        int[] decorOnScreen = new int[2];
+        decorView.getLocationOnScreen(decorOnScreen);
+        int windowBottom = decorOnScreen[1] + decorView.getHeight();
+        if (!visible.isEmpty()) {
+            result = Math.max(result, windowBottom - visible.bottom);
+        }
+
+        return Math.max(0, Math.min(result, navigationBarCap()));
+    }
+
+    private int navigationBarCap() {
+        int resId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resId > 0) {
+            int height = getResources().getDimensionPixelSize(resId);
+            if (height > 0) {
+                return height;
+            }
+        }
+        return Math.round(56 * getResources().getDisplayMetrics().density);
     }
 }
