@@ -12,6 +12,7 @@ import { getSupabase } from '../services/base/supabase';
 import { Utils } from '../utilities/Utils';
 import { environment } from 'src/environments/environment';
 import { translate } from '@jsverse/transloco';
+import { isPlanPublished } from '../utilities/plan-published';
 
 interface OrgPlanEntry {
   kind: 'attendance';
@@ -124,7 +125,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
         .order('date', { ascending: true }),
     ]);
 
-    const attEntries: OrgPlanEntry[] = ((attRows.data ?? []) as any[]).map(row => {
+    const attEntries: OrgPlanEntry[] = ((attRows.data ?? []) as any[]).filter(row => isPlanPublished(row.plan)).map(row => {
       const plan = row.plan as any;
       return {
         kind: 'attendance',
@@ -141,7 +142,7 @@ export class OrgPlanPublicPage implements OnInit, OnDestroy {
       };
     });
 
-    const adhocEntries: AdHocEntry[] = ((adhocRows.data ?? []) as SharedPlan[]).map(row => ({
+    const adhocEntries: AdHocEntry[] = ((adhocRows.data ?? []) as SharedPlan[]).filter(row => !row.unpublished).map(row => ({
       kind: 'adhoc',
       id: row.id,
       date: row.date ?? '',

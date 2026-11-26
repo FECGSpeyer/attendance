@@ -372,6 +372,8 @@ export interface Plan {
   label?: string;
   /** Day within a multi-day Termin, 0 = first day. */
   day?: number;
+  /** Set in the Gemeinde App: only the editor shows the plan until it is published. */
+  unpublished?: boolean;
 }
 
 export interface SharedPlan {
@@ -386,6 +388,8 @@ export interface SharedPlan {
   creator_user_id?: string | null;
   created_at?: string;
   org_id?: number | null;
+  /** Set in the Gemeinde App: only the editor shows the plan until it is published. */
+  unpublished?: boolean;
 }
 
 export interface PersonAttendance {

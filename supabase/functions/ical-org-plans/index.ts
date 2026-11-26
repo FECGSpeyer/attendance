@@ -264,7 +264,7 @@ Deno.serve(async (req: Request) => {
       : Promise.resolve({ data: [] }),
     supabase
       .from('shared_plans')
-      .select('id, date, time, end_time, plan_title, fields')
+      .select('id, date, time, end_time, plan_title, fields, unpublished')
       .eq('org_id', org.id)
       .order('date', { ascending: true }),
   ]);
@@ -273,7 +273,8 @@ Deno.serve(async (req: Request) => {
 
   for (const row of ((attRows as any).data ?? []) as any[]) {
     const plan = row.plan as any;
-    if (!plan) continue;
+    // Unpublished in the Gemeinde App: not in the calendar until it is published.
+    if (!plan || plan.unpublished === true) continue;
     plans.push({
       uid: `att-${row.id}`,
       date: row.date ?? '',
@@ -285,6 +286,7 @@ Deno.serve(async (req: Request) => {
   }
 
   for (const row of ((adhocRows as any).data ?? []) as any[]) {
+    if (row.unpublished === true) continue;
     plans.push({
       uid: `adhoc-${row.id}`,
       date: row.date ?? '',

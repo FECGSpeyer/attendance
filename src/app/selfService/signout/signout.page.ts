@@ -23,6 +23,7 @@ import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.co
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { MyTasksComponent } from 'src/app/tasks/my-tasks/my-tasks.component';
 import { translate } from '@jsverse/transloco';
+import { isPlanPublished } from 'src/app/utilities/plan-published';
 
 @Component({
   selector: 'app-signout',
@@ -636,7 +637,7 @@ export class SignoutPage implements OnInit {
     if (this.showAllAttendances && !attendance.id) {
       if (attendance.attendance?.description) {
         await this.openDescription(attendance);
-      } else if (attendance.attendance?.share_plan && attendance.attendance?.plan) {
+      } else if (attendance.attendance?.share_plan && isPlanPublished(attendance.attendance?.plan)) {
         await this.openPlanViewer(attendance);
       } else if (attendance.attendance?.attachment_url) {
         this.openAttachment(attendance.attendance);
@@ -770,7 +771,7 @@ export class SignoutPage implements OnInit {
     }
 
     // Add plan viewing option if share_plan is true
-    if (attendance.attendance?.share_plan && attendance.attendance?.plan && !(hideQuickActions && this.hasPlan(attendance))) {
+    if (attendance.attendance?.share_plan && isPlanPublished(attendance.attendance?.plan) && !(hideQuickActions && this.hasPlan(attendance))) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -1094,7 +1095,7 @@ export class SignoutPage implements OnInit {
   }
 
   hasPlan(attendance: PersonAttendance): boolean {
-    return attendance.attendance?.share_plan && attendance.attendance?.plan?.fields?.length > 0;
+    return attendance.attendance?.share_plan && isPlanPublished(attendance.attendance?.plan) && attendance.attendance?.plan?.fields?.length > 0;
   }
 
   getSongNames(songIds: number[]): string {

@@ -17,6 +17,7 @@ import { Utils } from 'src/app/utilities/Utils';
 import { PlanViewerComponent } from 'src/app/planning/plan-viewer/plan-viewer.component';
 import { ExcuseReasonPickerComponent } from 'src/app/shared/excuse-reason-picker/excuse-reason-picker.component';
 import { translate } from '@jsverse/transloco';
+import { isPlanPublished } from 'src/app/utilities/plan-published';
 
 interface KidStats {
   perc: number;
@@ -377,7 +378,7 @@ export class ParentsPage implements OnInit {
     }
 
     // Add plan viewing option if share_plan is true
-    if (attendance.share_plan && attendance.plan) {
+    if (attendance.share_plan && isPlanPublished(attendance.plan)) {
       const cancelBtn = buttons.find(btn => btn.role === 'destructive');
       const cancelIndex = buttons.indexOf(cancelBtn);
       buttons.splice(cancelIndex, 0, {
@@ -529,7 +530,7 @@ export class ParentsPage implements OnInit {
   }
 
   hasPlan(attendance: Attendance): boolean {
-    return attendance?.share_plan && attendance?.plan?.fields?.length > 0;
+    return attendance?.share_plan && isPlanPublished(attendance?.plan) && attendance?.plan?.fields?.length > 0;
   }
 
   async openPlanViewer(attendance: Attendance) {

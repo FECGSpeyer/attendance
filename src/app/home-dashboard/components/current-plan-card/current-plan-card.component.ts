@@ -12,6 +12,7 @@ import { fieldNumbers, isGroupHead } from '../../../utilities/plan-groups';
 import { Utils } from '../../../utilities/Utils';
 import { translate } from '@jsverse/transloco';
 import { currentLanguage, dateFmt } from '../../../i18n/languages';
+import { isPlanPublished } from 'src/app/utilities/plan-published';
 @Component({
   selector: 'app-current-plan-card',
   templateUrl: './current-plan-card.component.html',
@@ -51,7 +52,7 @@ export class CurrentPlanCardComponent implements OnDestroy {
       const isAdmin = [Role.ADMIN, Role.RESPONSIBLE].includes(role);
 
       const next = upcoming.find(a =>
-        allPlans(a).some(p => (p?.fields?.length ?? 0) > 0) &&
+        allPlans(a).some(p => (p?.fields?.length ?? 0) > 0 && isPlanPublished(p)) &&
         (isAdmin || a.share_plan)
       ) ?? null;
 

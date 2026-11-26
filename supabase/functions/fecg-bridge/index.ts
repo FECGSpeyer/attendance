@@ -7,6 +7,17 @@ import {
   reasonsOf,
   STATUS_NEUTRAL,
 } from '../_shared/self-status.ts';
+import {
+  applyPlanOps,
+  EditField,
+  EditPlan,
+  freshFields,
+  planEnd,
+  PlanConflict,
+  PlanOp,
+  PlanOpInvalid,
+  withUids,
+} from '../_shared/plan-edit.ts';
 
 // Bridge for the Gemeinde App (FECG Speyer, FECG Schwegenheim). Auth: header x-gemeinde-app-key,
 // of which tenant_groups stores only the SHA-256.
@@ -23,6 +34,19 @@ import {
 //   file = { name, path } or null to remove it. Points are written through the SQL function
 //   fecg_set_beamer_file (supabase/sql/add_gemeinde_app_write.sql), so a concurrent save in
 //   Attendix keeps the file.
+//
+// Editing Ablaufpläne from the Gemeinde App (2026-11-26), only ORG plans of the key's organisation:
+// POST { action: 'plan_edit', plan, ops }        small changes per row (see _shared/plan-edit.ts);
+//                                                 409 { error: 'conflict', uids, plan } when the same row
+//                                                 was changed meanwhile. Answers { ok, plan } (same shape as GET).
+// POST { action: 'plan_create', date, time, title?, fields?, unpublished? }
+//                                                 a free ORG plan (shared_plans) of the organisation; `fields`
+//                                                 from a template or a copy get fresh ids. Answers { ok, plan }.
+// POST { action: 'plan_delete', plan }            removes the plan (the Termin itself stays).
+// POST { action: 'planning' }                     the organisation's plan templates and fields.
+// POST { action: 'planning_save', kind: 'templates' | 'fields', old, value }
+//                                                 replaces them when `old` is still current, else 409 + current.
+// Plans carry `unpublished: true` while only their editors may see them.
 //
 // Attendance card in the Gemeinde App group chats (2026-11-21):
 // POST { action: 'persons' }                      active persons of all the org's tenants, so
@@ -67,7 +91,7 @@ interface FieldSelection {
   beamerFile?: BeamerFile;
 }
 
-interface Plan { time?: string; end?: string; title?: string; label?: string; day?: number; fields?: FieldSelection[] }
+interface Plan { time?: string; end?: string; title?: string; label?: string; day?: number; fields?: FieldSelection[]; unpublished?: boolean }
 
 const PAST_PLANS_LIMIT = 20;
 const EVENTS_LIMIT = 2000;
@@ -107,16 +131,22 @@ function rowUid(f: FieldSelection, seen: Map<string, number>): string {
 
 function mapFields(fields: FieldSelection[], beamerActive: boolean, songFiles: Map<number, BeamerFile>) {
   const seen = new Map<string, number>();
-  return fields.map(f => ({
-    uid: rowUid(f, seen),
+  const uids = fields.map(f => rowUid(f, seen));
+  // Unterpunkte point at their head by id; the Gemeinde App works with uids.
+  const headUid = new Map<string, string>();
+  fields.forEach((f, i) => { if (f.isGroup) { headUid.set(f.id, uids[i]); } });
+  return fields.map((f, i) => ({
+    uid: uids[i],
+    kind: f.isGroup ? 'block' : f.id.includes('noteFld') ? 'note' : 'item',
     name: f.name,
     minutes: f.isGroup ? 0 : (Number(f.time) || 0),
     conductor: f.conductor || null,
     info: f.info || null,
     note: f.id.includes('noteFld'),
     isGroup: !!f.isGroup,
-    groupUid: f.groupId ?? null,
+    groupUid: f.groupId ? headUid.get(f.groupId) ?? f.groupId : null,
     songId: f.songId ?? null,
+    beamerAuto: f.needsBeamer === undefined,
     needsBeamer: beamerActive && needsBeamer(f),
     beamerFile: f.beamerFile ?? null,
     songBeamerFile: f.songId ? songFiles.get(f.songId) ?? null : null,
@@ -181,6 +211,11 @@ async function handleWrite(req: Request, org: Org): Promise<Response> {
   if (body.action === 'status') { return handleStatus(org, body); }
   if (body.action === 'groups') { return handleGroups(org, body); }
   if (body.action === 'create_person') { return handleCreatePerson(org, body); }
+  if (body.action === 'plan_edit') { return handlePlanEdit(org, body); }
+  if (body.action === 'plan_create') { return handlePlanCreate(org, body); }
+  if (body.action === 'plan_delete') { return handlePlanDelete(org, body); }
+  if (body.action === 'planning') { return handlePlanning(org); }
+  if (body.action === 'planning_save') { return handlePlanningSave(org, body); }
   const file = parseFile(body.file);
   if (file === undefined) {
     return json({ error: 'invalid_file' }, 400);
@@ -242,6 +277,215 @@ async function handleWrite(req: Request, org: Org): Promise<Response> {
     return json({ error: 'write_failed' }, 500);
   }
   return ok ? json({ ok: true, file }) : json({ error: 'not_found' }, 404);
+}
+
+// ---------------------------------------------------------------------------
+// Editing plans (Gemeinde App)
+
+const CAS_TRIES = 4;
+
+type PlanRef =
+  | { kind: 'attendance'; id: number; index: number; tenantId: number; list: Plan[]; plan: Plan }
+  | { kind: 'adhoc'; id: string; plan: Plan };
+
+/** The plan as Attendix holds it right now, or null when it is not an ORG plan of this org. */
+async function loadPlanRef(org: Org, uid: string): Promise<PlanRef | null> {
+  const att = /^att-(\d+)-(\d+)$/.exec(uid);
+  if (att) {
+    const tenantIds = await orgTenantIds(org.id);
+    const { data: row } = await supabase
+      .from('attendance')
+      .select('id, tenantId, is_org_plan, plan, extra_plans')
+      .eq('id', Number(att[1]))
+      .maybeSingle();
+    if (!row || !row.is_org_plan || !tenantIds.includes(row.tenantId)) { return null; }
+    const list = [row.plan, ...(Array.isArray(row.extra_plans) ? row.extra_plans : [])].filter(Boolean) as Plan[];
+    const index = Number(att[2]);
+    if (!list[index]) { return null; }
+    return { kind: 'attendance', id: row.id, index, tenantId: row.tenantId, list, plan: list[index] };
+  }
+  if (uid.startsWith('adhoc-')) {
+    const { data: row } = await supabase
+      .from('shared_plans')
+      .select('id, org_id, plan_title, date, time, end_time, fields, unpublished')
+      .eq('id', uid.slice('adhoc-'.length))
+      .maybeSingle();
+    if (!row || row.org_id !== org.id) { return null; }
+    return { kind: 'adhoc', id: row.id, plan: sharedPlanJson(row) };
+  }
+  return null;
+}
+
+/** Same object as fecg_shared_plan_json in SQL (compare-and-swap compares exactly this). */
+function sharedPlanJson(row: any): Plan {
+  return {
+    title: row.plan_title ?? null,
+    date: row.date ?? null,
+    time: row.time ?? null,
+    end: row.end_time ?? null,
+    fields: row.fields ?? [],
+    unpublished: row.unpublished === true,
+  } as Plan;
+}
+
+/** Writes `next` when the plan is still `ref.plan`; false = someone saved meanwhile. */
+async function casPlan(org: Org, ref: PlanRef, next: Plan | null): Promise<boolean> {
+  if (ref.kind === 'attendance') {
+    const list = [...ref.list];
+    if (next) { list[ref.index] = next; } else { list.splice(ref.index, 1); }
+    const { data, error } = await supabase.rpc('fecg_cas_attendance_plans', {
+      p_attendance_id: ref.id,
+      p_old: ref.list,
+      p_new: list,
+    });
+    if (error) { throw error; }
+    return data === true;
+  }
+  const { data, error } = await supabase.rpc('fecg_cas_shared_plan', {
+    p_id: ref.id,
+    p_org_id: org.id,
+    p_old: ref.plan,
+    p_new: next,
+  });
+  if (error) { throw error; }
+  return data === true;
+}
+
+/** One plan in the shape of the GET answer (fields with uid, kind, Beamer state). */
+async function planOut(org: Org, uid: string, plan: Plan): Promise<Record<string, unknown>> {
+  const songIds = [...new Set((plan.fields ?? []).map(f => f.songId).filter((id): id is number => !!id))];
+  const songFiles = new Map<number, BeamerFile>();
+  if (songIds.length) {
+    const { data: songs } = await supabase.from('songs').select('id, beamer_file').in('id', songIds);
+    (songs ?? []).forEach((s: any) => s.beamer_file && songFiles.set(s.id, s.beamer_file));
+  }
+  return {
+    uid,
+    title: plan.title ?? null,
+    time: plan.time ?? null,
+    end: plan.end ?? null,
+    unpublished: plan.unpublished === true,
+    fields: mapFields(plan.fields ?? [], !!org.beamer_files_enabled, songFiles),
+  };
+}
+
+async function handlePlanEdit(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const uid = String(body.plan ?? '');
+  const ops = body.ops as PlanOp[];
+  for (let attempt = 0; attempt < CAS_TRIES; attempt++) {
+    const ref = await loadPlanRef(org, uid);
+    if (!ref) { return json({ error: 'not_found' }, 404); }
+    let next: EditPlan;
+    try {
+      next = applyPlanOps(ref.plan as EditPlan, ops);
+    } catch (e) {
+      if (e instanceof PlanConflict) {
+        return json({ error: 'conflict', uids: e.uids, plan: await planOut(org, uid, ref.plan) }, 409);
+      }
+      if (e instanceof PlanOpInvalid) { return json({ error: e.message }, 400); }
+      throw e;
+    }
+    try {
+      if (await casPlan(org, ref, next as Plan)) {
+        return json({ ok: true, plan: await planOut(org, uid, next as Plan) });
+      }
+    } catch (e) {
+      console.error('fecg-bridge plan_edit failed', e);
+      return json({ error: 'write_failed' }, 500);
+    }
+  }
+  return json({ error: 'busy' }, 409);
+}
+
+async function handlePlanCreate(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const date = String(body.date ?? '');
+  const time = String(body.time ?? '');
+  if (!validDate(date) || !/^\d{2}:\d{2}$/.test(time)) { return json({ error: 'invalid_time' }, 400); }
+  const title = String(body.title ?? '').trim().slice(0, 300) || null;
+  const fields = withUids(freshFields(body.fields));
+  const end = planEnd({ time, fields }) ?? time;
+  const id = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+  const { error } = await supabase.from('shared_plans').insert({
+    id,
+    edit_key: crypto.randomUUID().replace(/-/g, '').slice(0, 12),
+    plan_title: title,
+    date,
+    time,
+    end_time: end,
+    fields,
+    org_id: org.id,
+    unpublished: body.unpublished === true,
+  });
+  if (error) {
+    console.error('fecg-bridge plan_create failed', error);
+    return json({ error: 'write_failed' }, 500);
+  }
+  const plan = { title, date, time, end, fields, unpublished: body.unpublished === true } as Plan;
+  return json({ ok: true, plan: { ...(await planOut(org, `adhoc-${id}`, plan)), date } });
+}
+
+async function handlePlanDelete(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const uid = String(body.plan ?? '');
+  for (let attempt = 0; attempt < CAS_TRIES; attempt++) {
+    const ref = await loadPlanRef(org, uid);
+    if (!ref) { return json({ ok: true }); }
+    try {
+      if (await casPlan(org, ref, null)) { return json({ ok: true }); }
+    } catch (e) {
+      console.error('fecg-bridge plan_delete failed', e);
+      return json({ error: 'write_failed' }, 500);
+    }
+  }
+  return json({ error: 'busy' }, 409);
+}
+
+const PLANNING_COLUMNS = { templates: 'planning_templates', fields: 'default_fields' } as const;
+
+async function handlePlanning(org: Org): Promise<Response> {
+  const { data, error } = await supabase
+    .from('tenant_groups')
+    .select('planning_templates, default_fields')
+    .eq('id', org.id)
+    .maybeSingle();
+  if (error) { return json({ error: 'load_failed' }, 500); }
+  return json({ templates: data?.planning_templates ?? [], fields: data?.default_fields ?? [] });
+}
+
+/** Templates are whole plans, fields single rows; both are checked loosely and get uids. */
+function cleanPlanning(kind: 'templates' | 'fields', value: unknown): unknown[] | null {
+  if (!Array.isArray(value) || value.length > 200) { return null; }
+  if (kind === 'fields') {
+    return withUids(value.filter(f => f && typeof f === 'object' && String((f as any).name ?? '').trim()) as EditField[])
+      .map(f => ({ ...f, id: String(f.id || `fld-${crypto.randomUUID()}`), name: String(f.name).slice(0, 300), time: String(f.time ?? '0') }));
+  }
+  return value.filter(t => t && typeof t === 'object').map(t => {
+    const tpl = t as Record<string, unknown>;
+    const fields = Array.isArray(tpl.fields) ? withUids(tpl.fields as EditField[]) : [];
+    const time = typeof tpl.time === 'string' ? tpl.time : undefined;
+    return { ...tpl, title: String(tpl.title ?? '').slice(0, 300) || undefined, time, end: planEnd({ time, fields }) ?? tpl.end, fields };
+  });
+}
+
+async function handlePlanningSave(org: Org, body: Record<string, unknown>): Promise<Response> {
+  const kind = body.kind === 'fields' ? 'fields' : body.kind === 'templates' ? 'templates' : null;
+  if (!kind) { return json({ error: 'invalid_kind' }, 400); }
+  const value = cleanPlanning(kind, body.value);
+  if (!value) { return json({ error: 'invalid_value' }, 400); }
+  const { data: ok, error } = await supabase.rpc('fecg_cas_org_planning', {
+    p_org_id: org.id,
+    p_column: PLANNING_COLUMNS[kind],
+    p_old: body.old ?? [],
+    p_new: value,
+  });
+  if (error) {
+    console.error('fecg-bridge planning_save failed', error);
+    return json({ error: 'write_failed' }, 500);
+  }
+  if (!ok) {
+    const current = await (await handlePlanning(org)).json();
+    return json({ error: 'conflict', ...current }, 409);
+  }
+  return json({ ok: true, [kind]: value });
 }
 
 // ---------------------------------------------------------------------------
@@ -564,7 +808,7 @@ Deno.serve(async (req: Request) => {
     .not('plan', 'is', null);
   const adhocQuery = () => supabase
     .from('shared_plans')
-    .select('id, date, time, end_time, plan_title, fields')
+    .select('id, date, time, end_time, plan_title, fields, unpublished')
     .eq('org_id', org.id);
   const none = Promise.resolve({ data: [], error: null });
 
@@ -641,6 +885,7 @@ Deno.serve(async (req: Request) => {
         eventEnd: row.end_time ?? null,
         time: plan.time ?? null,
         end: plan.end ?? null,
+        unpublished: plan.unpublished === true,
         branding: branding(org, tenants.get(row.tenantId)),
         fields: mapFields(plan.fields ?? [], beamerActive, songFiles),
       });
@@ -664,6 +909,7 @@ Deno.serve(async (req: Request) => {
       eventEnd: null,
       time: row.time ?? null,
       end: row.end_time ?? null,
+      unpublished: row.unpublished === true,
       branding: branding(org),
       fields: mapFields((row.fields ?? []) as FieldSelection[], beamerActive, songFiles),
     });

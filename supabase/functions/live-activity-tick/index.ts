@@ -37,6 +37,7 @@ interface PlanJson {
   day?: number | null;
   time?: string;
   fields?: any[];
+  unpublished?: boolean;
 }
 
 interface AttendanceRow {
@@ -59,6 +60,7 @@ interface SharedPlanRow {
   time: string | null;
   fields: any[] | null;
   org_id: number;
+  unpublished?: boolean | null;
 }
 
 interface LivePlan {
@@ -120,7 +122,8 @@ function livePlans(att: AttendanceRow, typeName: string, typeColor: string | und
       attendance: att,
       planKey: plan.id || 'main',
       title: plans.length > 1 ? `${name} · ${planLabel(att, plans, index, timezone)}` : name,
-      state: withLiveColor(liveStateAt(schedule, now), typeColor),
+      // Unpublished in the Gemeinde App: no Live Activity (a running one ends).
+      state: plan.unpublished === true ? null : withLiveColor(liveStateAt(schedule, now), typeColor),
     };
   });
 }
@@ -134,7 +137,7 @@ function sharedLivePlan(sp: SharedPlanRow, tenantId: number, timezone: string, n
     attendance: { id: 0, tenantId } as AttendanceRow,
     planKey: `org-${sp.id}`,
     title: sp.plan_title?.trim() || 'ORG-Plan',
-    state: liveStateAt(schedule, now),
+    state: sp.unpublished === true ? null : liveStateAt(schedule, now),
     orgId: sp.org_id,
     orgOnly: true,
   };
@@ -270,7 +273,7 @@ Deno.serve(async (req) => {
     const day = (offset: number) => new Date(now + offset * 86_400_000).toISOString().slice(0, 10);
     const [{ data: orgLinks }, { data: sharedPlans }] = await Promise.all([
       supabase.from('tenant_group_tenants').select('tenant_group, tenant_id'),
-      supabase.from('shared_plans').select('id, plan_title, date, time, fields, org_id')
+      supabase.from('shared_plans').select('id, plan_title, date, time, fields, org_id, unpublished')
         .not('org_id', 'is', null).gte('date', day(-1)).lte('date', day(1)),
     ]);
     const orgOfTenant = new Map<number, number>();

@@ -1583,6 +1583,8 @@
     "next": "Siguiente",
     "orgPlan": "Plan de organización",
     "shareWithMembers": "Compartir programa con miembros",
+    "unpublishedHint": "Aún no publicado. Solo visible aquí en el editor hasta que el plan se publique en la Gemeinde App.",
+    "updatedElsewhere": "El plan se acaba de cambiar en otro lugar y se ha actualizado.",
     "blocks": "Bloques del programa",
     "sectionalPlan": "Plan de ensayos por secciones",
     "insertAgenda": "Insertar orden del día",

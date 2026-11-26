@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.19.29",
+      "date": "26.11.2026",
+      "changes": [
+        "✏️ ORG-Pläne können jetzt auch in der Gemeinde App bearbeitet, angelegt, kopiert und gelöscht werden. Änderungen erscheinen sofort, ein offener Plan in Attendix lädt sich von selbst neu.",
+        "🙈 Unveröffentlichte Pläne bleiben für Mitglieder, öffentliche Seite, Kalender-Abo und Live-Aktivität verborgen. Im Editor zeigt ein Hinweis, dass der Plan noch nicht veröffentlicht ist."
+      ]
+    },
+    {
       "version": "4.19.28",
       "date": "25.11.2026",
       "changes": [

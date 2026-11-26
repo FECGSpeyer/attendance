@@ -13,6 +13,8 @@ import { Utils } from '../utilities/Utils';
 import { supabase } from '../services/base/supabase';
 import { environment } from 'src/environments/environment';
 import { translate } from '@jsverse/transloco';
+import { Role } from '../utilities/constants';
+import { isPlanPublished } from '../utilities/plan-published';
 
 interface OrgPlanRow {
   kind: 'attendance';
@@ -75,11 +77,15 @@ export class OrgPlansPage implements OnInit {
         this.loadAdHocPlans(org.id),
       ]);
 
+      // Unpublished (Gemeinde App): only Admins and Verantwortliche, who edit plans, see them here.
+      const leader = [Role.ADMIN, Role.RESPONSIBLE].includes(this.db.tenantUser()?.role);
       this.plans = [
         ...attPlans
-          .filter(a => a.plan)
+          .filter(a => a.plan && (leader || isPlanPublished(a.plan)))
           .map(a => ({ kind: 'attendance' as const, attendance: a, plan: a.plan as Plan })),
-        ...adhocPlans.map(s => ({ kind: 'adhoc' as const, sharedPlan: s })),
+        ...adhocPlans
+          .filter(s => leader || !s.unpublished)
+          .map(s => ({ kind: 'adhoc' as const, sharedPlan: s })),
       ].sort((a, b) => {
         const dateA = a.kind === 'attendance' ? a.attendance.date : a.sharedPlan.date;
         const dateB = b.kind === 'attendance' ? b.attendance.date : b.sharedPlan.date;

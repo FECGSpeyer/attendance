@@ -1583,6 +1583,8 @@
     "next": "Nächste",
     "orgPlan": "Organisationsplan",
     "shareWithMembers": "Plan mit Mitgliedern teilen",
+    "unpublishedHint": "Noch nicht veröffentlicht. Nur hier im Editor sichtbar, bis der Plan in der Gemeinde App veröffentlicht wird.",
+    "updatedElsewhere": "Der Plan wurde gerade an anderer Stelle geändert und ist aktualisiert.",
     "blocks": "Programmblöcke",
     "sectionalPlan": "Registerprobenplan",
     "insertAgenda": "Tagesordnung einfügen",

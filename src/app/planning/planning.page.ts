@@ -1,5 +1,5 @@
 import { dateFmt } from '../i18n/languages';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActionSheetButton, ActionSheetController, AlertController, IonItemSliding, IonModal, IonPopover, ItemReorderEventDetail, ModalController } from '@ionic/angular/lazy';
 import { Capacitor } from '@capacitor/core';
 import dayjs from 'dayjs';
@@ -16,6 +16,8 @@ import { blockTemplateFrom, childrenOf, cloneBlock, groupDuration, isGroupHead, 
 import { translate } from '@jsverse/transloco';
 import { beamerActive, ensureFieldUids, gemeindeAppLinked, needsBeamer } from '../utilities/plan-beamer';
 import { PlanFieldEditComponent, PlanFieldEditResult } from './plan-field-edit/plan-field-edit.component';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { stableJson } from '../utilities/plan-published';
 
 /** A row of the editor list: a field, or the "Unterpunkt hinzufügen" row closing an open block. */
 interface PlanRow {
@@ -33,7 +35,7 @@ interface PlanRow {
   styleUrls: ['./planning.page.scss'],
   standalone: false
 })
-export class PlanningPage implements OnInit {
+export class PlanningPage implements OnInit, OnDestroy {
   @Input() attendanceId?: number;
   /** Plan to open first when the Termin has several (e.g. the day shown on the Terminseite). */
   @Input() initialPlanIndex = 0;
@@ -67,6 +69,9 @@ export class PlanningPage implements OnInit {
   public isSongSelectorOpen = false;
   /** Which of the Termin's Ablaufpläne is open (0 = attendance.plan). */
   public planIndex = 0;
+  /** Live updates of the open Termin (ORG plans can also be edited in the Gemeinde App). */
+  private planSub?: RealtimeChannel;
+  private planSubId?: number;
 
   readonly AGENDA_ITEMS_PLACEHOLDER_ID = AGENDA_ITEMS_PLACEHOLDER_ID;
 
@@ -425,6 +430,49 @@ export class PlanningPage implements OnInit {
     }
 
     this.calculateEnd();
+    this.watchPlan();
+  }
+
+  /** Unpublished in the Gemeinde App: only editors see the plan until it is published there. */
+  get planUnpublished(): boolean {
+    const att = this.attendances.find((a: Attendance) => a.id === this.attendance);
+    return !!allPlans(att)[this.planIndex]?.unpublished;
+  }
+
+  ngOnDestroy() {
+    void this.planSub?.unsubscribe();
+  }
+
+  /**
+   * ORG plans can be changed in the Gemeinde App at the same time. Each change there
+   * arrives here right away, so the next save here builds on it instead of overwriting it.
+   */
+  private watchPlan() {
+    if (!this.attendance || this.planSubId === this.attendance) { return; }
+    void this.planSub?.unsubscribe();
+    const id = this.attendance;
+    this.planSubId = id;
+    this.planSub = this.db.getSupabase()
+      .channel(`planning-att-${id}`)
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'attendance', filter: `id=eq.${id}` },
+        (payload: any) => this.applyRemotePlan(id, payload.new))
+      .subscribe();
+  }
+
+  private applyRemotePlan(id: number, row: any) {
+    const att = this.attendances.find((a: Attendance) => a.id === id);
+    if (!att || !row || !att.is_org_plan) { return; }
+    const remote = { plan: row.plan ?? undefined, extra_plans: row.extra_plans ?? null };
+    if (stableJson(allPlans(remote as Attendance)) === stableJson(allPlans(att))) { return; }
+    att.plan = remote.plan;
+    att.extra_plans = remote.extra_plans;
+    if (this.attendance !== id) { return; }
+    const plans = allPlans(att);
+    this.planIndex = Math.min(this.planIndex, Math.max(plans.length - 1, 0));
+    this.loadPlan(att, plans[this.planIndex]);
+    this.calculateEnd();
+    Utils.showToast(translate('planning.updatedElsewhere'), 'primary');
   }
 
   async toggleSharePlan() {

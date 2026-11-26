@@ -1583,6 +1583,8 @@
     "next": "Next",
     "orgPlan": "Organization plan",
     "shareWithMembers": "Share plan with members",
+    "unpublishedHint": "Not published yet. Only visible here in the editor until the plan is published in the Gemeinde App.",
+    "updatedElsewhere": "The plan was just changed elsewhere and has been updated.",
     "blocks": "Program blocks",
     "sectionalPlan": "Sectional rehearsal plan",
     "insertAgenda": "Insert agenda",

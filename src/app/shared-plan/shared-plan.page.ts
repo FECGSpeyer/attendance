@@ -12,6 +12,7 @@ import { moveRow, normalizeGroups } from '../utilities/plan-groups';
 import { PUBLIC_BRANDINGS } from '../public-planning/public-planning-templates';
 import { getSupabase } from '../services/base/supabase';
 import { translate } from '@jsverse/transloco';
+import { isPlanPublished } from '../utilities/plan-published';
 
 @Component({
   selector: 'app-shared-plan',
@@ -95,7 +96,9 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       .eq('archived', false)
       .single();
 
-    if (!data || !data.plan) {
+    const canEdit = !!editKey && editKey === (data as any)?.share_edit_key;
+    // Unpublished (Gemeinde App): the view link shows nothing until it is published.
+    if (!data || !data.plan || (!canEdit && !allPlans(data as any).some(p => isPlanPublished(p)))) {
       this.notFound = true;
       return;
     }
@@ -143,7 +146,7 @@ export class SharedPlanPage implements OnInit, OnDestroy {
       .eq('id', key)
       .single();
 
-    if (!data) {
+    if (!data || ((data as any).unpublished && !(editKey && editKey === data.edit_key))) {
       this.notFound = true;
       return;
     }

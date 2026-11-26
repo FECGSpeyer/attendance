@@ -66,7 +66,7 @@ With "Reset" you can return to the default programme items of the event type at 
   },
   'plan-beamer': {
     title: 'Projector files in the run sheet (Gemeinde App)',
-    keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem', 'calendar', 'rehearsal', 'performance', 'link event'],
+    keywords: ['projector', 'projector file', 'beamer', 'songbeamer', 'sng', 'slides', 'gemeinde app', 'fecg', 'org plan', 'edit item', 'edit field', 'song', 'poem', 'calendar', 'rehearsal', 'performance', 'link event', 'unpublished', 'publish', 'edit in gemeinde app', 'edit plan'],
     body: `This feature is only available to the organisations FECG Speyer and FECG Schwegenheim, whose org plans appear in the Gemeinde App. There you see the org plans of the next 8 weeks plus the 20 most recent past ones.
 
 **Switching on:** Admins switch on **Projector files in the run sheet** under Settings › Organisation › Gemeinde App. There you also create the **connection key** for the Gemeinde App. It is only visible right after you create it. If you renew it, the old key stops working.
@@ -79,7 +79,11 @@ With "Reset" you can return to the default programme items of the event type at 
 
 **When saving:** Linked files stay on the programme item even if you edit, rename or move it in Attendix at the same time. If you delete the item or copy the plan, the new item has no file.
 
-**Events in the Gemeinde App calendar:** With the same connection key the Gemeinde App also receives all events of this organisation's groups (rehearsals, practices, performances and every other type). It links them to the matching calendar entries there. App admins and the group's leaders then see **Open in Attendix** on the event and land right on that event in Attendix. Archived events are not passed on.`,
+**Events in the Gemeinde App calendar:** With the same connection key the Gemeinde App also receives all events of this organisation's groups (rehearsals, practices, performances and every other type). It links them to the matching calendar entries there. App admins and the group's leaders then see **Open in Attendix** on the event and land right on that event in Attendix. Archived events are not passed on.
+
+**Editing plans in the Gemeinde App:** People who are allowed to in the Gemeinde App can also edit, create, copy and delete org plans there, as well as the organisation's plan templates and fields. Every change reaches Attendix right away. If you have the same plan open in Attendix, it reloads by itself and you see the note "The plan was just changed elsewhere and has been updated.".
+
+**Unpublished plans:** In the Gemeinde App a plan can be marked as unpublished. It then appears neither in the Gemeinde App nor in Attendix for members, on the public page, in the calendar subscription or in the Live Activity. Admins and responsible people still see it under org plans, and the editor shows a note at the top that the plan is not published yet.`,
   },
   'plan-conductor': {
     title: 'Assigning a lead/conductor',

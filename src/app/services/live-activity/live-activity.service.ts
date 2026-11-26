@@ -12,6 +12,7 @@ import { allPlans } from '../../utilities/plan-days';
 import { buildSchedule, iosLiveState, withLiveColor, liveSchedule, liveStateAt, liveStateKey, liveTitle, livePlanKey, LivePlanState } from '../../utilities/live-plan';
 import { LiveActivity, LiveActivityTarget } from './live-activity.plugin';
 import { Utils } from '../../utilities/Utils';
+import { isPlanPublished } from 'src/app/utilities/plan-published';
 
 /** How often the open app re-checks running plans (the widget counts down on its own). */
 const SYNC_INTERVAL_MS = 20_000;
@@ -171,6 +172,8 @@ export class LiveActivityService {
       const type = this.db.attendanceTypes().find(t => t.id === att.type_id);
       const typeName = type?.name ?? '';
       plans.forEach((plan, index) => {
+        // Unpublished (Gemeinde App): no Live Activity until it is published.
+        if (!isPlanPublished(plan)) { return; }
         const state = withLiveColor(liveStateAt(liveSchedule(att, index, timezone, plans), now), type?.color);
         if (!state) { return; }
         result.push({
