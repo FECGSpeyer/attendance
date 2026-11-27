@@ -249,7 +249,18 @@ async function recipients(supabase: SupabaseClient, plan: LivePlan, orgTenants: 
     .in('id', allowed);
   const optedOut = new Set<string>((settings ?? []).filter((s: any) => s.live_activity === false).map((s: any) => s.id));
 
-  return [...new Set<string>(allowed)].filter(id => !excusedUsers.has(id) && !optedOut.has(id));
+  // ORG plans: people who show them as a Live Activity in the Gemeinde App don't get a second one here.
+  const inGemeindeApp = new Set<string>();
+  if (plan.orgId) {
+    const { data: skip } = await supabase.from('gemeinde_app_live_skip').select('person_id').eq('org_id', plan.orgId);
+    const personIds = (skip ?? []).map((r: any) => r.person_id as number);
+    if (personIds.length) {
+      const { data: players } = await supabase.from('player').select('appId').in('id', personIds);
+      (players ?? []).forEach((p: any) => p.appId && inGemeindeApp.add(p.appId as string));
+    }
+  }
+
+  return [...new Set<string>(allowed)].filter(id => !excusedUsers.has(id) && !optedOut.has(id) && !inGemeindeApp.has(id));
 }
 
 Deno.serve(async (req) => {

@@ -1,6 +1,14 @@
 {
   "versions": [
     {
+      "version": "4.19.30",
+      "date": "27.11.2026",
+      "changes": [
+        "📲 Live-Aktivität: Wer die Live-Anzeige in der Gemeinde App eingeschaltet hat, bekommt laufende ORG-Pläne dort und nicht doppelt aus Attendix. Pläne der eigenen Gruppe bleiben unverändert.",
+        "🧩 Neue SQL-Datei add_gemeinde_app_live_skip.sql und neue Bridge-Aktion live_skip."
+      ]
+    },
+    {
       "version": "4.19.29",
       "date": "26.11.2026",
       "changes": [

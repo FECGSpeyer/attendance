@@ -92,7 +92,9 @@ export const PLANNING_ARTICLES: HelpArticle[] = [
 
 **Pläne in der Gemeinde App bearbeiten:** Wer in der Gemeinde App dafür freigegeben ist, kann ORG-Pläne dort auch bearbeiten, neu anlegen, kopieren und löschen, ebenso die Planvorlagen und Felder der Organisation. Jede Änderung landet sofort in Attendix. Hast du denselben Plan in Attendix gerade offen, lädt er sich von selbst neu und du siehst den Hinweis "Der Plan wurde gerade an anderer Stelle geändert und ist aktualisiert.".
 
-**Unveröffentlichte Pläne:** In der Gemeinde App kann ein Plan als unveröffentlicht markiert werden. Er erscheint dann weder in der Gemeinde App noch in Attendix bei Mitgliedern, auf der öffentlichen Seite, im Kalender-Abo oder in der Live-Aktivität. Admins und Verantwortliche sehen ihn weiter unter den ORG-Plänen, und im Editor steht oben der Hinweis, dass der Plan noch nicht veröffentlicht ist.`,
+**Unveröffentlichte Pläne:** In der Gemeinde App kann ein Plan als unveröffentlicht markiert werden. Er erscheint dann weder in der Gemeinde App noch in Attendix bei Mitgliedern, auf der öffentlichen Seite, im Kalender-Abo oder in der Live-Aktivität. Admins und Verantwortliche sehen ihn weiter unter den ORG-Plänen, und im Editor steht oben der Hinweis, dass der Plan noch nicht veröffentlicht ist.
+
+**Live-Aktivität und Gemeinde App:** Wer die Live-Anzeige in der Gemeinde App eingeschaltet hat, bekommt die Live-Aktivität laufender ORG-Pläne dort und nicht zusätzlich aus Attendix. Pläne deiner eigenen Gruppe zeigt Attendix wie gewohnt.`,
   },
   {
     id: 'plan-conductor',

@@ -49,6 +49,9 @@ import {
 // Plans carry `unpublished: true` while only their editors may see them.
 //
 // Attendance card in the Gemeinde App group chats (2026-11-21):
+// POST { action: 'live_skip', personIds }         persons who show the running ORG plan as a Live Activity in the
+//                                                 Gemeinde App; live-activity-tick skips them for ORG plans (the
+//                                                 whole list is replaced). -> { ok, count }
 // POST { action: 'persons' }                      active persons of all the org's tenants, so
 //                                                 the Gemeinde App can link them to its members
 //                                                 (email and Microsoft oid of the account, if any).
@@ -214,6 +217,7 @@ async function handleWrite(req: Request, org: Org): Promise<Response> {
   if (body.action === 'plan_edit') { return handlePlanEdit(org, body); }
   if (body.action === 'plan_create') { return handlePlanCreate(org, body); }
   if (body.action === 'plan_delete') { return handlePlanDelete(org, body); }
+  if (body.action === 'live_skip') { return handleLiveSkip(org, body); }
   if (body.action === 'planning') { return handlePlanning(org); }
   if (body.action === 'planning_save') { return handlePlanningSave(org, body); }
   const file = parseFile(body.file);
@@ -493,6 +497,31 @@ async function handlePlanningSave(org: Org, body: Record<string, unknown>): Prom
 
 // Status values, rules and the self sign-in / sign-out live in ../_shared/self-status.ts
 // (shared with the Telegram card in attendix-bot).
+
+async function handleLiveSkip(org: Org, body: Record<string, unknown>): Promise<Response> {
+  if (!Array.isArray(body.personIds) || body.personIds.length > 5000) { return json({ error: 'invalid_ids' }, 400); }
+  const ids = [...new Set(body.personIds.map(Number).filter(n => Number.isSafeInteger(n) && n > 0))];
+  const tenantIds = await orgTenantIds(org.id);
+  let valid: number[] = [];
+  if (ids.length && tenantIds.length) {
+    const { data, error } = await supabase.from('player').select('id').in('id', ids).in('tenantId', tenantIds);
+    if (error) { return json({ error: 'load_failed' }, 500); }
+    valid = (data ?? []).map((p: any) => p.id as number);
+  }
+  const { error: delError } = await supabase.from('gemeinde_app_live_skip').delete().eq('org_id', org.id);
+  if (delError) {
+    console.error('fecg-bridge live_skip failed', delError);
+    return json({ error: 'write_failed' }, 500);
+  }
+  if (valid.length) {
+    const { error } = await supabase.from('gemeinde_app_live_skip').insert(valid.map(id => ({ org_id: org.id, person_id: id })));
+    if (error) {
+      console.error('fecg-bridge live_skip failed', error);
+      return json({ error: 'write_failed' }, 500);
+    }
+  }
+  return json({ ok: true, count: valid.length });
+}
 
 async function handlePersons(org: Org): Promise<Response> {
   const tenantIds = await orgTenantIds(org.id);

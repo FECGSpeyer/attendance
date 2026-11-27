@@ -83,7 +83,9 @@ With "Reset" you can return to the default programme items of the event type at 
 
 **Editing plans in the Gemeinde App:** People who are allowed to in the Gemeinde App can also edit, create, copy and delete org plans there, as well as the organisation's plan templates and fields. Every change reaches Attendix right away. If you have the same plan open in Attendix, it reloads by itself and you see the note "The plan was just changed elsewhere and has been updated.".
 
-**Unpublished plans:** In the Gemeinde App a plan can be marked as unpublished. It then appears neither in the Gemeinde App nor in Attendix for members, on the public page, in the calendar subscription or in the Live Activity. Admins and responsible people still see it under org plans, and the editor shows a note at the top that the plan is not published yet.`,
+**Unpublished plans:** In the Gemeinde App a plan can be marked as unpublished. It then appears neither in the Gemeinde App nor in Attendix for members, on the public page, in the calendar subscription or in the Live Activity. Admins and responsible people still see it under org plans, and the editor shows a note at the top that the plan is not published yet.
+
+**Live Activity and the Gemeinde App:** If you turned on the live display in the Gemeinde App, you get the Live Activity of running org plans there and not additionally from Attendix. Plans of your own group are still shown by Attendix as usual.`,
   },
   'plan-conductor': {
     title: 'Assigning a lead/conductor',
